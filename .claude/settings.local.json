@@ -19,7 +19,10 @@
       "Bash(dart run:*)",
       "Bash(xargs grep:*)",
       "Bash(xargs ls:*)",
-      "Bash(xargs wc:*)"
+      "Bash(xargs wc:*)",
+      "Bash(timeout 180)",
+      "Bash(flutter build:*)",
+      "Bash(gh --version)"
     ]
   }
 }
