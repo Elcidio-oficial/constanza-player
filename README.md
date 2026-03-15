@@ -14,7 +14,6 @@ O player foi projetado para oferecer uma experiência imersiva, combinando esté
 
 ### Experiência Visual e Interface
 
-- **Interface Adaptativa (Dark/Light Mode):** troca inteligente de temas baseada na preferência do sistema ou ajuste manual para maior conforto visual.
 - **Modo Foco / Minimalista:** interface simplificada que oculta controles secundários, destacando apenas a arte do álbum para uma experiência sem distrações.
 - **Suporte a Metadados e Capas:** extração automática de capas de álbuns e leitura de tags ID3 (artista, álbum, ano) para manter sua biblioteca organizada.
 
