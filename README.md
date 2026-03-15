@@ -1,16 +1,11 @@
 # constanza_player
 
-A new Flutter project.
+Leitor de Música moderno
 
-## Getting Started
+## Imagens do Constanza Player
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/8615a932-d0f8-46fb-b0b1-59060785c245" width="250"/>
+  <img src="https://github.com/user-attachments/assets/0b278cc9-8791-4ad3-b285-f447c09d3ffb" width="250"/>
+  <img src="https://github.com/user-attachments/assets/0d02870e-efdb-42a0-9d98-5cf55daae538" width="250"/>
+</p>
