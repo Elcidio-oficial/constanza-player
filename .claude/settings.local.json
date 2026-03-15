@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze lib/presentation/pages/home/home_page.dart lib/presentation/pages/now_playing/now_playing_page.dart)",
+      "Bash(timeout 35 powershell:*)",
+      "Bash(Get-Content \"C:\\\\Users\\\\Dev\\\\Desktop\\\\Apps\\\\AppCosntanzaMusicas\\\\constanza_player\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\com\\\\constanza\\\\constanza_player\\\\MainActivity.kt\")",
+      "Bash(flutter analyze:*)",
+      "Bash(xargs grep -l \"Bokeh\\\\|bokeh\\\\|_BokehLayer\")",
+      "Bash(find \"C:\\\\Users\\\\Dev\\\\Desktop\\\\Apps\\\\AppCosntanzaMusicas\\\\constanza_player/lib\" -type f -name \"*.dart\" -exec grep -l \"Add to Playlist\\\\|add to playlist\" {} ;)",
+      "Bash(xargs grep -l \"SearchPage\\\\|search\\\\|Search\")",
+      "Bash(xargs grep -l \"audio\")",
+      "Bash(node \"C:\\\\Users\\\\Dev\\\\Desktop\\\\Apps\\\\AppCosntanzaMusicas\\\\create_doc.js\")",
+      "Read(//c/Users/Dev/Desktop/Apps/AppCosntanzaMusicas/**)",
+      "Bash(npm install:*)",
+      "Bash(node create_doc.js)",
+      "Bash(rm \"C:\\\\Users\\\\Dev\\\\Desktop\\\\Apps\\\\AppCosntanzaMusicas\\\\create_doc.js\")",
+      "Bash(rm -rf \"C:\\\\Users\\\\Dev\\\\Desktop\\\\Apps\\\\AppCosntanzaMusicas\\\\node_modules\" \"C:\\\\Users\\\\Dev\\\\Desktop\\\\Apps\\\\AppCosntanzaMusicas\\\\package.json\" \"C:\\\\Users\\\\Dev\\\\Desktop\\\\Apps\\\\AppCosntanzaMusicas\\\\package-lock.json\")",
+      "Bash(flutter pub:*)",
+      "Bash(dart run:*)",
+      "Bash(xargs grep:*)",
+      "Bash(xargs ls:*)",
+      "Bash(xargs wc:*)"
+    ]
+  }
+}

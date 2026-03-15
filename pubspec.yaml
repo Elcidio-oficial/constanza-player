@@ -1,0 +1,59 @@
+name: constanza_player
+description: "Constanza Músicas — Sua música. Seu silêncio. Seu momento."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # === STATE MANAGEMENT ===
+  flutter_riverpod: ^2.6.1
+
+  # === NAVEGAÇÃO ===
+  go_router: ^14.8.1
+
+  # === AUDIO ===
+  just_audio: ^0.9.43
+  just_audio_background: ^0.0.1-beta.12
+  audio_service: ^0.18.15
+  audio_session: ^0.1.21
+  on_audio_query: ^2.9.0
+
+  # === STORAGE ===
+  permission_handler: ^11.3.1
+  path_provider: ^2.1.5
+  shared_preferences: ^2.3.3
+
+  # === UI/UX ===
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.2
+
+  # === IMAGE PICKER ===
+  image_picker: ^1.1.2
+
+  # === NETWORK / IMAGENS ONLINE ===
+  http: ^1.2.2
+  cached_network_image: ^3.4.1
+
+  # === UTILS ===
+  equatable: ^2.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#1A1A2E"
+  adaptive_icon_foreground: "assets/icon/icon.png"
+
+flutter:
+  uses-material-design: true
