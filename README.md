@@ -1,7 +1,7 @@
 # Constanza Player
 
 **Constanza Player** é um reprodutor de mídia moderno e intuitivo, desenvolvido para oferecer uma experiência de áudio e vídeo fluida e elegante. O foco do projeto é a simplicidade de uso aliada a uma interface limpa.
-
+Credits
 ![License](https://img.shields.io/github/license/Elcidio-oficial/constanza-player)
 ![Stars](https://img.shields.io/github/stars/Elcidio-oficial/constanza-player)
 ![Issues](https://img.shields.io/github/issues/Elcidio-oficial/constanza-player)
