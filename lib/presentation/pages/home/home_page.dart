@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -10,18 +11,14 @@ import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
+import 'package:constanza_player/presentation/providers/audio_analysis_provider.dart';
 import 'package:constanza_player/presentation/widgets/song_tile/song_tile.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
-import 'package:constanza_player/presentation/pages/library/album_detail_page.dart';
-import 'package:constanza_player/presentation/pages/library/artist_detail_page.dart';
-import 'package:constanza_player/presentation/pages/library/song_list_page.dart';
 import 'package:constanza_player/presentation/pages/settings/settings_page.dart';
-import 'package:constanza_player/presentation/pages/library/genres_page.dart';
-import 'package:constanza_player/presentation/pages/library/composers_page.dart';
-import 'package:constanza_player/presentation/pages/library/statistics_page.dart';
-import 'package:constanza_player/presentation/pages/library/history_page.dart';
 import 'package:constanza_player/presentation/widgets/artist_image.dart';
-import 'package:constanza_player/core/utils/app_page_route.dart';
+import 'package:constanza_player/services/audio_analysis_service.dart';
+import 'package:constanza_player/presentation/pages/now_playing/now_playing_page.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -34,6 +31,16 @@ class HomePage extends ConsumerWidget {
     return 'Boa noite';
   }
 
+  String get _moodSuggestion {
+    final h = DateTime.now().hour;
+    if (h < 6) return 'Músicas calmas para a madrugada';
+    if (h < 10) return 'Comece o dia com energia';
+    if (h < 14) return 'Ritmo para o seu dia';
+    if (h < 18) return 'Som da tarde';
+    if (h < 22) return 'Relaxe com suas favoritas';
+    return 'Sons para o fim do dia';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -44,24 +51,23 @@ class HomePage extends ConsumerWidget {
     final albums = libraryState.albums;
     final artists = libraryState.artists;
 
-    // Smart playlists
     final favSongs = ref.watch(
       playlistProvider.select(
-        (p) => p.firstWhere((pl) => pl.id == 'fav').songs,
+        (p) => p.where((pl) => pl.id == 'fav').firstOrNull?.songs ?? const [],
       ),
     );
     final recentSongs = ref.watch(
       playlistProvider.select(
-        (p) => p.firstWhere((pl) => pl.id == 'recent').songs,
+        (p) =>
+            p.where((pl) => pl.id == 'recent').firstOrNull?.songs ?? const [],
       ),
     );
     final mostSongs = ref.watch(
       playlistProvider.select(
-        (p) => p.firstWhere((pl) => pl.id == 'most').songs,
+        (p) => p.where((pl) => pl.id == 'most').firstOrNull?.songs ?? const [],
       ),
     );
 
-    // Currently playing song ID (for "now playing" indicator)
     final currentSongId = ref.watch(
       playerProvider.select((s) => s.currentSong?.id),
     );
@@ -241,7 +247,7 @@ class HomePage extends ConsumerWidget {
       );
     }
 
-    // Compute recently added songs
+    // ── Data preparation ─────────────────────────────────────
     final addedRecently = List<Song>.of(songs)
       ..sort((a, b) {
         final aDate = a.dateAdded ?? DateTime(1970);
@@ -250,7 +256,6 @@ class HomePage extends ConsumerWidget {
       });
     final recentlyAdded = addedRecently.take(20).toList();
 
-    // Compute total duration for stats
     final totalDur = songs.fold<Duration>(
       Duration.zero,
       (sum, s) => sum + s.duration,
@@ -261,11 +266,23 @@ class HomePage extends ConsumerWidget {
         ? '${totalHours}h ${totalMins}min'
         : '$totalMins min';
 
+    // Player state for hero card
+    final playerState = ref.watch(playerProvider);
+    final currentSong = playerState.currentSong;
+
+    // Analysis for current song
+    final analysisState = ref.watch(audioAnalysisProvider);
+
+    // Mood-based quick picks (time-aware suggestion)
+    final moodPicks = _getMoodPicks(songs, recentSongs, favSongs);
+
+    int sectionIdx = 0;
+
     return CustomScrollView(
       slivers: [
         // ─── HEADER ───────────────────────────────────────────
         SliverAppBar(
-          expandedHeight: 110,
+          expandedHeight: 100,
           floating: true,
           snap: true,
           backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
@@ -287,6 +304,14 @@ class HomePage extends ConsumerWidget {
                     color: colors.onSurface.withValues(alpha: 0.35),
                     letterSpacing: 1.2,
                     fontSize: 9,
+                    shadows: themeState.hasBackground
+                        ? [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.7),
+                              blurRadius: 6,
+                            ),
+                          ]
+                        : null,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -297,12 +322,46 @@ class HomePage extends ConsumerWidget {
                     fontWeight: FontWeight.w200,
                     fontSize: 24,
                     letterSpacing: -0.5,
+                    shadows: themeState.hasBackground
+                        ? [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.8),
+                              blurRadius: 8,
+                            ),
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 16,
+                            ),
+                          ]
+                        : null,
                   ),
                 ),
               ],
             ),
           ),
         ),
+
+        // ─── NOW PLAYING HERO CARD ───────────────────────────
+        if (currentSong != null)
+          SliverToBoxAdapter(
+            child:
+                _NowPlayingHero(
+                      song: currentSong,
+                      isPlaying: playerState.isPlaying,
+                      progress: playerState.progress,
+                      analysis: analysisState.result,
+                      colors: colors,
+                      theme: theme,
+                      onTap: () => _openNowPlaying(context),
+                      onPlayPause: () {
+                        final notifier = ref.read(playerProvider.notifier);
+                        notifier.togglePlayPause();
+                      },
+                    )
+                    .animate()
+                    .fadeIn(duration: 400.ms, curve: Curves.easeOut)
+                    .slideY(begin: 0.03, end: 0, duration: 400.ms),
+          ),
 
         // ─── QUICK ACTION CHIPS ──────────────────────────────
         SliverToBoxAdapter(
@@ -321,14 +380,9 @@ class HomePage extends ConsumerWidget {
                     _QuickChip(
                       icon: Icons.favorite_rounded,
                       label: 'Favoritas',
-                      onTap: () => Navigator.push(
-                        context,
-                        AppPageRoute(
-                          page: SongListPage(
-                            title: 'Favoritas',
-                            songs: favSongs,
-                          ),
-                        ),
+                      onTap: () => context.push(
+                        '/song-list',
+                        extra: {'title': 'Favoritas', 'songs': favSongs},
                       ),
                       colors: colors,
                       theme: theme,
@@ -339,14 +393,12 @@ class HomePage extends ConsumerWidget {
                     _QuickChip(
                       icon: Icons.history_rounded,
                       label: 'Recentes',
-                      onTap: () => Navigator.push(
-                        context,
-                        AppPageRoute(
-                          page: SongListPage(
-                            title: 'Tocadas Recentemente',
-                            songs: recentSongs,
-                          ),
-                        ),
+                      onTap: () => context.push(
+                        '/song-list',
+                        extra: {
+                          'title': 'Tocadas Recentemente',
+                          'songs': recentSongs,
+                        },
                       ),
                       colors: colors,
                       theme: theme,
@@ -357,14 +409,9 @@ class HomePage extends ConsumerWidget {
                     _QuickChip(
                       icon: Icons.trending_up_rounded,
                       label: 'Mais Tocadas',
-                      onTap: () => Navigator.push(
-                        context,
-                        AppPageRoute(
-                          page: SongListPage(
-                            title: 'Mais Tocadas',
-                            songs: mostSongs,
-                          ),
-                        ),
+                      onTap: () => context.push(
+                        '/song-list',
+                        extra: {'title': 'Mais Tocadas', 'songs': mostSongs},
                       ),
                       colors: colors,
                       theme: theme,
@@ -374,10 +421,7 @@ class HomePage extends ConsumerWidget {
                   _QuickChip(
                     icon: Icons.category_rounded,
                     label: 'Gêneros',
-                    onTap: () => Navigator.push(
-                      context,
-                      AppPageRoute(page: const GenresPage()),
-                    ),
+                    onTap: () => context.push('/genres'),
                     colors: colors,
                     theme: theme,
                   ),
@@ -385,10 +429,7 @@ class HomePage extends ConsumerWidget {
                   _QuickChip(
                     icon: Icons.edit_note_rounded,
                     label: 'Compositores',
-                    onTap: () => Navigator.push(
-                      context,
-                      AppPageRoute(page: const ComposersPage()),
-                    ),
+                    onTap: () => context.push('/composers'),
                     colors: colors,
                     theme: theme,
                   ),
@@ -396,10 +437,7 @@ class HomePage extends ConsumerWidget {
                   _QuickChip(
                     icon: Icons.bar_chart_rounded,
                     label: 'Estatísticas',
-                    onTap: () => Navigator.push(
-                      context,
-                      AppPageRoute(page: const StatisticsPage()),
-                    ),
+                    onTap: () => context.push('/statistics'),
                     colors: colors,
                     theme: theme,
                   ),
@@ -407,24 +445,7 @@ class HomePage extends ConsumerWidget {
                   _QuickChip(
                     icon: Icons.history_rounded,
                     label: 'Histórico',
-                    onTap: () => Navigator.push(
-                      context,
-                      AppPageRoute(page: const HistoryPage()),
-                    ),
-                    colors: colors,
-                    theme: theme,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  _QuickChip(
-                    icon: Icons.shuffle_rounded,
-                    label: 'Aleatório',
-                    onTap: () {
-                      if (songs.isNotEmpty) {
-                        ref
-                            .read(playerProvider.notifier)
-                            .playSong(songs.first, queue: songs, shuffle: true);
-                      }
-                    },
+                    onTap: () => context.push('/history'),
                     colors: colors,
                     theme: theme,
                   ),
@@ -516,6 +537,47 @@ class HomePage extends ConsumerWidget {
           ),
         ),
 
+        // ─── MOOD PICKS (time-aware) ─────────────────────────
+        if (moodPicks.isNotEmpty) ...[
+          SliverToBoxAdapter(
+            child: _SectionHeader(
+              title: _moodSuggestion,
+              colors: colors,
+              theme: theme,
+              sectionIndex: sectionIdx++,
+              icon: Icons.auto_awesome_rounded,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 200,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                itemCount: moodPicks.length.clamp(0, 15),
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: AppSpacing.sm),
+                itemBuilder: (context, index) {
+                  final song = moodPicks[index];
+                  final isPlaying = song.id == currentSongId;
+                  final analysis = AudioAnalysisService.getCached(song.id);
+                  return _PremiumSongCard(
+                    song: song,
+                    isPlaying: isPlaying,
+                    size: 140,
+                    analysis: analysis,
+                    colors: colors,
+                    theme: theme,
+                    onTap: () => ref
+                        .read(playerProvider.notifier)
+                        .playSong(song, queue: moodPicks),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+
         // ─── FAVORITAS ───────────────────────────────────────
         if (favSongs.isNotEmpty) ...[
           SliverToBoxAdapter(
@@ -523,35 +585,32 @@ class HomePage extends ConsumerWidget {
               title: 'Favoritas',
               colors: colors,
               theme: theme,
-              sectionIndex: 0,
-              onSeeAll: () => Navigator.push(
-                context,
-                AppPageRoute(
-                  page: SongListPage(
-                    title: 'Favoritas',
-                    songs: favSongs,
-                  ),
-                ),
+              sectionIndex: sectionIdx++,
+              icon: Icons.favorite_rounded,
+              onSeeAll: () => context.push(
+                '/song-list',
+                extra: {'title': 'Favoritas', 'songs': favSongs},
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 185,
+              height: 200,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 itemCount: favSongs.length.clamp(0, 20),
                 separatorBuilder: (_, __) =>
                     const SizedBox(width: AppSpacing.sm),
                 itemBuilder: (context, index) {
                   final song = favSongs[index];
                   final isPlaying = song.id == currentSongId;
-                  return _SongCard(
+                  final analysis = AudioAnalysisService.getCached(song.id);
+                  return _PremiumSongCard(
                     song: song,
                     isPlaying: isPlaying,
-                    size: 130,
+                    size: 140,
+                    analysis: analysis,
                     colors: colors,
                     theme: theme,
                     onTap: () => ref
@@ -564,32 +623,27 @@ class HomePage extends ConsumerWidget {
           ),
         ],
 
-        // ─── TOCADAS RECENTEMENTE ──────────────────────────────
+        // ─── TOCADAS RECENTEMENTE ────────────────────────────
         if (recentSongs.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _SectionHeader(
               title: 'Tocadas Recentemente',
               colors: colors,
               theme: theme,
-              sectionIndex: 1,
-              onSeeAll: () => Navigator.push(
-                context,
-                AppPageRoute(
-                  page: SongListPage(
-                    title: 'Tocadas Recentemente',
-                    songs: recentSongs,
-                  ),
-                ),
+              sectionIndex: sectionIdx++,
+              icon: Icons.history_rounded,
+              onSeeAll: () => context.push(
+                '/song-list',
+                extra: {'title': 'Tocadas Recentemente', 'songs': recentSongs},
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 170,
+              height: 180,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 itemCount: recentSongs.length.clamp(0, 20),
                 separatorBuilder: (_, __) =>
                     const SizedBox(width: AppSpacing.sm),
@@ -599,7 +653,7 @@ class HomePage extends ConsumerWidget {
                   return _SongCard(
                     song: song,
                     isPlaying: isPlaying,
-                    size: 115,
+                    size: 120,
                     colors: colors,
                     theme: theme,
                     onTap: () => ref
@@ -612,32 +666,27 @@ class HomePage extends ConsumerWidget {
           ),
         ],
 
-        // ─── MAIS TOCADAS ──────────────────────────────────────
+        // ─── MAIS TOCADAS ────────────────────────────────────
         if (mostSongs.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _SectionHeader(
               title: 'Mais Tocadas',
               colors: colors,
               theme: theme,
-              sectionIndex: 2,
-              onSeeAll: () => Navigator.push(
-                context,
-                AppPageRoute(
-                  page: SongListPage(
-                    title: 'Mais Tocadas',
-                    songs: mostSongs,
-                  ),
-                ),
+              sectionIndex: sectionIdx++,
+              icon: Icons.trending_up_rounded,
+              onSeeAll: () => context.push(
+                '/song-list',
+                extra: {'title': 'Mais Tocadas', 'songs': mostSongs},
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 170,
+              height: 180,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 itemCount: mostSongs.length.clamp(0, 20),
                 separatorBuilder: (_, __) =>
                     const SizedBox(width: AppSpacing.sm),
@@ -647,7 +696,7 @@ class HomePage extends ConsumerWidget {
                   return _SongCard(
                     song: song,
                     isPlaying: isPlaying,
-                    size: 115,
+                    size: 120,
                     colors: colors,
                     theme: theme,
                     onTap: () => ref
@@ -660,32 +709,30 @@ class HomePage extends ConsumerWidget {
           ),
         ],
 
-        // ─── ADICIONADAS RECENTEMENTE ─────────────────────────
+        // ─── ADICIONADAS RECENTEMENTE ────────────────────────
         if (recentlyAdded.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _SectionHeader(
               title: 'Adicionadas Recentemente',
               colors: colors,
               theme: theme,
-              sectionIndex: 3,
-              onSeeAll: () => Navigator.push(
-                context,
-                AppPageRoute(
-                  page: SongListPage(
-                    title: 'Adicionadas Recentemente',
-                    songs: recentlyAdded,
-                  ),
-                ),
+              sectionIndex: sectionIdx++,
+              icon: Icons.new_releases_rounded,
+              onSeeAll: () => context.push(
+                '/song-list',
+                extra: {
+                  'title': 'Adicionadas Recentemente',
+                  'songs': recentlyAdded,
+                },
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 170,
+              height: 180,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 itemCount: recentlyAdded.length,
                 separatorBuilder: (_, __) =>
                     const SizedBox(width: AppSpacing.sm),
@@ -695,7 +742,7 @@ class HomePage extends ConsumerWidget {
                   return _SongCard(
                     song: song,
                     isPlaying: isPlaying,
-                    size: 115,
+                    size: 120,
                     colors: colors,
                     theme: theme,
                     onTap: () => ref
@@ -715,61 +762,53 @@ class HomePage extends ConsumerWidget {
               title: 'Álbuns',
               colors: colors,
               theme: theme,
-              sectionIndex: 4,
-              onSeeAll: () => Navigator.push(
-                context,
-                AppPageRoute(
-                  page: SongListPage(
-                    title: 'Todas as Músicas',
-                    songs: songs,
-                  ),
-                ),
+              sectionIndex: sectionIdx++,
+              icon: Icons.album_rounded,
+              onSeeAll: () => context.push(
+                '/song-list',
+                extra: {'title': 'Todas as Músicas', 'songs': songs},
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 165,
+              height: 175,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 itemCount: albums.length,
                 separatorBuilder: (_, __) =>
                     const SizedBox(width: AppSpacing.sm),
                 itemBuilder: (context, index) {
                   final album = albums[index];
                   return GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      AppPageRoute(
-                        page: AlbumDetailPage(album: album),
-                      ),
-                    ),
+                    onTap: () => context.push('/album', extra: album),
                     child: SizedBox(
-                      width: 120,
+                      width: 130,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(
-                                  AppSpacing.radiusMd),
+                                AppSpacing.radiusMd,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.06),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 6),
                                 ),
                               ],
                             ),
                             child: ArtworkImage.album(
                               albumId: album.numericId,
-                              size: 120,
+                              size: 130,
                               borderRadius: BorderRadius.circular(
-                                  AppSpacing.radiusMd),
+                                AppSpacing.radiusMd,
+                              ),
                               placeholderIcon: Icons.album_rounded,
-                              placeholderIconSize: 40,
+                              placeholderIconSize: 44,
                             ),
                           ),
                           const SizedBox(height: AppSpacing.xs),
@@ -807,15 +846,11 @@ class HomePage extends ConsumerWidget {
               title: 'Artistas',
               colors: colors,
               theme: theme,
-              sectionIndex: 5,
-              onSeeAll: () => Navigator.push(
-                context,
-                AppPageRoute(
-                  page: SongListPage(
-                    title: 'Todas as Músicas',
-                    songs: songs,
-                  ),
-                ),
+              sectionIndex: sectionIdx++,
+              icon: Icons.person_rounded,
+              onSeeAll: () => context.push(
+                '/song-list',
+                extra: {'title': 'Todas as Músicas', 'songs': songs},
               ),
             ),
           ),
@@ -824,34 +859,24 @@ class HomePage extends ConsumerWidget {
               height: 110,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 itemCount: artists.length,
                 separatorBuilder: (_, __) =>
                     const SizedBox(width: AppSpacing.md),
                 itemBuilder: (context, index) {
                   final artist = artists[index];
                   return GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      AppPageRoute(
-                        page: ArtistDetailPage(artist: artist),
-                      ),
-                    ),
+                    onTap: () => context.push('/artist', extra: artist),
                     child: SizedBox(
                       width: 80,
                       child: Column(
                         children: [
-                          ArtistImage(
-                            artistName: artist.name,
-                            size: 72,
-                          ),
+                          ArtistImage(artistName: artist.name, size: 72),
                           const SizedBox(height: AppSpacing.xxs),
                           Text(
                             artist.name,
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color:
-                                  colors.onSurface.withValues(alpha: 0.55),
+                              color: colors.onSurface.withValues(alpha: 0.55),
                               fontSize: 10,
                             ),
                             maxLines: 1,
@@ -868,12 +893,28 @@ class HomePage extends ConsumerWidget {
           ),
         ],
 
+        // ─── LIBRARY STATS BAR ────────────────────────────────
+        SliverToBoxAdapter(
+          child:
+              _LibraryStatsBar(
+                    songCount: songs.length,
+                    albumCount: albums.length,
+                    artistCount: artists.length,
+                    durationLabel: durationLabel,
+                    colors: colors,
+                    theme: theme,
+                  )
+                  .animate(delay: Duration(milliseconds: 60 * sectionIdx))
+                  .fadeIn(duration: 350.ms)
+                  .slideY(begin: 0.04, end: 0, duration: 350.ms),
+        ),
+
         // ─── TODAS AS MÚSICAS ──────────────────────────────────
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.md,
-              AppSpacing.lg,
+              AppSpacing.sm,
               AppSpacing.md,
               AppSpacing.xs,
             ),
@@ -910,9 +951,9 @@ class HomePage extends ConsumerWidget {
             final song = songs[index];
             return SongTile(
               song: song,
-              onTap: () {
-                ref.read(playerProvider.notifier).playSong(song, queue: songs);
-              },
+              onTap: () => ref
+                  .read(playerProvider.notifier)
+                  .playSong(song, queue: songs),
             );
           },
         ),
@@ -920,13 +961,578 @@ class HomePage extends ConsumerWidget {
       ],
     );
   }
+
+  void _openNowPlaying(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const NowPlayingPage(),
+        transitionsBuilder: (_, anim, __, child) =>
+            FadeTransition(opacity: anim, child: child),
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
+
+  /// Mood-based picks: combine favorites + recent + random based on time of day.
+  List<Song> _getMoodPicks(
+    List<Song> songs,
+    List<Song> recent,
+    List<Song> favs,
+  ) {
+    if (songs.isEmpty) return [];
+    final rng = Random(DateTime.now().day); // Stable per day
+    final picks = <Song>[];
+    final seen = <String>{};
+
+    void addUnique(Song s) {
+      if (seen.add(s.id)) picks.add(s);
+    }
+
+    // Mix favorites and recents
+    for (var i = 0; i < min(5, favs.length); i++) {
+      addUnique(favs[i]);
+    }
+    for (var i = 0; i < min(5, recent.length); i++) {
+      addUnique(recent[i]);
+    }
+
+    // Fill with random songs
+    final shuffled = List<Song>.of(songs)..shuffle(rng);
+    for (final s in shuffled) {
+      if (picks.length >= 15) break;
+      addUnique(s);
+    }
+
+    return picks;
+  }
 }
 
 // ============================================================
-// WIDGETS AUXILIARES
+// NOW PLAYING HERO CARD — premium card at top when music is playing
 // ============================================================
 
-/// Card reutilizável para carrosséis de músicas — com indicador "tocando agora".
+class _NowPlayingHero extends StatelessWidget {
+  const _NowPlayingHero({
+    required this.song,
+    required this.isPlaying,
+    required this.progress,
+    required this.analysis,
+    required this.colors,
+    required this.theme,
+    required this.onTap,
+    required this.onPlayPause,
+  });
+
+  final Song song;
+  final bool isPlaying;
+  final double progress;
+  final AudioAnalysisResult? analysis;
+  final ColorScheme colors;
+  final ThemeData theme;
+  final VoidCallback onTap;
+  final VoidCallback onPlayPause;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.xs,
+        AppSpacing.md,
+        AppSpacing.xs,
+      ),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                colors.primary.withValues(alpha: 0.15),
+                colors.primaryContainer.withValues(alpha: 0.08),
+                colors.surface.withValues(alpha: 0.4),
+              ],
+            ),
+            border: Border.all(color: colors.primary.withValues(alpha: 0.12)),
+            boxShadow: [
+              BoxShadow(
+                color: colors.primary.withValues(alpha: 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Row(
+                  children: [
+                    // Artwork with glow
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.primary.withValues(alpha: 0.2),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ArtworkImage.song(
+                        songId: song.numericId,
+                        size: 64,
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
+                        placeholderIcon: Icons.music_note_rounded,
+                        placeholderIconSize: 28,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    // Song info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              if (isPlaying)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child: _PulsingDot(color: colors.primary),
+                                ),
+                              Expanded(
+                                child: Text(
+                                  isPlaying ? 'Tocando agora' : 'Pausado',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: colors.primary.withValues(
+                                      alpha: 0.7,
+                                    ),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 10,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            song.title,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: colors.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            song.artist,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onSurface.withValues(alpha: 0.5),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (analysis != null &&
+                              analysis!.fullLabel.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              analysis!.fullLabel,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: colors.tertiary.withValues(alpha: 0.6),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    // Play/Pause button
+                    GestureDetector(
+                      onTap: onPlayPause,
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: colors.primary,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors.primary.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          isPlaying
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
+                          color: colors.onPrimary,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Progress bar
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(AppSpacing.radiusLg),
+                  bottomRight: Radius.circular(AppSpacing.radiusLg),
+                ),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 3,
+                  backgroundColor: colors.onSurface.withValues(alpha: 0.06),
+                  valueColor: AlwaysStoppedAnimation(
+                    colors.primary.withValues(alpha: 0.6),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// PREMIUM SONG CARD — with BPM/Key badge
+// ============================================================
+
+class _PremiumSongCard extends StatelessWidget {
+  const _PremiumSongCard({
+    required this.song,
+    required this.isPlaying,
+    required this.size,
+    required this.analysis,
+    required this.colors,
+    required this.theme,
+    required this.onTap,
+  });
+  final Song song;
+  final bool isPlaying;
+  final double size;
+  final AudioAnalysisResult? analysis;
+  final ColorScheme colors;
+  final ThemeData theme;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: size,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isPlaying
+                            ? colors.primary.withValues(alpha: 0.15)
+                            : Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: ArtworkImage.song(
+                    songId: song.numericId,
+                    size: size,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    placeholderIcon: Icons.music_note_rounded,
+                    placeholderIconSize: size * 0.33,
+                  ),
+                ),
+                // Now playing indicator
+                if (isPlaying)
+                  Positioned(
+                    right: 6,
+                    bottom: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: colors.primary,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.primary.withValues(alpha: 0.4),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.equalizer_rounded,
+                        size: 12,
+                        color: colors.onPrimary,
+                      ),
+                    ),
+                  ),
+                // BPM badge
+                if (analysis != null && analysis!.hasBpm)
+                  Positioned(
+                    left: 6,
+                    top: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${analysis!.bpm} BPM',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              song.title,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: isPlaying ? colors.primary : colors.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    song.artist,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.4),
+                      fontSize: 10,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (analysis != null && analysis!.hasKey) ...[
+                  const SizedBox(width: 4),
+                  Text(
+                    '${analysis!.key}${analysis!.scale == "Minor" ? "m" : ""}',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.tertiary.withValues(alpha: 0.5),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 9,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// LIBRARY STATS BAR — compact summary
+// ============================================================
+
+class _LibraryStatsBar extends StatelessWidget {
+  const _LibraryStatsBar({
+    required this.songCount,
+    required this.albumCount,
+    required this.artistCount,
+    required this.durationLabel,
+    required this.colors,
+    required this.theme,
+  });
+  final int songCount;
+  final int albumCount;
+  final int artistCount;
+  final String durationLabel;
+  final ColorScheme colors;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.xs,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: colors.onSurface.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          border: Border.all(color: colors.outline.withValues(alpha: 0.08)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _StatItem(
+              value: '$songCount',
+              label: 'Músicas',
+              colors: colors,
+              theme: theme,
+            ),
+            Container(
+              width: 1,
+              height: 24,
+              color: colors.outline.withValues(alpha: 0.1),
+            ),
+            _StatItem(
+              value: '$albumCount',
+              label: 'Álbuns',
+              colors: colors,
+              theme: theme,
+            ),
+            Container(
+              width: 1,
+              height: 24,
+              color: colors.outline.withValues(alpha: 0.1),
+            ),
+            _StatItem(
+              value: '$artistCount',
+              label: 'Artistas',
+              colors: colors,
+              theme: theme,
+            ),
+            Container(
+              width: 1,
+              height: 24,
+              color: colors.outline.withValues(alpha: 0.1),
+            ),
+            _StatItem(
+              value: durationLabel,
+              label: 'Duração',
+              colors: colors,
+              theme: theme,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  const _StatItem({
+    required this.value,
+    required this.label,
+    required this.colors,
+    required this.theme,
+  });
+  final String value;
+  final String label;
+  final ColorScheme colors;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: colors.onSurface,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: colors.onSurface.withValues(alpha: 0.35),
+            fontSize: 9,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// PULSING DOT — animated indicator
+// ============================================================
+
+class _PulsingDot extends StatefulWidget {
+  const _PulsingDot({required this.color});
+  final Color color;
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<double>(
+      valueListenable: _ctrl,
+      builder: (context, value, child) {
+        return Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget.color.withValues(alpha: 0.5 + 0.5 * value),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ============================================================
+// STANDARD SONG CARD (unchanged from original)
+// ============================================================
+
 class _SongCard extends StatelessWidget {
   const _SongCard({
     required this.song,
@@ -956,8 +1562,7 @@ class _SongCard extends StatelessWidget {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusMd),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.08),
@@ -969,13 +1574,11 @@ class _SongCard extends StatelessWidget {
                   child: ArtworkImage.song(
                     songId: song.numericId,
                     size: size,
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusMd),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     placeholderIcon: Icons.music_note_rounded,
                     placeholderIconSize: size * 0.33,
                   ),
                 ),
-                // Now playing indicator
                 if (isPlaying)
                   Positioned(
                     right: 6,
@@ -1027,7 +1630,10 @@ class _SongCard extends StatelessWidget {
   }
 }
 
-/// Chip de ação rápida.
+// ============================================================
+// QUICK CHIP
+// ============================================================
+
 class _QuickChip extends StatelessWidget {
   const _QuickChip({
     required this.icon,
@@ -1051,9 +1657,7 @@ class _QuickChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: colors.onSurface.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          border: Border.all(
-            color: colors.outline.withValues(alpha: 0.1),
-          ),
+          border: Border.all(color: colors.outline.withValues(alpha: 0.1)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1074,7 +1678,10 @@ class _QuickChip extends StatelessWidget {
   }
 }
 
-/// Section header com link "Ver tudo".
+// ============================================================
+// SECTION HEADER — with icon and staggered animation
+// ============================================================
+
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({
     required this.title,
@@ -1082,47 +1689,59 @@ class _SectionHeader extends StatelessWidget {
     required this.theme,
     this.onSeeAll,
     this.sectionIndex = 0,
+    this.icon,
   });
   final String title;
   final ColorScheme colors;
   final ThemeData theme;
   final VoidCallback? onSeeAll;
   final int sectionIndex;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.sm,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.5),
-              fontWeight: FontWeight.w400,
-            ),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.lg,
+            AppSpacing.md,
+            AppSpacing.sm,
           ),
-          if (onSeeAll != null)
-            GestureDetector(
-              onTap: onSeeAll,
-              child: Text(
-                'Ver tudo',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: colors.primary.withValues(alpha: 0.7),
-                  fontWeight: FontWeight.w500,
+          child: Row(
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 16,
+                  color: colors.primary.withValues(alpha: 0.5),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.55),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-            ),
-        ],
-      ),
-    ).animate(delay: Duration(milliseconds: 60 * sectionIndex))
-      .fadeIn(duration: 350.ms, curve: Curves.easeOut)
-      .slideY(begin: 0.04, end: 0, duration: 350.ms, curve: Curves.easeOut);
+              if (onSeeAll != null)
+                GestureDetector(
+                  onTap: onSeeAll,
+                  child: Text(
+                    'Ver tudo',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.primary.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        )
+        .animate(delay: Duration(milliseconds: 60 * sectionIndex))
+        .fadeIn(duration: 350.ms, curve: Curves.easeOut)
+        .slideY(begin: 0.04, end: 0, duration: 350.ms, curve: Curves.easeOut);
   }
 }

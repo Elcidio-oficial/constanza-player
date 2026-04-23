@@ -5,6 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/presentation/providers/audio_settings_provider.dart';
 import 'package:constanza_player/presentation/providers/artwork_provider.dart';
+import 'package:constanza_player/presentation/providers/theme_provider.dart';
+import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
+import 'package:constanza_player/core/utils/background_helper.dart';
+import 'package:go_router/go_router.dart';
 
 /// Página do Equalizador — 5 bandas + presets + efeitos.
 class EqualizerPage extends ConsumerWidget {
@@ -19,219 +23,224 @@ class EqualizerPage extends ConsumerWidget {
     final palette = ref.watch(artworkPaletteProvider);
     final accentColor = palette?.vibrant ?? palette?.dominant;
 
-    return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        title: Text(
-          'Equalizador',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w300,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          // Toggle master
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.xs),
-            child: Switch.adaptive(
-              value: audioState.eqEnabled,
-              onChanged: (_) => notifier.toggleEq(),
-              activeColor: accentColor ?? colors.onSurface,
+    final themeState = ref.watch(themeProvider);
+
+    return BackgroundWrapper(
+      child: Scaffold(
+        backgroundColor: BackgroundHelper.scaffoldColor(colors, themeState),
+        appBar: AppBar(
+          backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
+          title: Text(
+            'Equalizador',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w300,
             ),
           ),
-        ],
-      ),
-      body: AnimatedOpacity(
-        opacity: audioState.eqEnabled ? 1.0 : 0.35,
-        duration: const Duration(milliseconds: 200),
-        child: AbsorbPointer(
-          absorbing: !audioState.eqEnabled,
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            children: [
-              // === PRESETS ===
-              Text(
-                'PRESETS',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
-                  letterSpacing: 1.5,
-                ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => context.pop(),
+          ),
+          actions: [
+            // Toggle master
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.xs),
+              child: Switch.adaptive(
+                value: audioState.eqEnabled,
+                onChanged: (_) => notifier.toggleEq(),
+                activeColor: accentColor ?? colors.onSurface,
               ),
-              const SizedBox(height: AppSpacing.sm),
-              SizedBox(
-                height: 38,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: kEqPresets.length - 1, // exclui "custom"
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(width: AppSpacing.xs),
-                  itemBuilder: (context, index) {
-                    final preset = kEqPresets[index];
-                    final isSelected = audioState.eqPresetId == preset.id;
-                    return GestureDetector(
-                      onTap: () => notifier.setPreset(preset.id),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? (accentColor ?? colors.onSurface)
-                              : colors.onSurface.withValues(alpha: 0.04),
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusFull,
+            ),
+          ],
+        ),
+        body: AnimatedOpacity(
+          opacity: audioState.eqEnabled ? 1.0 : 0.35,
+          duration: const Duration(milliseconds: 200),
+          child: AbsorbPointer(
+            absorbing: !audioState.eqEnabled,
+            child: ListView(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              children: [
+                // === PRESETS ===
+                Text(
+                  'PRESETS',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.35),
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                SizedBox(
+                  height: 38,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: kEqPresets.length - 1, // exclui "custom"
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(width: AppSpacing.xs),
+                    itemBuilder: (context, index) {
+                      final preset = kEqPresets[index];
+                      final isSelected = audioState.eqPresetId == preset.id;
+                      return GestureDetector(
+                        onTap: () => notifier.setPreset(preset.id),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.xs,
                           ),
-                          border: Border.all(
+                          decoration: BoxDecoration(
                             color: isSelected
                                 ? (accentColor ?? colors.onSurface)
-                                : colors.outline.withValues(alpha: 0.2),
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            preset.name,
-                            style: theme.textTheme.labelMedium?.copyWith(
+                                : colors.onSurface.withValues(alpha: 0.04),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusFull,
+                            ),
+                            border: Border.all(
                               color: isSelected
-                                  ? Colors.white
-                                  : colors.onSurface.withValues(alpha: 0.6),
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
+                                  ? (accentColor ?? colors.onSurface)
+                                  : colors.outline.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              preset.name,
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: isSelected
+                                    ? Colors.white
+                                    : colors.onSurface.withValues(alpha: 0.6),
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // === BANDAS ===
-              Container(
-                height: 260,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.md,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.onSurface.withValues(alpha: 0.03),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  border: Border.all(
-                    color: colors.outline.withValues(alpha: 0.08),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // Escala dB
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '+12',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.25),
-                            fontSize: 9,
-                          ),
-                        ),
-                        Text(
-                          '0',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.35),
-                            fontSize: 9,
-                          ),
-                        ),
-                        Text(
-                          '-12',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.25),
-                            fontSize: 9,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    // Sliders verticais
-                    ...List.generate(5, (i) {
-                      return Expanded(
-                        child: _VerticalBandSlider(
-                          value: audioState.eqBands[i],
-                          label: kBandLabels[i],
-                          onChanged: (v) => notifier.setBand(i, v),
-                          colors: colors,
-                          theme: theme,
-                          accentColor: accentColor,
-                        ),
                       );
-                    }),
-                  ],
-                ),
-              ),
-
-              // Preset label
-              if (audioState.eqPresetId == 'custom')
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.xs),
-                  child: Text(
-                    'Custom',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.3),
-                      fontStyle: FontStyle.italic,
-                    ),
-                    textAlign: TextAlign.center,
+                    },
                   ),
                 ),
 
-              const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.xl),
 
-              // === EFEITOS ===
-              Text(
-                'EFEITOS',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
-                  letterSpacing: 1.5,
+                // === BANDAS ===
+                Container(
+                  height: 260,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.md,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.onSurface.withValues(alpha: 0.03),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    border: Border.all(
+                      color: colors.outline.withValues(alpha: 0.08),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Escala dB
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '+12',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: colors.onSurface.withValues(alpha: 0.25),
+                              fontSize: 9,
+                            ),
+                          ),
+                          Text(
+                            '0',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: colors.onSurface.withValues(alpha: 0.35),
+                              fontSize: 9,
+                            ),
+                          ),
+                          Text(
+                            '-12',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: colors.onSurface.withValues(alpha: 0.25),
+                              fontSize: 9,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      // Sliders verticais
+                      ...List.generate(5, (i) {
+                        return Expanded(
+                          child: _VerticalBandSlider(
+                            value: audioState.eqBands[i],
+                            label: kBandLabels[i],
+                            onChanged: (v) => notifier.setBand(i, v),
+                            colors: colors,
+                            theme: theme,
+                            accentColor: accentColor,
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
 
-              // Bass Boost
-              _EffectSlider(
-                label: 'Bass Boost',
-                value: audioState.bassBoost,
-                max: 10,
-                displayValue: audioState.bassBoost == 0
-                    ? 'Off'
-                    : audioState.bassBoost.round().toString(),
-                onChanged: notifier.setBassBoost,
-                colors: colors,
-                theme: theme,
-                accentColor: accentColor,
-              ),
+                // Preset label
+                if (audioState.eqPresetId == 'custom')
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: Text(
+                      'Custom',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
 
-              const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.xl),
 
-              // Virtualizer
-              _EffectSlider(
-                label: 'Virtualizer',
-                value: audioState.virtualizer,
-                max: 10,
-                displayValue: audioState.virtualizer == 0
-                    ? 'Off'
-                    : audioState.virtualizer.round().toString(),
-                onChanged: notifier.setVirtualizer,
-                colors: colors,
-                theme: theme,
-                accentColor: accentColor,
-              ),
+                // === EFEITOS ===
+                Text(
+                  'EFEITOS',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.35),
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
 
-              const SizedBox(height: AppSpacing.xxl),
-            ],
+                // Bass Boost
+                _EffectSlider(
+                  label: 'Bass Boost',
+                  value: audioState.bassBoost,
+                  max: 10,
+                  displayValue: audioState.bassBoost == 0
+                      ? 'Off'
+                      : audioState.bassBoost.round().toString(),
+                  onChanged: notifier.setBassBoost,
+                  colors: colors,
+                  theme: theme,
+                  accentColor: accentColor,
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Virtualizer
+                _EffectSlider(
+                  label: 'Virtualizer',
+                  value: audioState.virtualizer,
+                  max: 10,
+                  displayValue: audioState.virtualizer == 0
+                      ? 'Off'
+                      : audioState.virtualizer.round().toString(),
+                  onChanged: notifier.setVirtualizer,
+                  colors: colors,
+                  theme: theme,
+                  accentColor: accentColor,
+                ),
+
+                const SizedBox(height: AppSpacing.xxl),
+              ],
+            ),
           ),
         ),
       ),

@@ -97,7 +97,9 @@ class _LetterAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.outline.withValues(alpha: 0.1),
         shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: isCircle ? null : (borderRadius ?? BorderRadius.circular(6)),
+        borderRadius: isCircle
+            ? null
+            : (borderRadius ?? BorderRadius.circular(6)),
       ),
       child: Center(
         child: Text(

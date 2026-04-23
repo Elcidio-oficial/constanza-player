@@ -6,15 +6,12 @@ import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/widgets/song_tile/song_tile.dart';
+import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 
 /// Página reutilizável para exibir uma lista de músicas.
 /// Usada como destino de "Ver tudo" nas seções da Home.
 class SongListPage extends ConsumerWidget {
-  const SongListPage({
-    super.key,
-    required this.title,
-    required this.songs,
-  });
+  const SongListPage({super.key, required this.title, required this.songs});
 
   final String title;
   final List<Song> songs;
@@ -25,110 +22,112 @@ class SongListPage extends ConsumerWidget {
     final colors = theme.colorScheme;
     final themeState = ref.watch(themeProvider);
 
-    return Scaffold(
-      backgroundColor: BackgroundHelper.scaffoldColor(colors, themeState),
-      appBar: AppBar(
-        backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
-        title: Text(
-          title,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w300,
-          ),
-        ),
-        actions: [
-          // Shuffle all
-          IconButton(
-            icon: Icon(
-              Icons.shuffle_rounded,
-              color: colors.onSurface.withValues(alpha: 0.5),
-              size: 22,
+    return BackgroundWrapper(
+      child: Scaffold(
+        backgroundColor: BackgroundHelper.scaffoldColor(colors, themeState),
+        appBar: AppBar(
+          backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
+          title: Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w300,
             ),
-            onPressed: songs.isEmpty
-                ? null
-                : () => ref
-                    .read(playerProvider.notifier)
-                    .playSong(songs.first, queue: songs, shuffle: true),
           ),
-          const SizedBox(width: AppSpacing.xxs),
-        ],
-      ),
-      body: songs.isEmpty
-          ? Center(
-              child: Text(
-                'Nenhuma música',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
-                ),
+          actions: [
+            // Shuffle all
+            IconButton(
+              icon: Icon(
+                Icons.shuffle_rounded,
+                color: colors.onSurface.withValues(alpha: 0.5),
+                size: 22,
               ),
-            )
-          : Column(
-              children: [
-                // Song count header
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.md,
-                    AppSpacing.sm,
-                    AppSpacing.md,
-                    AppSpacing.xs,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${songs.length} música${songs.length == 1 ? '' : 's'}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.35),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => ref
-                            .read(playerProvider.notifier)
-                            .playSong(songs.first, queue: songs),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.play_arrow_rounded,
-                              size: 16,
-                              color: colors.primary.withValues(alpha: 0.7),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Tocar tudo',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: colors.primary.withValues(alpha: 0.7),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Divider(
-                  indent: AppSpacing.md,
-                  endIndent: AppSpacing.md,
-                  color: colors.outline.withValues(alpha: 0.1),
-                ),
-                // Song list
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: songs.length,
-                    padding: const EdgeInsets.only(bottom: 100),
-                    itemBuilder: (context, index) {
-                      final song = songs[index];
-                      return SongTile(
-                        song: song,
-                        onTap: () => ref
-                            .read(playerProvider.notifier)
-                            .playSong(song, queue: songs),
-                      );
-                    },
-                  ),
-                ),
-              ],
+              onPressed: songs.isEmpty
+                  ? null
+                  : () => ref
+                        .read(playerProvider.notifier)
+                        .playSong(songs.first, queue: songs, shuffle: true),
             ),
+            const SizedBox(width: AppSpacing.xxs),
+          ],
+        ),
+        body: songs.isEmpty
+            ? Center(
+                child: Text(
+                  'Nenhuma música',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.35),
+                  ),
+                ),
+              )
+            : Column(
+                children: [
+                  // Song count header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.sm,
+                      AppSpacing.md,
+                      AppSpacing.xs,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${songs.length} música${songs.length == 1 ? '' : 's'}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.onSurface.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => ref
+                              .read(playerProvider.notifier)
+                              .playSong(songs.first, queue: songs),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.play_arrow_rounded,
+                                size: 16,
+                                color: colors.primary.withValues(alpha: 0.7),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Tocar tudo',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: colors.primary.withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(
+                    indent: AppSpacing.md,
+                    endIndent: AppSpacing.md,
+                    color: colors.outline.withValues(alpha: 0.1),
+                  ),
+                  // Song list
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: songs.length,
+                      padding: const EdgeInsets.only(bottom: 100),
+                      itemBuilder: (context, index) {
+                        final song = songs[index];
+                        return SongTile(
+                          song: song,
+                          onTap: () => ref
+                              .read(playerProvider.notifier)
+                              .playSong(song, queue: songs),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }

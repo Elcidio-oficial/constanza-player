@@ -36,6 +36,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   _SearchFilter _filter = _SearchFilter.all;
   List<String> _recentSearches = [];
 
+  // Memoized search results — invalidados quando _query muda
+  String _lastRankedQuery = '';
+  List<Song> _cachedSongResults = [];
+  List<Album> _cachedAlbumResults = [];
+  List<Artist> _cachedArtistResults = [];
+
   /// Limite de resultados por seção no modo "Todos"
   static const _previewLimit = 5;
 
@@ -56,7 +62,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void _onSearchChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      if (mounted) setState(() => _query = value.trim().toLowerCase());
+      if (mounted) {
+        final newQuery = value.trim().toLowerCase();
+        if (newQuery != _query) {
+          _lastRankedQuery = ''; // invalidar cache
+          setState(() => _query = newQuery);
+        }
+      }
     });
   }
 
@@ -155,8 +167,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 filled: true,
                 fillColor: colors.onSurface.withValues(alpha: 0.04),
                 border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.radiusFull),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(
@@ -182,25 +193,22 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   // FILTER CHIPS com contagem de resultados
   // ============================================================
 
+  /// Atualiza o cache de resultados se a query mudou.
+  void _ensureRankedResults(LibraryState libState) {
+    if (_lastRankedQuery == _query) return;
+    _lastRankedQuery = _query;
+    _cachedSongResults = _rankSongs(libState.sortedSongs);
+    _cachedAlbumResults = _rankAlbums(libState.albums);
+    _cachedArtistResults = _rankArtists(libState.artists);
+  }
+
   Widget _buildFilterChips(ThemeData theme, ColorScheme colors) {
     final libState = ref.watch(libraryProvider);
+    _ensureRankedResults(libState);
 
-    // Contar resultados para cada filtro
-    final songCount = libState.sortedSongs.where((s) {
-      return s.title.toLowerCase().contains(_query) ||
-          s.artist.toLowerCase().contains(_query) ||
-          s.album.toLowerCase().contains(_query);
-    }).length;
-
-    final albumCount = libState.albums.where((a) {
-      return a.name.toLowerCase().contains(_query) ||
-          a.artist.toLowerCase().contains(_query);
-    }).length;
-
-    final artistCount = libState.artists.where((a) {
-      return a.name.toLowerCase().contains(_query);
-    }).length;
-
+    final songCount = _cachedSongResults.length;
+    final albumCount = _cachedAlbumResults.length;
+    final artistCount = _cachedArtistResults.length;
     final totalCount = songCount + albumCount + artistCount;
 
     return Column(
@@ -219,8 +227,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 label: 'Todos',
                 count: totalCount,
                 active: _filter == _SearchFilter.all,
-                onTap: () =>
-                    setState(() => _filter = _SearchFilter.all),
+                onTap: () => setState(() => _filter = _SearchFilter.all),
                 colors: colors,
                 theme: theme,
               ),
@@ -229,8 +236,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 label: 'Músicas',
                 count: songCount,
                 active: _filter == _SearchFilter.songs,
-                onTap: () =>
-                    setState(() => _filter = _SearchFilter.songs),
+                onTap: () => setState(() => _filter = _SearchFilter.songs),
                 colors: colors,
                 theme: theme,
               ),
@@ -239,8 +245,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 label: 'Álbuns',
                 count: albumCount,
                 active: _filter == _SearchFilter.albums,
-                onTap: () =>
-                    setState(() => _filter = _SearchFilter.albums),
+                onTap: () => setState(() => _filter = _SearchFilter.albums),
                 colors: colors,
                 theme: theme,
               ),
@@ -249,8 +254,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 label: 'Artistas',
                 count: artistCount,
                 active: _filter == _SearchFilter.artists,
-                onTap: () =>
-                    setState(() => _filter = _SearchFilter.artists),
+                onTap: () => setState(() => _filter = _SearchFilter.artists),
                 colors: colors,
                 theme: theme,
               ),
@@ -259,9 +263,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         ),
         // Barra de contagem total
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: Text(
             totalCount == 0
                 ? 'Nenhum resultado'
@@ -316,8 +318,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         if (_recentSearches.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xl),
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -366,13 +367,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     onTap: () => _insertRecent(query),
                     behavior: HitTestBehavior.opaque,
                     child: Padding(
-                      padding:
-                          const EdgeInsets.all(AppSpacing.xxs),
+                      padding: const EdgeInsets.all(AppSpacing.xxs),
                       child: Icon(
                         Icons.north_east_rounded,
                         size: 16,
-                        color: colors.onSurface
-                            .withValues(alpha: 0.2),
+                        color: colors.onSurface.withValues(alpha: 0.2),
                       ),
                     ),
                   ),
@@ -382,13 +381,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     onTap: () => _removeRecent(query),
                     behavior: HitTestBehavior.opaque,
                     child: Padding(
-                      padding:
-                          const EdgeInsets.all(AppSpacing.xxs),
+                      padding: const EdgeInsets.all(AppSpacing.xxs),
                       child: Icon(
                         Icons.close_rounded,
                         size: 16,
-                        color: colors.onSurface
-                            .withValues(alpha: 0.2),
+                        color: colors.onSurface.withValues(alpha: 0.2),
                       ),
                     ),
                   ),
@@ -408,6 +405,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   Widget _buildResults(ThemeData theme, ColorScheme colors, WidgetRef ref) {
     final libState = ref.watch(libraryProvider);
+    _ensureRankedResults(libState);
+
     final showSongs =
         _filter == _SearchFilter.all || _filter == _SearchFilter.songs;
     final showAlbums =
@@ -415,17 +414,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final showArtists =
         _filter == _SearchFilter.all || _filter == _SearchFilter.artists;
 
-    // Buscar e ranquear resultados
-    final songResults =
-        showSongs ? _rankSongs(libState.sortedSongs) : <Song>[];
-    final albumResults =
-        showAlbums ? _rankAlbums(libState.albums) : <Album>[];
-    final artistResults =
-        showArtists ? _rankArtists(libState.artists) : <Artist>[];
+    // Usar resultados cacheados
+    final songResults = showSongs ? _cachedSongResults : <Song>[];
+    final albumResults = showAlbums ? _cachedAlbumResults : <Album>[];
+    final artistResults = showArtists ? _cachedArtistResults : <Artist>[];
 
-    if (songResults.isEmpty &&
-        albumResults.isEmpty &&
-        artistResults.isEmpty) {
+    if (songResults.isEmpty && albumResults.isEmpty && artistResults.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -458,11 +452,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final isAllMode = _filter == _SearchFilter.all;
     final songPreview = isAllMode && songResults.length > _previewLimit;
     final albumPreview = isAllMode && albumResults.length > _previewLimit;
-    final artistPreview =
-        isAllMode && artistResults.length > _previewLimit;
+    final artistPreview = isAllMode && artistResults.length > _previewLimit;
 
-    final displaySongs =
-        songPreview ? songResults.take(_previewLimit).toList() : songResults;
+    final displaySongs = songPreview
+        ? songResults.take(_previewLimit).toList()
+        : songResults;
     final displayAlbums = albumPreview
         ? albumResults.take(_previewLimit).toList()
         : albumResults;
@@ -480,12 +474,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             theme,
             colors,
             showViewAll: artistPreview,
-            onViewAll: () =>
-                setState(() => _filter = _SearchFilter.artists),
+            onViewAll: () => setState(() => _filter = _SearchFilter.artists),
           ),
           ...displayArtists.map(
-            (artist) => _buildArtistTile(
-                artist, theme, colors, ref),
+            (artist) => _buildArtistTile(artist, theme, colors, ref),
           ),
           if (displaySongs.isNotEmpty || displayAlbums.isNotEmpty)
             Divider(
@@ -504,12 +496,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             theme,
             colors,
             showViewAll: albumPreview,
-            onViewAll: () =>
-                setState(() => _filter = _SearchFilter.albums),
+            onViewAll: () => setState(() => _filter = _SearchFilter.albums),
           ),
           ...displayAlbums.map(
-            (album) =>
-                _buildAlbumTile(album, theme, colors, ref),
+            (album) => _buildAlbumTile(album, theme, colors, ref),
           ),
           if (displaySongs.isNotEmpty)
             Divider(
@@ -528,8 +518,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             theme,
             colors,
             showViewAll: songPreview,
-            onViewAll: () =>
-                setState(() => _filter = _SearchFilter.songs),
+            onViewAll: () => setState(() => _filter = _SearchFilter.songs),
           ),
           ...displaySongs.map(
             (song) => SongTile(
@@ -589,11 +578,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
       if (name == _query || artist == _query) {
         exact.add(a);
-      } else if (name.startsWith(_query) ||
-          artist.startsWith(_query)) {
+      } else if (name.startsWith(_query) || artist.startsWith(_query)) {
         startsWith.add(a);
-      } else if (name.contains(_query) ||
-          artist.contains(_query)) {
+      } else if (name.contains(_query) || artist.contains(_query)) {
         contains.add(a);
       }
     }
@@ -673,9 +660,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       ),
       onTap: () {
         _addToRecent(_searchController.text.trim());
-        Navigator.of(context).push(
-          AppPageRoute(page: AlbumDetailPage(album: album)),
-        );
+        Navigator.of(
+          context,
+        ).push(AppPageRoute(page: AlbumDetailPage(album: album)));
       },
     );
   }
@@ -697,10 +684,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xxs,
       ),
-      leading: ArtistImage(
-        artistName: artist.name,
-        size: 48,
-      ),
+      leading: ArtistImage(artistName: artist.name, size: 48),
       title: Text(
         artist.name,
         style: theme.textTheme.titleSmall,
@@ -720,9 +704,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       ),
       onTap: () {
         _addToRecent(_searchController.text.trim());
-        Navigator.of(context).push(
-          AppPageRoute(page: ArtistDetailPage(artist: artist)),
-        );
+        Navigator.of(
+          context,
+        ).push(AppPageRoute(page: ArtistDetailPage(artist: artist)));
       },
     );
   }
@@ -757,10 +741,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           ),
           const SizedBox(width: AppSpacing.xs),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 6,
-              vertical: 1,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
             decoration: BoxDecoration(
               color: colors.onSurface.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(8),
@@ -859,8 +840,7 @@ class _FilterChip extends StatelessWidget {
             if (count > 0) ...[
               const SizedBox(width: 4),
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 5, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                 decoration: BoxDecoration(
                   color: active
                       ? colors.primary.withValues(alpha: 0.15)

@@ -95,8 +95,7 @@ class _ArtistLinksTextState extends ConsumerState<ArtistLinksText> {
     final segments = <_ArtistSegment>[];
     int lastEnd = 0;
 
-    for (final match
-        in ArtistLinksText._separatorPattern.allMatches(input)) {
+    for (final match in ArtistLinksText._separatorPattern.allMatches(input)) {
       if (match.start > lastEnd) {
         final name = input.substring(lastEnd, match.start).trim();
         if (name.isNotEmpty) segments.add(_ArtistSegment(name, true));
@@ -128,23 +127,24 @@ class _ArtistLinksTextState extends ConsumerState<ArtistLinksText> {
       if (seg.isArtist) {
         // Tentar encontrar o artista na library
         final found = allArtists
-            .where(
-                (a) => a.name.toLowerCase() == seg.text.toLowerCase())
+            .where((a) => a.name.toLowerCase() == seg.text.toLowerCase())
             .firstOrNull;
 
         if (found != null) {
           final recognizer = TapGestureRecognizer()
             ..onTap = () {
-              Navigator.of(context).push(
-                AppPageRoute(page: ArtistDetailPage(artist: found)),
-              );
+              Navigator.of(
+                context,
+              ).push(AppPageRoute(page: ArtistDetailPage(artist: found)));
             };
           _recognizers.add(recognizer);
-          spans.add(TextSpan(
-            text: seg.text,
-            style: widget.linkStyle ?? baseStyle,
-            recognizer: recognizer,
-          ));
+          spans.add(
+            TextSpan(
+              text: seg.text,
+              style: widget.linkStyle ?? baseStyle,
+              recognizer: recognizer,
+            ),
+          );
         } else {
           spans.add(TextSpan(text: seg.text, style: baseStyle));
         }
@@ -155,10 +155,9 @@ class _ArtistLinksTextState extends ConsumerState<ArtistLinksText> {
 
     // Suffix (ex: " · Album Name")
     if (widget.suffix != null && widget.suffix!.isNotEmpty) {
-      spans.add(TextSpan(
-        text: widget.suffix,
-        style: widget.suffixStyle ?? baseStyle,
-      ));
+      spans.add(
+        TextSpan(text: widget.suffix, style: widget.suffixStyle ?? baseStyle),
+      );
     }
 
     return Text.rich(

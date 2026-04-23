@@ -23,9 +23,12 @@ class GenresPage extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: Text('Gêneros', style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-          )),
+          title: Text(
+            'Gêneros',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
           elevation: 0,
           scrolledUnderElevation: 0,
@@ -35,20 +38,23 @@ class GenresPage extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.category_rounded, size: 64,
-                      color: colors.onSurface.withValues(alpha: 0.2)),
+                    Icon(
+                      Icons.category_rounded,
+                      size: 64,
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
                     const SizedBox(height: AppSpacing.md),
-                    Text('Nenhum gênero encontrado',
+                    Text(
+                      'Nenhum gênero encontrado',
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.4),
-                      )),
+                      ),
+                    ),
                   ],
                 ),
               )
             : ListView.separated(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.sm,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 itemCount: genres.length,
                 separatorBuilder: (_, __) => Divider(
                   height: 1,
@@ -66,10 +72,16 @@ class GenresPage extends ConsumerWidget {
                       vertical: AppSpacing.xxs,
                     ),
                     leading: Container(
-                      width: 52, height: 52,
+                      width: 52,
+                      height: 52,
                       decoration: BoxDecoration(
-                        color: _genreColor(index, colors).withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                        color: _genreColor(
+                          index,
+                          colors,
+                        ).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusSm,
+                        ),
                       ),
                       child: Icon(
                         _genreIcon(genre),
@@ -77,23 +89,34 @@ class GenresPage extends ConsumerWidget {
                         color: _genreColor(index, colors),
                       ),
                     ),
-                    title: Text(genre, style: theme.textTheme.titleSmall?.copyWith(
-                      color: colors.onSurface,
-                      fontWeight: FontWeight.w500,
-                    )),
+                    title: Text(
+                      genre,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     subtitle: Text(
                       '$songCount música${songCount != 1 ? 's' : ''}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.4),
                       ),
                     ),
-                    trailing: Icon(Icons.arrow_forward_ios_rounded,
-                      size: 14, color: colors.onSurface.withValues(alpha: 0.2)),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14,
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
                     onTap: () {
-                      final songs = ref.read(libraryProvider).songsByGenre(genre);
-                      Navigator.push(context, AppPageRoute(
-                        page: SongListPage(title: genre, songs: songs),
-                      ));
+                      final songs = ref
+                          .read(libraryProvider)
+                          .songsByGenre(genre);
+                      Navigator.push(
+                        context,
+                        AppPageRoute(
+                          page: SongListPage(title: genre, songs: songs),
+                        ),
+                      );
                     },
                   );
                 },
@@ -104,10 +127,18 @@ class GenresPage extends ConsumerWidget {
 
   static Color _genreColor(int index, ColorScheme colors) {
     const palette = [
-      Color(0xFFE57373), Color(0xFF81C784), Color(0xFF64B5F6),
-      Color(0xFFFFB74D), Color(0xFFBA68C8), Color(0xFF4DD0E1),
-      Color(0xFFF06292), Color(0xFFAED581), Color(0xFF7986CB),
-      Color(0xFFFF8A65), Color(0xFFA1887F), Color(0xFF90A4AE),
+      Color(0xFFE57373),
+      Color(0xFF81C784),
+      Color(0xFF64B5F6),
+      Color(0xFFFFB74D),
+      Color(0xFFBA68C8),
+      Color(0xFF4DD0E1),
+      Color(0xFFF06292),
+      Color(0xFFAED581),
+      Color(0xFF7986CB),
+      Color(0xFFFF8A65),
+      Color(0xFFA1887F),
+      Color(0xFF90A4AE),
     ];
     return palette[index % palette.length];
   }
@@ -119,17 +150,27 @@ class GenresPage extends ConsumerWidget {
     if (g.contains('hip') || g.contains('rap')) return Icons.mic_rounded;
     if (g.contains('jazz')) return Icons.piano_rounded;
     if (g.contains('class')) return Icons.music_note_rounded;
-    if (g.contains('electr') || g.contains('edm')) return Icons.equalizer_rounded;
+    if (g.contains('electr') || g.contains('edm')) {
+      return Icons.equalizer_rounded;
+    }
     if (g.contains('r&b') || g.contains('soul')) return Icons.favorite_rounded;
     if (g.contains('country')) return Icons.landscape_rounded;
     if (g.contains('metal')) return Icons.whatshot_rounded;
     if (g.contains('reggae')) return Icons.wb_sunny_rounded;
     if (g.contains('blues')) return Icons.nightlight_rounded;
-    if (g.contains('latin') || g.contains('salsa') || g.contains('samba')) return Icons.celebration_rounded;
+    if (g.contains('latin') || g.contains('salsa') || g.contains('samba')) {
+      return Icons.celebration_rounded;
+    }
     if (g.contains('folk')) return Icons.forest_rounded;
     if (g.contains('punk')) return Icons.flash_on_rounded;
-    if (g.contains('gospel') || g.contains('christian') || g.contains('worship')) return Icons.church_rounded;
-    if (g.contains('kizomba') || g.contains('zouk') || g.contains('semba')) return Icons.nightlife_rounded;
+    if (g.contains('gospel') ||
+        g.contains('christian') ||
+        g.contains('worship')) {
+      return Icons.church_rounded;
+    }
+    if (g.contains('kizomba') || g.contains('zouk') || g.contains('semba')) {
+      return Icons.nightlife_rounded;
+    }
     return Icons.album_rounded;
   }
 }

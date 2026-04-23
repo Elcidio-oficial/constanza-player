@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/domain/entities/album.dart';
@@ -46,6 +46,7 @@ class AudioScannerService {
           )
           .toList();
     } catch (e) {
+      debugPrint('[AudioScanner] scan error: $e');
       return [];
     }
   }
@@ -70,6 +71,7 @@ class AudioScannerService {
           )
           .toList();
     } catch (e) {
+      debugPrint('[AudioScanner] scan error: $e');
       return [];
     }
   }
@@ -93,6 +95,7 @@ class AudioScannerService {
           )
           .toList();
     } catch (e) {
+      debugPrint('[AudioScanner] scan error: $e');
       return [];
     }
   }

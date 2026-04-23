@@ -82,7 +82,12 @@ class LyricsNotifier extends StateNotifier<LyricsState> {
     _sortAndUpdate(updated);
   }
 
-  void updateLine(int index, {Duration? timestamp, bool clearTimestamp = false, String? text}) {
+  void updateLine(
+    int index, {
+    Duration? timestamp,
+    bool clearTimestamp = false,
+    String? text,
+  }) {
     if (index < 0 || index >= state.lines.length) return;
     final updated = List<LyricLine>.from(state.lines);
     updated[index] = updated[index].copyWith(

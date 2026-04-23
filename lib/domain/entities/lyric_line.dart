@@ -22,7 +22,11 @@ class LyricLine extends Equatable {
     return '$m:${s.toString().padLeft(2, '0')}.${cs.toString().padLeft(2, '0')}';
   }
 
-  LyricLine copyWith({Duration? timestamp, bool clearTimestamp = false, String? text}) {
+  LyricLine copyWith({
+    Duration? timestamp,
+    bool clearTimestamp = false,
+    String? text,
+  }) {
     return LyricLine(
       timestamp: clearTimestamp ? null : (timestamp ?? this.timestamp),
       text: text ?? this.text,

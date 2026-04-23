@@ -8,6 +8,7 @@ import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
+import 'package:go_router/go_router.dart';
 
 class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
@@ -24,10 +25,15 @@ class HistoryPage extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: Text('Historico', style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600)),
+          title: Text(
+            'Historico',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
-          elevation: 0, scrolledUnderElevation: 0,
+          elevation: 0,
+          scrolledUnderElevation: 0,
           actions: [
             if (history.isNotEmpty)
               IconButton(
@@ -42,12 +48,18 @@ class HistoryPage extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.history_rounded, size: 64,
-                      color: colors.onSurface.withValues(alpha: 0.2)),
+                    Icon(
+                      Icons.history_rounded,
+                      size: 64,
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
                     const SizedBox(height: AppSpacing.md),
-                    Text('Nenhuma reproducao registrada',
+                    Text(
+                      'Nenhuma reproducao registrada',
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4))),
+                        color: colors.onSurface.withValues(alpha: 0.4),
+                      ),
+                    ),
                   ],
                 ),
               )
@@ -68,9 +80,14 @@ class HistoryPage extends ConsumerWidget {
                   final timeLabel = _formatTime(time);
 
                   // Show date header
-                  final showDateHeader = index == 0 || _dateKey(time) != _dateKey(
-                    DateTime.fromMillisecondsSinceEpoch(
-                      (history[index - 1]['timestamp'] as int?) ?? 0));
+                  final showDateHeader =
+                      index == 0 ||
+                      _dateKey(time) !=
+                          _dateKey(
+                            DateTime.fromMillisecondsSinceEpoch(
+                              (history[index - 1]['timestamp'] as int?) ?? 0,
+                            ),
+                          );
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +95,11 @@ class HistoryPage extends ConsumerWidget {
                       if (showDateHeader)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.xs),
+                            AppSpacing.md,
+                            AppSpacing.md,
+                            AppSpacing.md,
+                            AppSpacing.xs,
+                          ),
                           child: Text(
                             _formatDate(time),
                             style: theme.textTheme.labelSmall?.copyWith(
@@ -89,25 +110,48 @@ class HistoryPage extends ConsumerWidget {
                         ),
                       ListTile(
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md, vertical: 2),
+                          horizontal: AppSpacing.md,
+                          vertical: 2,
+                        ),
                         leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
                           child: ArtworkImage.song(
-                            songId: numericId, size: 48,
-                            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                            songId: numericId,
+                            size: 48,
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusSm,
+                            ),
                             placeholderIconSize: 20,
                           ),
                         ),
-                        title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis,
+                        title: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colors.onSurface)),
-                        subtitle: Text(artist, maxLines: 1, overflow: TextOverflow.ellipsis,
+                            color: colors.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          artist,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.4))),
-                        trailing: Text(timeLabel, style: theme.textTheme.labelSmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.3))),
+                            color: colors.onSurface.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        trailing: Text(
+                          timeLabel,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: colors.onSurface.withValues(alpha: 0.3),
+                          ),
+                        ),
                         onTap: song != null
-                            ? () => ref.read(playerProvider.notifier).playSong(song)
+                            ? () => ref
+                                  .read(playerProvider.notifier)
+                                  .playSong(song)
                             : null,
                       ),
                     ],
@@ -126,7 +170,20 @@ class HistoryPage extends ConsumerWidget {
     final date = DateTime(d.year, d.month, d.day);
     if (date == today) return 'HOJE';
     if (date == today.subtract(const Duration(days: 1))) return 'ONTEM';
-    final months = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+    final months = [
+      'JAN',
+      'FEV',
+      'MAR',
+      'ABR',
+      'MAI',
+      'JUN',
+      'JUL',
+      'AGO',
+      'SET',
+      'OUT',
+      'NOV',
+      'DEZ',
+    ];
     return '${d.day} ${months[d.month - 1]} ${d.year}';
   }
 
@@ -142,14 +199,11 @@ class HistoryPage extends ConsumerWidget {
         title: const Text('Limpar Historico'),
         content: const Text('Deseja apagar todo o historico de reproducao?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
+          TextButton(onPressed: () => ctx.pop(), child: const Text('Cancelar')),
           TextButton(
             onPressed: () {
               ref.read(playlistProvider.notifier).clearHistory();
-              Navigator.pop(ctx);
+              ctx.pop();
             },
             child: Text('Limpar', style: TextStyle(color: colors.error)),
           ),

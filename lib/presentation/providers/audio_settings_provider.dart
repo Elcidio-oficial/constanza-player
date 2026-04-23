@@ -15,17 +15,17 @@ class EqPreset {
 }
 
 const kEqPresets = [
-  EqPreset(id: 'flat',         name: 'Flat',       bands: [ 0,  0,  0,  0,  0]),
-  EqPreset(id: 'rock',         name: 'Rock',        bands: [ 4,  2, -1,  3,  5]),
-  EqPreset(id: 'pop',          name: 'Pop',         bands: [-1,  2,  5,  2, -1]),
-  EqPreset(id: 'jazz',         name: 'Jazz',        bands: [ 3,  1, -2,  1,  4]),
-  EqPreset(id: 'classical',    name: 'Clássico',    bands: [ 4,  2,  0,  2,  4]),
-  EqPreset(id: 'hiphop',       name: 'Hip Hop',     bands: [ 5,  4,  0,  1,  3]),
-  EqPreset(id: 'electronic',   name: 'Eletrônica',  bands: [ 5,  3,  0,  2,  5]),
-  EqPreset(id: 'vocal',        name: 'Vocal',       bands: [-2,  0,  4,  3,  0]),
-  EqPreset(id: 'bass_boost',   name: 'Bass+',       bands: [ 6,  4,  0,  0,  0]),
-  EqPreset(id: 'treble_boost', name: 'Agudos+',     bands: [ 0,  0,  0,  4,  6]),
-  EqPreset(id: 'custom',       name: 'Custom',      bands: [ 0,  0,  0,  0,  0]),
+  EqPreset(id: 'flat', name: 'Flat', bands: [0, 0, 0, 0, 0]),
+  EqPreset(id: 'rock', name: 'Rock', bands: [4, 2, -1, 3, 5]),
+  EqPreset(id: 'pop', name: 'Pop', bands: [-1, 2, 5, 2, -1]),
+  EqPreset(id: 'jazz', name: 'Jazz', bands: [3, 1, -2, 1, 4]),
+  EqPreset(id: 'classical', name: 'Clássico', bands: [4, 2, 0, 2, 4]),
+  EqPreset(id: 'hiphop', name: 'Hip Hop', bands: [5, 4, 0, 1, 3]),
+  EqPreset(id: 'electronic', name: 'Eletrônica', bands: [5, 3, 0, 2, 5]),
+  EqPreset(id: 'vocal', name: 'Vocal', bands: [-2, 0, 4, 3, 0]),
+  EqPreset(id: 'bass_boost', name: 'Bass+', bands: [6, 4, 0, 0, 0]),
+  EqPreset(id: 'treble_boost', name: 'Agudos+', bands: [0, 0, 0, 4, 6]),
+  EqPreset(id: 'custom', name: 'Custom', bands: [0, 0, 0, 0, 0]),
 ];
 
 const kBandLabels = ['60Hz', '250Hz', '1kHz', '4kHz', '16kHz'];
@@ -55,18 +55,17 @@ class AudioSettingsState {
   final List<double> eqBands;
   final double bassBoost;
   final double virtualizer;
-  final int crossfadeDuration;   // segundos (0 = off)
+  final int crossfadeDuration; // segundos (0 = off)
   final double playbackSpeed;
   final bool volumeNormalization;
   final bool gaplessPlayback;
-  final int sleepTimerMinutes;   // minutos configurados (0 = off)
+  final int sleepTimerMinutes; // minutos configurados (0 = off)
   final DateTime? sleepTimerEndTime;
-  final int sleepTimerTick;      // contador interno para forçar rebuild do label
+  final int sleepTimerTick; // contador interno para forçar rebuild do label
 
   // ── Getters calculados ──────────────────────────────────
 
-  bool get hasSleepTimer =>
-      sleepTimerMinutes > 0 && sleepTimerEndTime != null;
+  bool get hasSleepTimer => sleepTimerMinutes > 0 && sleepTimerEndTime != null;
 
   /// Label dinâmico com tempo restante — atualiza a cada tick do timer UI.
   String get sleepTimerLabel {
@@ -99,63 +98,68 @@ class AudioSettingsState {
   // ── Serialização ──────────────────────────────────────
 
   Map<String, dynamic> toJson() => {
-    'eqEnabled':           eqEnabled,
-    'eqPresetId':          eqPresetId,
-    'eqBands':             eqBands,
-    'bassBoost':           bassBoost,
-    'virtualizer':         virtualizer,
-    'crossfadeDuration':   crossfadeDuration,
-    'playbackSpeed':       playbackSpeed,
+    'eqEnabled': eqEnabled,
+    'eqPresetId': eqPresetId,
+    'eqBands': eqBands,
+    'bassBoost': bassBoost,
+    'virtualizer': virtualizer,
+    'crossfadeDuration': crossfadeDuration,
+    'playbackSpeed': playbackSpeed,
     'volumeNormalization': volumeNormalization,
-    'gaplessPlayback':     gaplessPlayback,
+    'gaplessPlayback': gaplessPlayback,
     // sleepTimer é transiente — não persiste
   };
 
   factory AudioSettingsState.fromJson(Map<String, dynamic> json) {
     return AudioSettingsState(
-      eqEnabled:    json['eqEnabled']    as bool?   ?? false,
-      eqPresetId:   json['eqPresetId']   as String? ?? 'flat',
-      eqBands: (json['eqBands'] as List<dynamic>?)
+      eqEnabled: json['eqEnabled'] as bool? ?? false,
+      eqPresetId: json['eqPresetId'] as String? ?? 'flat',
+      eqBands:
+          (json['eqBands'] as List<dynamic>?)
               ?.map((e) => (e as num).toDouble())
               .toList() ??
           const [0, 0, 0, 0, 0],
-      bassBoost:    (json['bassBoost']    as num?)?.toDouble() ?? 0.0,
-      virtualizer:  (json['virtualizer']  as num?)?.toDouble() ?? 0.0,
-      crossfadeDuration:   json['crossfadeDuration']   as int?  ?? 0,
-      playbackSpeed:       (json['playbackSpeed'] as num?)?.toDouble() ?? 1.0,
+      bassBoost: (json['bassBoost'] as num?)?.toDouble() ?? 0.0,
+      virtualizer: (json['virtualizer'] as num?)?.toDouble() ?? 0.0,
+      crossfadeDuration: json['crossfadeDuration'] as int? ?? 0,
+      playbackSpeed: (json['playbackSpeed'] as num?)?.toDouble() ?? 1.0,
       volumeNormalization: json['volumeNormalization'] as bool? ?? false,
-      gaplessPlayback:     json['gaplessPlayback']     as bool? ?? false,
+      gaplessPlayback: json['gaplessPlayback'] as bool? ?? false,
     );
   }
 
   AudioSettingsState copyWith({
-    bool?          eqEnabled,
-    String?        eqPresetId,
-    List<double>?  eqBands,
-    double?        bassBoost,
-    double?        virtualizer,
-    int?           crossfadeDuration,
-    double?        playbackSpeed,
-    bool?          volumeNormalization,
-    bool?          gaplessPlayback,
-    int?           sleepTimerMinutes,
-    DateTime?      sleepTimerEndTime,
-    int?           sleepTimerTick,
-    bool           clearSleepTimer = false,
+    bool? eqEnabled,
+    String? eqPresetId,
+    List<double>? eqBands,
+    double? bassBoost,
+    double? virtualizer,
+    int? crossfadeDuration,
+    double? playbackSpeed,
+    bool? volumeNormalization,
+    bool? gaplessPlayback,
+    int? sleepTimerMinutes,
+    DateTime? sleepTimerEndTime,
+    int? sleepTimerTick,
+    bool clearSleepTimer = false,
   }) {
     return AudioSettingsState(
-      eqEnabled:           eqEnabled           ?? this.eqEnabled,
-      eqPresetId:          eqPresetId          ?? this.eqPresetId,
-      eqBands:             eqBands             ?? this.eqBands,
-      bassBoost:           bassBoost           ?? this.bassBoost,
-      virtualizer:         virtualizer         ?? this.virtualizer,
-      crossfadeDuration:   crossfadeDuration   ?? this.crossfadeDuration,
-      playbackSpeed:       playbackSpeed       ?? this.playbackSpeed,
+      eqEnabled: eqEnabled ?? this.eqEnabled,
+      eqPresetId: eqPresetId ?? this.eqPresetId,
+      eqBands: eqBands ?? this.eqBands,
+      bassBoost: bassBoost ?? this.bassBoost,
+      virtualizer: virtualizer ?? this.virtualizer,
+      crossfadeDuration: crossfadeDuration ?? this.crossfadeDuration,
+      playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       volumeNormalization: volumeNormalization ?? this.volumeNormalization,
-      gaplessPlayback:     gaplessPlayback     ?? this.gaplessPlayback,
-      sleepTimerMinutes:   clearSleepTimer ? 0   : (sleepTimerMinutes ?? this.sleepTimerMinutes),
-      sleepTimerEndTime:   clearSleepTimer ? null : (sleepTimerEndTime ?? this.sleepTimerEndTime),
-      sleepTimerTick:      sleepTimerTick      ?? this.sleepTimerTick,
+      gaplessPlayback: gaplessPlayback ?? this.gaplessPlayback,
+      sleepTimerMinutes: clearSleepTimer
+          ? 0
+          : (sleepTimerMinutes ?? this.sleepTimerMinutes),
+      sleepTimerEndTime: clearSleepTimer
+          ? null
+          : (sleepTimerEndTime ?? this.sleepTimerEndTime),
+      sleepTimerTick: sleepTimerTick ?? this.sleepTimerTick,
     );
   }
 }
@@ -172,7 +176,7 @@ class AudioSettingsNotifier extends StateNotifier<AudioSettingsState> {
   final Ref _ref;
 
   Timer? _sleepCountdownTimer; // tick a cada 1s → atualiza label
-  Timer? _sleepFireTimer;       // dispara 1x quando o tempo acabar
+  Timer? _sleepFireTimer; // dispara 1x quando o tempo acabar
 
   // ── Persistência ────────────────────────────────────────
 

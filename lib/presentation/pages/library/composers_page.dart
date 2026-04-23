@@ -23,9 +23,12 @@ class ComposersPage extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: Text('Compositores', style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-          )),
+          title: Text(
+            'Compositores',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
           elevation: 0,
           scrolledUnderElevation: 0,
@@ -35,18 +38,25 @@ class ComposersPage extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.edit_note_rounded, size: 64,
-                      color: colors.onSurface.withValues(alpha: 0.2)),
+                    Icon(
+                      Icons.edit_note_rounded,
+                      size: 64,
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
                     const SizedBox(height: AppSpacing.md),
-                    Text('Nenhum compositor encontrado',
+                    Text(
+                      'Nenhum compositor encontrado',
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.4),
-                      )),
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.xs),
-                    Text('Informação disponível nos metadados ID3',
+                    Text(
+                      'Informação disponível nos metadados ID3',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.25),
-                      )),
+                      ),
+                    ),
                   ],
                 ),
               )
@@ -57,7 +67,9 @@ class ComposersPage extends ConsumerWidget {
                   final composer = composers[index];
                   final libState = ref.read(libraryProvider);
                   final songs = libState.songsByComposer(composer);
-                  final initial = composer.isNotEmpty ? composer[0].toUpperCase() : '?';
+                  final initial = composer.isNotEmpty
+                      ? composer[0].toUpperCase()
+                      : '?';
 
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -67,27 +79,39 @@ class ComposersPage extends ConsumerWidget {
                     leading: CircleAvatar(
                       radius: 24,
                       backgroundColor: colors.primary.withValues(alpha: 0.1),
-                      child: Text(initial, style: theme.textTheme.titleMedium?.copyWith(
-                        color: colors.primary,
-                        fontWeight: FontWeight.w600,
-                      )),
+                      child: Text(
+                        initial,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                    title: Text(composer, style: theme.textTheme.titleSmall?.copyWith(
-                      color: colors.onSurface,
-                      fontWeight: FontWeight.w500,
-                    )),
+                    title: Text(
+                      composer,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     subtitle: Text(
                       '${songs.length} música${songs.length != 1 ? 's' : ''}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.4),
                       ),
                     ),
-                    trailing: Icon(Icons.arrow_forward_ios_rounded,
-                      size: 14, color: colors.onSurface.withValues(alpha: 0.2)),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14,
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
                     onTap: () {
-                      Navigator.push(context, AppPageRoute(
-                        page: SongListPage(title: composer, songs: songs),
-                      ));
+                      Navigator.push(
+                        context,
+                        AppPageRoute(
+                          page: SongListPage(title: composer, songs: songs),
+                        ),
+                      );
                     },
                   );
                 },

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -27,6 +28,9 @@ class LyricsFetchService {
 
       // 2. Fallback: busca por termo via GET /search
       return _fetchSearch(title, artist);
+    } on TimeoutException {
+      debugPrint('[LyricsFetch] Request timed out');
+      return null;
     } catch (e) {
       debugPrint('[LyricsFetch] Error: $e');
       return null;
@@ -34,7 +38,10 @@ class LyricsFetchService {
   }
 
   static Future<List<LyricLine>?> _fetchExact(
-    String title, String artist, String? album, Duration? duration,
+    String title,
+    String artist,
+    String? album,
+    Duration? duration,
   ) async {
     final params = {
       'track_name': title,
@@ -53,12 +60,13 @@ class LyricsFetchService {
   }
 
   static Future<List<LyricLine>?> _fetchSearch(
-    String title, String artist,
+    String title,
+    String artist,
   ) async {
     final query = '$title $artist';
-    final uri = Uri.parse('$_baseUrl/search').replace(
-      queryParameters: {'q': query},
-    );
+    final uri = Uri.parse(
+      '$_baseUrl/search',
+    ).replace(queryParameters: {'q': query});
     final response = await http.get(uri, headers: _headers).timeout(_timeout);
 
     if (response.statusCode != 200) return null;
@@ -70,7 +78,8 @@ class LyricsFetchService {
     Map<String, dynamic>? best;
     for (final item in list) {
       final m = item as Map<String, dynamic>;
-      if (m['syncedLyrics'] != null && (m['syncedLyrics'] as String).isNotEmpty) {
+      if (m['syncedLyrics'] != null &&
+          (m['syncedLyrics'] as String).isNotEmpty) {
         best = m;
         break;
       }
