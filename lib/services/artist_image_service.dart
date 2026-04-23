@@ -15,6 +15,31 @@ class ArtistImageService {
   static const _baseUrl = 'https://api.deezer.com/search/artist';
   static const _timeout = Duration(seconds: 8);
 
+  /// Extrai o artista principal (primeiro) de uma string com múltiplos artistas.
+  /// Ex: "A feat. B, C & D (feat. E, F, G)" → "A"
+  static String _primaryArtistName(String name) {
+    // Expandir feat. parentético
+    var field = name.replaceAllMapped(
+      RegExp(
+        r'\(\s*(?:feat\.?|ft\.?|featuring)\s+([^)]+)\)',
+        caseSensitive: false,
+      ),
+      (m) => ' feat. ${m.group(1)}',
+    );
+    return field
+        .split(
+          RegExp(
+            r'\s*[,;/]\s*'
+            r'|\s+(?:feat\.?|ft\.?|featuring)\s+'
+            r'|\s+[&×·]\s+'
+            r'|\s+x\s+',
+            caseSensitive: false,
+          ),
+        )
+        .first
+        .trim();
+  }
+
   /// Busca a URL da foto do artista pelo nome.
   ///
   /// Retorna null se não encontrar ou se houver erro de rede.
@@ -24,15 +49,20 @@ class ArtistImageService {
   }) async {
     if (artistName.isEmpty) return null;
 
+    // Normalizar: usar apenas o artista principal para melhor match no Deezer
+    final searchName = _primaryArtistName(artistName);
+
     try {
-      final uri = Uri.parse(_baseUrl).replace(
-        queryParameters: {'q': artistName},
-      );
+      final uri = Uri.parse(
+        _baseUrl,
+      ).replace(queryParameters: {'q': searchName});
 
       final response = await http.get(uri).timeout(_timeout);
 
       if (response.statusCode != 200) {
-        debugPrint('[ArtistImage] HTTP ${response.statusCode} for "$artistName"');
+        debugPrint(
+          '[ArtistImage] HTTP ${response.statusCode} for "$artistName"',
+        );
         return null;
       }
 
@@ -44,8 +74,8 @@ class ArtistImageService {
         return null;
       }
 
-      // Procurar match exato pelo nome (case-insensitive)
-      final normalizedQuery = artistName.toLowerCase().trim();
+      // Procurar match exato pelo nome normalizado (case-insensitive)
+      final normalizedQuery = searchName.toLowerCase().trim();
       Map<String, dynamic>? bestMatch;
 
       for (final item in data) {

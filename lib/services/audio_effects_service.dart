@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Serviço de efeitos de áudio nativos via Platform Channel.
@@ -13,13 +14,15 @@ class AudioEffectsService {
   /// Retorna info das bandas do EQ nativo.
   static Future<Map<String, dynamic>?> init(int sessionId) async {
     try {
-      final result = await _channel.invokeMethod<Map<Object?, Object?>>('init', {
-        'sessionId': sessionId,
-      });
+      final result = await _channel.invokeMethod<Map<Object?, Object?>>(
+        'init',
+        {'sessionId': sessionId},
+      );
       _initialized = true;
       if (result == null) return null;
       return result.map((k, v) => MapEntry(k.toString(), v));
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[AudioEffects] init error: $e');
       return null;
     }
   }
@@ -29,7 +32,9 @@ class AudioEffectsService {
     if (!_initialized) return;
     try {
       await _channel.invokeMethod('setEnabled', {'enabled': enabled});
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AudioEffects] setEnabled error: $e');
+    }
   }
 
   /// Define todas as bandas do EQ de uma vez.
@@ -38,7 +43,9 @@ class AudioEffectsService {
     if (!_initialized) return;
     try {
       await _channel.invokeMethod('setAllBands', {'levels': levels});
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AudioEffects] setAllBands error: $e');
+    }
   }
 
   /// Define nível de uma banda específica.
@@ -49,7 +56,9 @@ class AudioEffectsService {
         'band': band,
         'level': level,
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AudioEffects] setBandLevel error: $e');
+    }
   }
 
   /// Define força do Bass Boost (0-1000).
@@ -57,7 +66,9 @@ class AudioEffectsService {
     if (!_initialized) return;
     try {
       await _channel.invokeMethod('setBassBoost', {'strength': strength});
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AudioEffects] setBassBoost error: $e');
+    }
   }
 
   /// Define força do Virtualizer (0-1000).
@@ -65,7 +76,9 @@ class AudioEffectsService {
     if (!_initialized) return;
     try {
       await _channel.invokeMethod('setVirtualizer', {'strength': strength});
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AudioEffects] setVirtualizer error: $e');
+    }
   }
 
   /// Libera recursos nativos.
@@ -74,6 +87,8 @@ class AudioEffectsService {
     try {
       await _channel.invokeMethod('release');
       _initialized = false;
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[AudioEffects] release error: $e');
+    }
   }
 }

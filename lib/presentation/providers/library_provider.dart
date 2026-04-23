@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:developer' as dev;
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/domain/entities/album.dart';
@@ -8,7 +10,15 @@ import 'package:constanza_player/services/permission_service.dart';
 import 'package:constanza_player/services/settings_storage_service.dart';
 
 /// Estado da biblioteca.
-enum LibraryStatus { initial, loading, loaded, noPermission, empty, error, needsFolderSetup }
+enum LibraryStatus {
+  initial,
+  loading,
+  loaded,
+  noPermission,
+  empty,
+  error,
+  needsFolderSetup,
+}
 
 /// Ordenação padrão da biblioteca.
 enum SortOrder { title, artist, album, dateAdded, duration }
@@ -40,26 +50,34 @@ class LibraryState {
   /// Pastas selecionadas pelo usuário.
   final List<String> selectedFolders;
 
+  // Memoized genres/composers — invalidados junto com _sortedSongsCache
+  List<String>? _genresCache;
+  List<String>? _composersCache;
+
   List<String> get genres {
+    if (_genresCache != null) return _genresCache!;
     final set = <String>{};
     for (final s in songs) {
       if (s.genre != null && s.genre!.isNotEmpty) set.add(s.genre!);
     }
-    final list = set.toList()..sort();
-    return list;
+    _genresCache = set.toList()..sort();
+    return _genresCache!;
   }
 
   List<String> get composers {
+    if (_composersCache != null) return _composersCache!;
     final set = <String>{};
     for (final s in songs) {
       if (s.composer != null && s.composer!.isNotEmpty) set.add(s.composer!);
     }
-    final list = set.toList()..sort();
-    return list;
+    _composersCache = set.toList()..sort();
+    return _composersCache!;
   }
 
-  List<Song> songsByGenre(String genre) => songs.where((s) => s.genre == genre).toList();
-  List<Song> songsByComposer(String composer) => songs.where((s) => s.composer == composer).toList();
+  List<Song> songsByGenre(String genre) =>
+      songs.where((s) => s.genre == genre).toList();
+  List<Song> songsByComposer(String composer) =>
+      songs.where((s) => s.composer == composer).toList();
 
   bool get isLoaded => status == LibraryStatus.loaded;
   bool get isLoading => status == LibraryStatus.loading;
@@ -85,11 +103,17 @@ class LibraryState {
     // Ordenar
     switch (sortOrder) {
       case SortOrder.title:
-        result.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+        result.sort(
+          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+        );
       case SortOrder.artist:
-        result.sort((a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()));
+        result.sort(
+          (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
+        );
       case SortOrder.album:
-        result.sort((a, b) => a.album.toLowerCase().compareTo(b.album.toLowerCase()));
+        result.sort(
+          (a, b) => a.album.toLowerCase().compareTo(b.album.toLowerCase()),
+        );
       case SortOrder.dateAdded:
         result.sort((a, b) {
           final aDate = a.dateAdded ?? DateTime(1970);
@@ -123,7 +147,10 @@ class LibraryState {
     List<String>? allFolders,
     List<String>? selectedFolders,
   }) {
-    return LibraryState(
+    // Invalidate sorted cache when any input that affects it changes
+    final invalidateCache =
+        songs != null || sortOrder != null || filterShortTracks != null;
+    final newState = LibraryState(
       status: status ?? this.status,
       songs: songs ?? this.songs,
       albums: albums ?? this.albums,
@@ -134,6 +161,12 @@ class LibraryState {
       allFolders: allFolders ?? this.allFolders,
       selectedFolders: selectedFolders ?? this.selectedFolders,
     );
+    if (!invalidateCache) {
+      newState._sortedSongsCache = _sortedSongsCache;
+      newState._genresCache = _genresCache;
+      newState._composersCache = _composersCache;
+    }
+    return newState;
   }
 }
 
@@ -149,6 +182,9 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
 
   // IDs de favoritos persistidos (carregados antes do scan)
   Set<String> _savedFavoriteIds = {};
+
+  /// Timer para debounce do cache — evita re-serializar durante operações em lote.
+  Timer? _cacheSaveTimer;
 
   void _loadSettings() {
     final json = SettingsStorageService.loadLibrarySettings();
@@ -254,7 +290,10 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
 
   /// Define as pastas selecionadas, escaneia e filtra músicas.
   Future<void> setSelectedFolders(List<String> folders) async {
-    state = state.copyWith(selectedFolders: folders, status: LibraryStatus.loading);
+    state = state.copyWith(
+      selectedFolders: folders,
+      status: LibraryStatus.loading,
+    );
     await SettingsStorageService.saveMusicFolders(folders);
 
     if (folders.isEmpty) {
@@ -317,15 +356,121 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     SettingsStorageService.saveFavorites(favoriteIds);
   }
 
+  /// Atualiza metadados de uma música na biblioteca e persiste o cache.
+  Future<void> updateSong(Song updated) async {
+    final newSongs = state.songs.map((s) {
+      if (s.id == updated.id) return updated.copyWith(isFavorite: s.isFavorite);
+      return s;
+    }).toList();
+    // Reconstruir álbuns e artistas para refletir mudanças de artista/álbum
+    final albums = _buildAlbumsFromSongs(newSongs);
+    final artists = _buildArtistsFromSongs(newSongs);
+    state = state.copyWith(songs: newSongs, albums: albums, artists: artists);
+    // Aguarda persistência do cache para garantir que os dados não sejam perdidos
+    await _saveToCache(newSongs, albums, artists, immediate: true);
+  }
+
+  void removeSong(String songId) {
+    final newSongs = state.songs.where((s) => s.id != songId).toList();
+    state = state.copyWith(songs: newSongs);
+    _saveToCache(newSongs, state.albums, state.artists);
+  }
+
+  /// Remove múltiplas músicas do dispositivo (usada para duplicadas).
+  /// [toDelete] lista de Songs a remover; [toRemoveIds] IDs a remover da biblioteca.
+  Future<Map<String, bool>> removeSongs(List<Song> toDelete) async {
+    final results = <String, bool>{};
+    for (final song in toDelete) {
+      if (song.filePath.isEmpty) {
+        removeSong(song.id);
+        results[song.id] = true;
+        continue;
+      }
+      final deleted = await _deleteSongFromDevice(song);
+      if (deleted) removeSong(song.id);
+      results[song.id] = deleted;
+    }
+    return results;
+  }
+
+  Future<bool> _deleteSongFromDevice(Song song) async {
+    try {
+      const channel = MethodChannel('com.constanza.media_tag');
+      final result = await channel.invokeMethod<bool>('deleteSong', {
+        'filePath': song.filePath,
+        'songId': song.numericId,
+      });
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Detecta grupos de músicas duplicadas na biblioteca.
+  ///
+  /// Critério principal: título normalizado + artista normalizado são idênticos.
+  /// Normalização: lowercase, trim, remove conteúdo parentético (feat., official, etc.).
+  List<List<Song>> findDuplicates() {
+    final groups = <String, List<Song>>{};
+
+    for (final song in state.songs) {
+      final key = _normalizeDuplicateKey(song.title, song.artist);
+      groups.putIfAbsent(key, () => []).add(song);
+    }
+
+    // Apenas grupos com 2+ músicas
+    final duplicates = groups.values
+        .where((group) => group.length >= 2)
+        .toList();
+
+    // Ordenar cada grupo: primeiro pela duração mais longa (provável melhor qualidade)
+    for (final group in duplicates) {
+      group.sort((a, b) => b.duration.compareTo(a.duration));
+    }
+
+    // Ordenar grupos por título
+    duplicates.sort(
+      (a, b) =>
+          a.first.title.toLowerCase().compareTo(b.first.title.toLowerCase()),
+    );
+
+    return duplicates;
+  }
+
+  /// Regex pré-compilada para normalização de duplicatas.
+  /// Executada uma vez por música — pre-compilar evita ~N compilações por scan.
+  static final _duplicateParenRegex = RegExp(
+    r'\s*\((?:feat\.?|ft\.?|featuring|official|lyrics?|audio|video|remaster(?:ed)?|live)[^)]*\)',
+    caseSensitive: false,
+  );
+  static final _duplicateSpaceRegex = RegExp(r'\s+');
+
+  /// Normaliza título+artista para chave de deduplicação.
+  static String _normalizeDuplicateKey(String title, String artist) {
+    String normalize(String s) {
+      var n = s.toLowerCase().trim();
+      // Remove conteúdo parentético comum: (feat. X), (official video), (lyrics), (audio), etc.
+      n = n.replaceAll(_duplicateParenRegex, '');
+      // Remove espaços extras
+      n = n.replaceAll(_duplicateSpaceRegex, ' ').trim();
+      return n;
+    }
+
+    return '${normalize(title)}|||${normalize(artist)}';
+  }
+
   /// Carrega biblioteca do cache local.
   bool _loadFromCache() {
     try {
       final cache = SettingsStorageService.loadLibraryCache();
       if (cache == null) return false;
 
-      final songsJson = (cache['songs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-      final albumsJson = (cache['albums'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-      final artistsJson = (cache['artists'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final songsJson =
+          (cache['songs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final albumsJson =
+          (cache['albums'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final artistsJson =
+          (cache['artists'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
       if (songsJson.isEmpty) return false;
 
@@ -340,7 +485,11 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
       final ids = _savedFavoriteIds;
       final restored = ids.isEmpty
           ? songs
-          : songs.map((s) => ids.contains(s.id) ? s.copyWith(isFavorite: true) : s).toList();
+          : songs
+                .map(
+                  (s) => ids.contains(s.id) ? s.copyWith(isFavorite: true) : s,
+                )
+                .toList();
 
       state = state.copyWith(
         status: LibraryStatus.loaded,
@@ -357,12 +506,42 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
   }
 
   /// Salva biblioteca no cache local.
-  Future<void> _saveToCache(List<Song> songs, List<Album> albums, List<Artist> artists) async {
-    await SettingsStorageService.saveLibraryCache({
-      'songs': songs.map((s) => s.toJson()).toList(),
-      'albums': albums.map((a) => a.toJson()).toList(),
-      'artists': artists.map((a) => a.toJson()).toList(),
+  /// Usa debounce de 500ms para evitar re-serialização durante operações em lote
+  /// (ex: removeSongs apaga várias faixas em sequência).
+  /// [immediate] força gravação imediata (usado após scan/filter completo).
+  Future<void> _saveToCache(
+    List<Song> songs,
+    List<Album> albums,
+    List<Artist> artists, {
+    bool immediate = false,
+  }) async {
+    if (immediate) {
+      _cacheSaveTimer?.cancel();
+      _cacheSaveTimer = null;
+      await _flushCache(songs, albums, artists);
+      return;
+    }
+    // Debounce: agenda persistência para daqui a 500ms
+    _cacheSaveTimer?.cancel();
+    _cacheSaveTimer = Timer(const Duration(milliseconds: 500), () {
+      _flushCache(songs, albums, artists);
     });
+  }
+
+  Future<void> _flushCache(
+    List<Song> songs,
+    List<Album> albums,
+    List<Artist> artists,
+  ) async {
+    try {
+      await SettingsStorageService.saveLibraryCache({
+        'songs': songs.map((s) => s.toJson()).toList(),
+        'albums': albums.map((a) => a.toJson()).toList(),
+        'artists': artists.map((a) => a.toJson()).toList(),
+      });
+    } catch (e) {
+      dev.log('Library cache save failed: $e');
+    }
   }
 
   /// Extrai pastas únicas das músicas, ordenadas por nome.
@@ -423,7 +602,9 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     final ids = _savedFavoriteIds;
     final restored = ids.isEmpty
         ? filtered
-        : filtered.map((s) => ids.contains(s.id) ? s.copyWith(isFavorite: true) : s).toList();
+        : filtered
+              .map((s) => ids.contains(s.id) ? s.copyWith(isFavorite: true) : s)
+              .toList();
 
     state = state.copyWith(
       status: LibraryStatus.loaded,
@@ -433,8 +614,10 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
       allFolders: _extractFolders(_allScannedSongs),
     );
 
-    await _saveToCache(restored, albums, artists);
-    dev.log('Library: filtered ${restored.length} songs from ${folders.length} folders');
+    await _saveToCache(restored, albums, artists, immediate: true);
+    dev.log(
+      'Library: filtered ${restored.length} songs from ${folders.length} folders',
+    );
   }
 
   /// Constrói lista de álbuns a partir das músicas filtradas.
@@ -447,40 +630,94 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
       }
     }
     return albumMap.entries.map((e) {
-      final first = e.value.first;
-      return Album(
-        id: first.albumId!,
-        name: first.album,
-        artist: first.artist,
-        songCount: e.value.length,
-      );
-    }).toList()
+        final first = e.value.first;
+        return Album(
+          id: first.albumId!,
+          name: first.album,
+          artist: first.artist,
+          songCount: e.value.length,
+        );
+      }).toList()
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
   }
 
   /// Constrói lista de artistas a partir das músicas filtradas.
+  ///
+  /// Suporta músicas com múltiplos artistas ("feat.", "ft.", "&", ",", etc.):
+  /// cada artista individual recebe sua própria entrada, acumulando todas as
+  /// músicas em que aparece.
   List<Artist> _buildArtistsFromSongs(List<Song> songs) {
-    final artistMap = <String, List<Song>>{};
+    // nome_lower → lista de músicas
+    final artistSongMap = <String, List<Song>>{};
+    // nome_lower → artistId (primeiro encontrado, para artwork)
+    final artistIdMap = <String, String>{};
+    // nome_lower → nome original preservando capitalização
+    final artistNameMap = <String, String>{};
+
     for (final s in songs) {
-      final aid = s.artistId;
-      if (aid != null && aid.isNotEmpty) {
-        artistMap.putIfAbsent(aid, () => []).add(s);
+      final individuals = _parseArtistNames(s.artist);
+      for (final name in individuals) {
+        final key = name.toLowerCase();
+        artistSongMap.putIfAbsent(key, () => []).add(s);
+        if (!artistNameMap.containsKey(key)) {
+          artistNameMap[key] = name;
+        }
+        if (!artistIdMap.containsKey(key) &&
+            s.artistId != null &&
+            s.artistId!.isNotEmpty) {
+          artistIdMap[key] = s.artistId!;
+        }
       }
     }
-    return artistMap.entries.map((e) {
-      final first = e.value.first;
-      final albumIds = e.value
-          .map((s) => s.albumId)
-          .whereType<String>()
-          .toSet();
-      return Artist(
-        id: first.artistId!,
-        name: first.artist,
-        songCount: e.value.length,
-        albumCount: albumIds.length,
-      );
-    }).toList()
+
+    return artistSongMap.entries.map((e) {
+        final albumIds = e.value
+            .map((s) => s.albumId)
+            .whereType<String>()
+            .toSet();
+        return Artist(
+          id: artistIdMap[e.key] ?? e.key,
+          name: artistNameMap[e.key] ?? e.key,
+          songCount: e.value.length,
+          albumCount: albumIds.length,
+        );
+      }).toList()
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  }
+
+  /// Regex pré-compilada para parsing de artistas.
+  static final _artistFeatParenRegex = RegExp(
+    r'\(\s*(?:feat\.?|ft\.?|featuring)\s+([^)]+)\)',
+    caseSensitive: false,
+  );
+  static final _artistSplitRegex = RegExp(
+    r'\s*[,;/]\s*'
+    r'|\s+(?:feat\.?|ft\.?|featuring)\s+'
+    r'|\s+[&×·]\s+'
+    r'|\s+x\s+',
+    caseSensitive: false,
+  );
+
+  /// Separa uma string de artistas nos nomes individuais.
+  ///
+  /// Reconhece qualquer número de artistas com os separadores:
+  ///   ",", ";", "/", "feat.", "ft.", "featuring", "&", "×", "·", " x "
+  /// Também suporta feat entre parênteses: "Artist A (feat. B, C)"
+  static List<String> _parseArtistNames(String artistField) {
+    // Expandir feat. parentético: "A (feat. B, C)" → "A feat. B, C"
+    var field = artistField.replaceAllMapped(
+      _artistFeatParenRegex,
+      (m) => ' feat. ${m.group(1)}',
+    );
+
+    final parts = field.split(_artistSplitRegex);
+    return parts.map((p) => p.trim()).where((p) => p.isNotEmpty).toList();
+  }
+
+  @override
+  void dispose() {
+    _cacheSaveTimer?.cancel();
+    super.dispose();
   }
 }
 

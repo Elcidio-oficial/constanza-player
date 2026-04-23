@@ -13,7 +13,11 @@ import 'package:constanza_player/presentation/providers/library_provider.dart';
 import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/pages/settings/background_settings_page.dart';
 import 'package:constanza_player/presentation/pages/settings/equalizer_page.dart';
+import 'package:constanza_player/presentation/pages/library/duplicates_page.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
+import 'package:constanza_player/services/audio_analysis_service.dart';
+import 'package:constanza_player/services/bpm_key_fetch_service.dart';
+import 'package:go_router/go_router.dart';
 
 /// Página de Configurações — personalização completa do Constanza.
 class SettingsPage extends ConsumerWidget {
@@ -65,13 +69,89 @@ class SettingsPage extends ConsumerWidget {
                 theme: theme,
                 onTap: () => Navigator.push(
                   context,
-                  AppPageRoute(
-                    page: const BackgroundSettingsPage(),
-                  ),
+                  AppPageRoute(page: const BackgroundSettingsPage()),
                 ),
               ),
             ],
           ),
+
+          // ========================================
+          // TEMAS PRÉ-DEFINIDOS
+          // ========================================
+          _SectionHeader(title: 'TEMAS', theme: theme, colors: colors),
+          SizedBox(
+            height: 120,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              scrollDirection: Axis.horizontal,
+              itemCount: ThemePresets.all.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final preset = ThemePresets.all[index];
+                return GestureDetector(
+                  onTap: () {
+                    ref.read(themeProvider.notifier).applyThemePreset(preset);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Tema "${preset.name}" aplicado'),
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: preset.previewColors,
+                      ),
+                      border: Border.all(
+                        color: colors.outline.withValues(alpha: 0.12),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Icon(preset.icon, color: Colors.white, size: 28),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            borderRadius: const BorderRadius.vertical(
+                              bottom: Radius.circular(15),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                preset.name,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: AppSpacing.sm),
 
           // ========================================
           // PERSONALIZAÇÃO
@@ -101,7 +181,9 @@ class SettingsPage extends ConsumerWidget {
                       ref.read(themeProvider.notifier).toggleAlbumArtInList(),
                   activeColor: accentColor ?? colors.primary,
                   activeTrackColor: accentColor?.withValues(alpha: 0.3),
-                  trackOutlineColor: WidgetStatePropertyAll(colors.onSurface.withValues(alpha: 0.15)),
+                  trackOutlineColor: WidgetStatePropertyAll(
+                    colors.onSurface.withValues(alpha: 0.15),
+                  ),
                 ),
               ),
             ],
@@ -215,7 +297,9 @@ class SettingsPage extends ConsumerWidget {
                       .toggleVolumeNormalization(),
                   activeColor: accentColor ?? colors.primary,
                   activeTrackColor: accentColor?.withValues(alpha: 0.3),
-                  trackOutlineColor: WidgetStatePropertyAll(colors.onSurface.withValues(alpha: 0.15)),
+                  trackOutlineColor: WidgetStatePropertyAll(
+                    colors.onSurface.withValues(alpha: 0.15),
+                  ),
                 ),
               ),
               _divider(colors),
@@ -249,7 +333,9 @@ class SettingsPage extends ConsumerWidget {
                       ref.read(audioSettingsProvider.notifier).toggleGapless(),
                   activeColor: accentColor ?? colors.primary,
                   activeTrackColor: accentColor?.withValues(alpha: 0.3),
-                  trackOutlineColor: WidgetStatePropertyAll(colors.onSurface.withValues(alpha: 0.15)),
+                  trackOutlineColor: WidgetStatePropertyAll(
+                    colors.onSurface.withValues(alpha: 0.15),
+                  ),
                 ),
               ),
             ],
@@ -292,7 +378,9 @@ class SettingsPage extends ConsumerWidget {
                             backgroundColor: colors.onSurface,
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.radiusSm,
+                              ),
                             ),
                             duration: const Duration(seconds: 2),
                           ),
@@ -317,12 +405,83 @@ class SettingsPage extends ConsumerWidget {
                 theme: theme,
                 trailing: Switch.adaptive(
                   value: libState.filterShortTracks,
-                  onChanged: (_) =>
-                      ref.read(libraryProvider.notifier).toggleFilterShortTracks(),
+                  onChanged: (_) => ref
+                      .read(libraryProvider.notifier)
+                      .toggleFilterShortTracks(),
                   activeColor: accentColor ?? colors.primary,
                   activeTrackColor: accentColor?.withValues(alpha: 0.3),
-                  trackOutlineColor: WidgetStatePropertyAll(colors.onSurface.withValues(alpha: 0.15)),
+                  trackOutlineColor: WidgetStatePropertyAll(
+                    colors.onSurface.withValues(alpha: 0.15),
+                  ),
                 ),
+              ),
+              _divider(colors),
+              _SettingsTile(
+                icon: Icons.copy_all_rounded,
+                title: 'Músicas Duplicadas',
+                subtitle: 'Detectar e remover cópias da biblioteca',
+                colors: colors,
+                theme: theme,
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageRoute(page: const DuplicatesPage()),
+                ),
+              ),
+            ],
+          ),
+
+          // ========================================
+          // BPM & TONALIDADE
+          // ========================================
+          _SectionHeader(
+            title: 'BPM & TONALIDADE',
+            theme: theme,
+            colors: colors,
+          ),
+          _SettingsGroup(
+            colors: colors,
+            children: [
+              _SettingsTile(
+                icon: Icons.music_note_rounded,
+                title: 'Spotify API',
+                subtitle: BpmKeyFetchService.hasSpotifyCredentials
+                    ? 'Conectado ✓ — BPM e features via ReccoBeats'
+                    : 'Configurar — developer.spotify.com',
+                colors: colors,
+                theme: theme,
+                onTap: () => _showSpotifyCredentialsDialog(context, ref),
+              ),
+              _divider(colors),
+              _SettingsTile(
+                icon: Icons.cached_rounded,
+                title: 'Cache de análises',
+                subtitle:
+                    '${AudioAnalysisService.analyzedCount} músicas em cache',
+                colors: colors,
+                theme: theme,
+                onTap: () async {
+                  await AudioAnalysisService.clearCache();
+                  await BpmKeyFetchService.clearCache();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Cache limpo',
+                          style: TextStyle(color: colors.surface),
+                        ),
+                        backgroundColor: colors.onSurface,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                    (context as Element).markNeedsBuild();
+                  }
+                },
               ),
             ],
           ),
@@ -405,6 +564,152 @@ class SettingsPage extends ConsumerWidget {
   // DIALOGS
   // ============================================================
 
+  void _showSpotifyCredentialsDialog(BuildContext context, WidgetRef ref) {
+    final colors = Theme.of(context).colorScheme;
+    final clientIdCtrl = TextEditingController(
+      text: BpmKeyFetchService.spotifyClientId ?? '',
+    );
+    final clientSecretCtrl = TextEditingController(
+      text: BpmKeyFetchService.spotifyClientSecret ?? '',
+    );
+    var isTesting = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          backgroundColor: colors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.music_note_rounded, color: colors.primary, size: 24),
+              const SizedBox(width: 8),
+              const Text('Spotify API'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Crie um app em developer.spotify.com e copie o Client ID e Client Secret.\n\nUsado para identificar músicas e buscar BPM, energia e dançabilidade via ReccoBeats (gratuito, sem limite próprio).',
+                  style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: clientIdCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Client ID',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    isDense: true,
+                  ),
+                  style: Theme.of(ctx).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: clientSecretCtrl,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Client Secret',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    isDense: true,
+                  ),
+                  style: Theme.of(ctx).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            if (BpmKeyFetchService.hasSpotifyCredentials)
+              TextButton(
+                onPressed: () async {
+                  await BpmKeyFetchService.clearSpotifyCredentials();
+                  if (ctx.mounted) ctx.pop();
+                  if (context.mounted) (context as Element).markNeedsBuild();
+                },
+                child: Text('Remover', style: TextStyle(color: colors.error)),
+              ),
+            TextButton(
+              onPressed: () => ctx.pop(),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: isTesting
+                  ? null
+                  : () async {
+                      final id = clientIdCtrl.text.trim();
+                      final secret = clientSecretCtrl.text.trim();
+                      if (id.isEmpty || secret.isEmpty) return;
+                      setState(() => isTesting = true);
+                      final ok =
+                          await BpmKeyFetchService.testSpotifyCredentials(
+                            id,
+                            secret,
+                          );
+                      if (!ctx.mounted) return;
+                      if (ok) {
+                        await BpmKeyFetchService.saveSpotifyCredentials(
+                          id,
+                          secret,
+                        );
+                        if (ctx.mounted) ctx.pop();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Spotify conectado!',
+                                style: TextStyle(color: colors.surface),
+                              ),
+                              backgroundColor: Colors.green,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.radiusSm,
+                                ),
+                              ),
+                            ),
+                          );
+                          (context as Element).markNeedsBuild();
+                        }
+                      } else {
+                        setState(() => isTesting = false);
+                        ScaffoldMessenger.of(ctx).showSnackBar(
+                          SnackBar(
+                            content: const Text(
+                              'Credenciais inválidas — verifique Client ID e Secret',
+                            ),
+                            backgroundColor: colors.error,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+              child: isTesting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Salvar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showListDensityDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final current = ref.read(themeProvider).listDensity;
@@ -426,7 +731,7 @@ class SettingsPage extends ConsumerWidget {
               ref
                   .read(themeProvider.notifier)
                   .setListDensity(ListDensity.compact);
-              Navigator.pop(ctx);
+              ctx.pop();
             },
           ),
           _dialogOption(
@@ -438,7 +743,7 @@ class SettingsPage extends ConsumerWidget {
               ref
                   .read(themeProvider.notifier)
                   .setListDensity(ListDensity.normal);
-              Navigator.pop(ctx);
+              ctx.pop();
             },
           ),
           _dialogOption(
@@ -450,7 +755,7 @@ class SettingsPage extends ConsumerWidget {
               ref
                   .read(themeProvider.notifier)
                   .setListDensity(ListDensity.comfortable);
-              Navigator.pop(ctx);
+              ctx.pop();
             },
           ),
         ],
@@ -479,7 +784,7 @@ class SettingsPage extends ConsumerWidget {
             current == sec,
             () {
               ref.read(audioSettingsProvider.notifier).setCrossfade(sec);
-              Navigator.pop(ctx);
+              ctx.pop();
             },
           );
         }).toList(),
@@ -508,7 +813,7 @@ class SettingsPage extends ConsumerWidget {
             () {
               ref.read(audioSettingsProvider.notifier).setPlaybackSpeed(speed);
               ref.read(playerProvider.notifier).setSpeed(speed);
-              Navigator.pop(ctx);
+              ctx.pop();
             },
           );
         }).toList(),
@@ -540,64 +845,66 @@ class SettingsPage extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-            const SizedBox(height: AppSpacing.xs),
-            Container(
-              width: 32,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.outline.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text('Sleep Timer', style: theme.textTheme.titleMedium),
-            if (audioState.hasSleepTimer) ...[
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                audioState.sleepTimerLabel,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.tertiary,
-                ),
-              ),
-            ],
-            const SizedBox(height: AppSpacing.sm),
-            Divider(color: colors.outline.withValues(alpha: 0.15)),
-            ...options.map((min) {
-              final label = min == 0
-                  ? 'Desligar timer'
-                  : min < 60
-                  ? '$min minutos'
-                  : '${min ~/ 60}h${min % 60 > 0 ? ' ${min % 60}min' : ''}';
-              final isSelected = audioState.sleepTimerMinutes == min;
-              return ListTile(
-                leading: Icon(
-                  min == 0 ? Icons.timer_off_rounded : Icons.timer_rounded,
-                  color: isSelected
-                      ? colors.onSurface
-                      : colors.onSurface.withValues(alpha: 0.4),
-                ),
-                title: Text(
-                  label,
-                  style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                const SizedBox(height: AppSpacing.xs),
+                Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.outline.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                trailing: isSelected
-                    ? Icon(
-                        Icons.check_rounded,
-                        color: colors.onSurface,
-                        size: 20,
-                      )
-                    : null,
-                onTap: () {
-                  notifier.setSleepTimer(min);
-                  Navigator.pop(ctx);
-                },
-              );
-            }),
-            const SizedBox(height: AppSpacing.md),
-          ],
-        ),
+                const SizedBox(height: AppSpacing.md),
+                Text('Sleep Timer', style: theme.textTheme.titleMedium),
+                if (audioState.hasSleepTimer) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    audioState.sleepTimerLabel,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.tertiary,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.sm),
+                Divider(color: colors.outline.withValues(alpha: 0.15)),
+                ...options.map((min) {
+                  final label = min == 0
+                      ? 'Desligar timer'
+                      : min < 60
+                      ? '$min minutos'
+                      : '${min ~/ 60}h${min % 60 > 0 ? ' ${min % 60}min' : ''}';
+                  final isSelected = audioState.sleepTimerMinutes == min;
+                  return ListTile(
+                    leading: Icon(
+                      min == 0 ? Icons.timer_off_rounded : Icons.timer_rounded,
+                      color: isSelected
+                          ? colors.onSurface
+                          : colors.onSurface.withValues(alpha: 0.4),
+                    ),
+                    title: Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? Icon(
+                            Icons.check_rounded,
+                            color: colors.onSurface,
+                            size: 20,
+                          )
+                        : null,
+                    onTap: () {
+                      notifier.setSleepTimer(min);
+                      ctx.pop();
+                    },
+                  );
+                }),
+                const SizedBox(height: AppSpacing.md),
+              ],
+            ),
           ),
         ),
       ),
@@ -679,7 +986,7 @@ class SettingsPage extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => ctx.pop(),
             child: Text('Fechar', style: TextStyle(color: colors.onSurface)),
           ),
         ],
@@ -713,23 +1020,20 @@ class SettingsPage extends ConsumerWidget {
             SortOrder.dateAdded => Icons.calendar_today_rounded,
             SortOrder.duration => Icons.timer_rounded,
           };
-          return _dialogOption(
-            ctx,
-            label,
-            icon,
-            current == order,
-            () {
-              ref.read(libraryProvider.notifier).setSortOrder(order);
-              Navigator.pop(ctx);
-            },
-          );
+          return _dialogOption(ctx, label, icon, current == order, () {
+            ref.read(libraryProvider.notifier).setSortOrder(order);
+            ctx.pop();
+          });
         }).toList(),
       ),
     );
   }
 
   /// Abre o seletor de pastas. Pode ser chamado de qualquer página.
-  static Future<void> showFolderPicker(BuildContext context, WidgetRef ref) async {
+  static Future<void> showFolderPicker(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
 
@@ -768,11 +1072,13 @@ class SettingsPage extends ConsumerWidget {
     );
 
     // Descobrir pastas no dispositivo
-    final songCountMap = await ref.read(libraryProvider.notifier).discoverFolders();
+    final songCountMap = await ref
+        .read(libraryProvider.notifier)
+        .discoverFolders();
 
     // Fechar loading
     if (!context.mounted) return;
-    Navigator.pop(context);
+    context.pop();
 
     if (songCountMap.isEmpty) {
       if (!context.mounted) return;
@@ -901,7 +1207,9 @@ class SettingsPage extends ConsumerWidget {
                         );
 
                         return InkWell(
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
                           onTap: () {
                             setState(() {
                               if (isSelected) {
@@ -930,25 +1238,29 @@ class SettingsPage extends ConsumerWidget {
                                 const SizedBox(width: AppSpacing.sm),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         displayName,
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          fontWeight: isSelected
-                                              ? FontWeight.w500
-                                              : FontWeight.w400,
-                                          color: colors.onSurface,
-                                        ),
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w500
+                                                  : FontWeight.w400,
+                                              color: colors.onSurface,
+                                            ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       Text(
                                         '$shortPath  •  $count música${count == 1 ? '' : 's'}',
-                                        style: theme.textTheme.labelSmall?.copyWith(
-                                          color: colors.onSurface.withValues(alpha: 0.4),
-                                          fontSize: 10,
-                                        ),
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                              color: colors.onSurface
+                                                  .withValues(alpha: 0.4),
+                                              fontSize: 10,
+                                            ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -986,7 +1298,7 @@ class SettingsPage extends ConsumerWidget {
                       onPressed: selected.isEmpty
                           ? null
                           : () {
-                              Navigator.pop(ctx);
+                              ctx.pop();
                               ref
                                   .read(libraryProvider.notifier)
                                   .setSelectedFolders(selected.toList());
@@ -996,7 +1308,9 @@ class SettingsPage extends ConsumerWidget {
                         foregroundColor: colors.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusMd,
+                          ),
                         ),
                       ),
                       child: const Text('Confirmar'),
@@ -1037,13 +1351,10 @@ class SettingsPage extends ConsumerWidget {
         ),
         title: const Text('Estilo Now Playing'),
         children: options.map((o) {
-          return _dialogOption(
-            ctx, o.$2, o.$3, current == o.$1,
-            () {
-              ref.read(themeProvider.notifier).setNowPlayingStyle(o.$1);
-              Navigator.pop(ctx);
-            },
-          );
+          return _dialogOption(ctx, o.$2, o.$3, current == o.$1, () {
+            ref.read(themeProvider.notifier).setNowPlayingStyle(o.$1);
+            ctx.pop();
+          });
         }).toList(),
       ),
     );
@@ -1065,14 +1376,18 @@ class SettingsPage extends ConsumerWidget {
       builder: (ctx) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.lg,
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.md,
+            AppSpacing.lg,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: AppSpacing.xs),
               Container(
-                width: 32, height: 4,
+                width: 32,
+                height: 4,
                 decoration: BoxDecoration(
                   color: colors.outline.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
@@ -1097,32 +1412,39 @@ class SettingsPage extends ConsumerWidget {
                 colors: colors,
                 theme: theme,
                 previewColors: const [
-                  Color(0xFF6A3DE8), Color(0xFF3A1F8C), Color(0xFF1A1028),
+                  Color(0xFF6A3DE8),
+                  Color(0xFF3A1F8C),
+                  Color(0xFF1A1028),
                 ],
                 isLinear: true,
                 onTap: () {
-                  ref.read(themeProvider.notifier)
+                  ref
+                      .read(themeProvider.notifier)
                       .setNowPlayingColorStyle(NowPlayingColorStyle.degrade);
-                  Navigator.pop(ctx);
+                  ctx.pop();
                 },
               ),
               const SizedBox(height: AppSpacing.sm),
               // Gradient option
               _ColorStyleOption(
                 title: 'Gradiente',
-                description: 'Múltiplas cores da capa em gradiente radial fluido',
+                description:
+                    'Múltiplas cores da capa em gradiente radial fluido',
                 icon: Icons.blur_on_rounded,
                 isSelected: current == NowPlayingColorStyle.gradient,
                 colors: colors,
                 theme: theme,
                 previewColors: const [
-                  Color(0xFF00BCD4), Color(0xFFFF9800), Color(0xFFE91E63),
+                  Color(0xFF00BCD4),
+                  Color(0xFFFF9800),
+                  Color(0xFFE91E63),
                 ],
                 isLinear: false,
                 onTap: () {
-                  ref.read(themeProvider.notifier)
+                  ref
+                      .read(themeProvider.notifier)
                       .setNowPlayingColorStyle(NowPlayingColorStyle.gradient);
-                  Navigator.pop(ctx);
+                  ctx.pop();
                 },
               ),
             ],
@@ -1150,13 +1472,10 @@ class SettingsPage extends ConsumerWidget {
         ),
         title: const Text('Barra de Navegação'),
         children: options.map((o) {
-          return _dialogOption(
-            ctx, o.$2, o.$3, current == o.$1,
-            () {
-              ref.read(themeProvider.notifier).setNavBarStyle(o.$1);
-              Navigator.pop(ctx);
-            },
-          );
+          return _dialogOption(ctx, o.$2, o.$3, current == o.$1, () {
+            ref.read(themeProvider.notifier).setNavBarStyle(o.$1);
+            ctx.pop();
+          });
         }).toList(),
       ),
     );
@@ -1181,13 +1500,10 @@ class SettingsPage extends ConsumerWidget {
         ),
         title: const Text('Estilo Mini Player'),
         children: options.map((o) {
-          return _dialogOption(
-            ctx, o.$2, o.$3, current == o.$1,
-            () {
-              ref.read(themeProvider.notifier).setMiniPlayerStyle(o.$1);
-              Navigator.pop(ctx);
-            },
-          );
+          return _dialogOption(ctx, o.$2, o.$3, current == o.$1, () {
+            ref.read(themeProvider.notifier).setMiniPlayerStyle(o.$1);
+            ctx.pop();
+          });
         }).toList(),
       ),
     );
@@ -1212,13 +1528,10 @@ class SettingsPage extends ConsumerWidget {
         ),
         title: const Text('Barra de Progresso'),
         children: options.map((o) {
-          return _dialogOption(
-            ctx, o.$2, o.$3, current == o.$1,
-            () {
-              ref.read(themeProvider.notifier).setMediaBarStyle(o.$1);
-              Navigator.pop(ctx);
-            },
-          );
+          return _dialogOption(ctx, o.$2, o.$3, current == o.$1, () {
+            ref.read(themeProvider.notifier).setMediaBarStyle(o.$1);
+            ctx.pop();
+          });
         }).toList(),
       ),
     );
@@ -1540,8 +1853,9 @@ class _ColorStyleOption extends StatelessWidget {
                       Text(
                         title,
                         style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                           color: colors.onSurface,
                         ),
                       ),
@@ -1602,16 +1916,27 @@ class _CustomNpColorsSheet extends ConsumerStatefulWidget {
   final ThemeData theme;
 
   @override
-  ConsumerState<_CustomNpColorsSheet> createState() => _CustomNpColorsSheetState();
+  ConsumerState<_CustomNpColorsSheet> createState() =>
+      _CustomNpColorsSheetState();
 }
 
 class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
   static const _presetColors = [
-    Color(0xFFE53935), Color(0xFFD81B60), Color(0xFF8E24AA),
-    Color(0xFF5E35B1), Color(0xFF3949AB), Color(0xFF1E88E5),
-    Color(0xFF00ACC1), Color(0xFF00897B), Color(0xFF43A047),
-    Color(0xFF7CB342), Color(0xFFFDD835), Color(0xFFFB8C00),
-    Color(0xFFFF7043), Color(0xFF6D4C41), Color(0xFF546E7A),
+    Color(0xFFE53935),
+    Color(0xFFD81B60),
+    Color(0xFF8E24AA),
+    Color(0xFF5E35B1),
+    Color(0xFF3949AB),
+    Color(0xFF1E88E5),
+    Color(0xFF00ACC1),
+    Color(0xFF00897B),
+    Color(0xFF43A047),
+    Color(0xFF7CB342),
+    Color(0xFFFDD835),
+    Color(0xFFFB8C00),
+    Color(0xFFFF7043),
+    Color(0xFF6D4C41),
+    Color(0xFF546E7A),
     Color(0xFFEC407A),
   ];
 
@@ -1626,14 +1951,18 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.lg,
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.lg,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: AppSpacing.xs),
             Container(
-              width: 32, height: 4,
+              width: 32,
+              height: 4,
               decoration: BoxDecoration(
                 color: colors.outline.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
@@ -1652,7 +1981,10 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
 
             // Toggle
             SwitchListTile.adaptive(
-              title: Text('Usar cores personalizadas', style: theme.textTheme.bodyMedium),
+              title: Text(
+                'Usar cores personalizadas',
+                style: theme.textTheme.bodyMedium,
+              ),
               subtitle: Text(
                 themeState.useCustomNpColors
                     ? 'Cores manuais ativas'
@@ -1665,7 +1997,9 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
               onChanged: (_) => notifier.toggleCustomNpColors(),
               activeColor: accentColor ?? colors.primary,
               activeTrackColor: accentColor?.withValues(alpha: 0.3),
-              trackOutlineColor: WidgetStatePropertyAll(colors.onSurface.withValues(alpha: 0.15)),
+              trackOutlineColor: WidgetStatePropertyAll(
+                colors.onSurface.withValues(alpha: 0.15),
+              ),
               contentPadding: EdgeInsets.zero,
             ),
 
@@ -1755,7 +2089,8 @@ class _NpColorRow extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 28, height: 28,
+              width: 28,
+              height: 28,
               decoration: BoxDecoration(
                 color: color ?? colors.onSurface.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
@@ -1782,7 +2117,8 @@ class _NpColorRow extends StatelessWidget {
               return GestureDetector(
                 onTap: () => onColorSelected(c),
                 child: Container(
-                  width: 36, height: 36,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: c,
                     shape: BoxShape.circle,
@@ -1790,11 +2126,20 @@ class _NpColorRow extends StatelessWidget {
                         ? Border.all(color: Colors.white, width: 2.5)
                         : null,
                     boxShadow: isSelected
-                        ? [BoxShadow(color: c.withValues(alpha: 0.5), blurRadius: 8)]
+                        ? [
+                            BoxShadow(
+                              color: c.withValues(alpha: 0.5),
+                              blurRadius: 8,
+                            ),
+                          ]
                         : null,
                   ),
                   child: isSelected
-                      ? const Icon(Icons.check_rounded, size: 18, color: Colors.white)
+                      ? const Icon(
+                          Icons.check_rounded,
+                          size: 18,
+                          color: Colors.white,
+                        )
                       : null,
                 ),
               );

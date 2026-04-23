@@ -64,7 +64,12 @@ class LyricsService {
         final ms = (mins * 60 + secs) * 1000 + msExtra;
         final text = match.group(4)!.trim();
         if (text.isNotEmpty) {
-          lines.add(LyricLine(timestamp: Duration(milliseconds: ms), text: text));
+          lines.add(
+            LyricLine(
+              timestamp: Duration(milliseconds: ms),
+              text: text,
+            ),
+          );
         }
       } else if (!trimmed.startsWith('[')) {
         // Linha sem timestamp — adicionada como não sincronizada
@@ -90,7 +95,8 @@ class LyricsService {
       if (line.isSynced) {
         final m = line.timestamp!.inMinutes;
         final s = line.timestamp!.inSeconds.remainder(60);
-        final cs = (line.timestamp!.inMilliseconds.remainder(1000) / 10).round();
+        final cs = (line.timestamp!.inMilliseconds.remainder(1000) / 10)
+            .round();
         buf.writeln(
           '[${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}.${cs.toString().padLeft(2, '0')}]${line.text}',
         );

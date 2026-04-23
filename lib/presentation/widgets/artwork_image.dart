@@ -39,8 +39,8 @@ class ArtworkImage extends ConsumerWidget {
     this.isCircle = false,
     this.placeholderIcon,
     this.placeholderIconSize,
-  })  : id = songId,
-        type = ArtworkType.AUDIO;
+  }) : id = songId,
+       type = ArtworkType.AUDIO;
 
   /// Artwork de um álbum.
   const ArtworkImage.album({
@@ -51,8 +51,8 @@ class ArtworkImage extends ConsumerWidget {
     this.isCircle = false,
     this.placeholderIcon,
     this.placeholderIconSize,
-  })  : id = albumId,
-        type = ArtworkType.ALBUM;
+  }) : id = albumId,
+       type = ArtworkType.ALBUM;
 
   final int id;
   final ArtworkType type;
@@ -64,20 +64,27 @@ class ArtworkImage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch para reagir a novas artworks carregadas
-    ref.watch(artworkProvider);
     final colors = Theme.of(context).colorScheme;
     final notifier = ref.read(artworkProvider.notifier);
 
     // Resolução real em pixels: tamanho do widget × pixel ratio do device.
-    // Garante máxima nitidez em telas de alta densidade (2x, 3x, etc.).
     final dpr = MediaQuery.devicePixelRatioOf(context);
     final resolution = (size * dpr).ceil().clamp(100, 900);
+
+    // Watch counter but only rebuild when OUR artwork becomes available.
+    // Returns identity hashCode of the Uint8List — skips rebuild if same object.
+    ref.watch(
+      artworkProvider.select((_) {
+        final d = notifier.getArtwork(id, type, size: resolution);
+        return identityHashCode(d);
+      }),
+    );
     final data = notifier.getArtwork(id, type, size: resolution);
 
     final br = isCircle ? null : (borderRadius ?? BorderRadius.circular(6));
     final shape = isCircle ? BoxShape.circle : BoxShape.rectangle;
-    final icon = placeholderIcon ??
+    final icon =
+        placeholderIcon ??
         (type == ArtworkType.ALBUM
             ? Icons.album_rounded
             : Icons.music_note_rounded);
@@ -164,7 +171,7 @@ class _Placeholder extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: colors.outline.withValues(alpha: 0.1),
+        color: Colors.transparent,
         borderRadius: shape == BoxShape.circle ? null : borderRadius,
         shape: shape,
       ),

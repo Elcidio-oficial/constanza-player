@@ -101,23 +101,39 @@ class Song extends Equatable {
     'composer': composer,
   };
 
-  factory Song.fromJson(Map<String, dynamic> json) => Song(
-    id: json['id'] as String,
-    title: json['title'] as String,
-    artist: json['artist'] as String,
-    album: json['album'] as String,
-    duration: Duration(milliseconds: json['duration'] as int),
-    uri: json['uri'] as String? ?? '',
-    filePath: json['filePath'] as String? ?? '',
-    trackNumber: json['trackNumber'] as int?,
-    albumId: json['albumId'] as String?,
-    artistId: json['artistId'] as String?,
-    dateAdded: json['dateAdded'] != null
-        ? DateTime.fromMillisecondsSinceEpoch(json['dateAdded'] as int)
-        : null,
-    genre: json['genre'] as String?,
-    composer: json['composer'] as String?,
-  );
+  factory Song.fromJson(Map<String, dynamic> json) {
+    final id = json['id']?.toString() ?? '';
+    if (id.isEmpty) {
+      throw FormatException('Song.fromJson: campo "id" ausente ou vazio');
+    }
+
+    final durationMs = json['duration'];
+    final duration = Duration(
+      milliseconds: durationMs is int
+          ? durationMs
+          : int.tryParse('$durationMs') ?? 0,
+    );
+
+    return Song(
+      id: id,
+      title: json['title']?.toString() ?? '',
+      artist: json['artist']?.toString() ?? '',
+      album: json['album']?.toString() ?? '',
+      duration: duration,
+      uri: json['uri']?.toString() ?? '',
+      filePath: json['filePath']?.toString() ?? '',
+      trackNumber: json['trackNumber'] is int
+          ? json['trackNumber'] as int
+          : null,
+      albumId: json['albumId']?.toString(),
+      artistId: json['artistId']?.toString(),
+      dateAdded: json['dateAdded'] is int
+          ? DateTime.fromMillisecondsSinceEpoch(json['dateAdded'] as int)
+          : null,
+      genre: json['genre']?.toString(),
+      composer: json['composer']?.toString(),
+    );
+  }
 
   @override
   List<Object?> get props => [id];

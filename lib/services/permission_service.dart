@@ -41,4 +41,15 @@ class PermissionService {
   static Future<bool> openSettings() async {
     return await openAppSettings();
   }
+
+  /// Solicita permissão de notificação (Android 13+ / API 33).
+  /// Sem isto, o foreground service do audio_service não mostra notificação,
+  /// e o OS mata o service em poucos segundos em background.
+  static Future<bool> requestNotificationPermission() async {
+    final status = await Permission.notification.status;
+    if (status.isGranted) return true;
+    if (status.isPermanentlyDenied) return false;
+    final result = await Permission.notification.request();
+    return result.isGranted;
+  }
 }

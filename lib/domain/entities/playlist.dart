@@ -22,8 +22,10 @@ class Playlist extends Equatable {
   final bool isSmartPlaylist;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
   /// Caminho da imagem personalizada da playlist (file picker)
   final String? imagePath;
+
   /// Descrição opcional da playlist
   final String? description;
 
@@ -104,5 +106,12 @@ class Playlist extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [
+    id,
+    name,
+    imagePath,
+    description,
+    updatedAt,
+    songs.length,
+  ];
 }

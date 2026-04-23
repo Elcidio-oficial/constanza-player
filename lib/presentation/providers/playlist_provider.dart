@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:constanza_player/domain/entities/playlist.dart';
@@ -30,16 +32,25 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
     final now = DateTime.now();
     return [
       Playlist(
-        id: 'fav', name: 'Favoritas',
-        isSmartPlaylist: true, createdAt: now, updatedAt: now,
+        id: 'fav',
+        name: 'Favoritas',
+        isSmartPlaylist: true,
+        createdAt: now,
+        updatedAt: now,
       ),
       Playlist(
-        id: 'recent', name: 'Tocadas Recentemente',
-        isSmartPlaylist: true, createdAt: now, updatedAt: now,
+        id: 'recent',
+        name: 'Tocadas Recentemente',
+        isSmartPlaylist: true,
+        createdAt: now,
+        updatedAt: now,
       ),
       Playlist(
-        id: 'most', name: 'Mais Tocadas',
-        isSmartPlaylist: true, createdAt: now, updatedAt: now,
+        id: 'most',
+        name: 'Mais Tocadas',
+        isSmartPlaylist: true,
+        createdAt: now,
+        updatedAt: now,
       ),
     ];
   }
@@ -68,12 +79,9 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
       }
       _savedSongIds = songIdMap;
       // Merge com smart playlists
-      state = [
-        ...state.where((p) => p.isSmartPlaylist),
-        ...loaded,
-      ];
-    } catch (_) {
-      // Falha silenciosa — mantém estado padrão
+      state = [...state.where((p) => p.isSmartPlaylist), ...loaded];
+    } catch (e) {
+      debugPrint('[PlaylistNotifier] loadFromStorage parse error: $e');
     }
   }
 
@@ -92,9 +100,13 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
   }
 
   Future<void> _persist() async {
-    final userPlaylists = state.where((p) => !p.isSmartPlaylist).toList();
-    final json = jsonEncode(userPlaylists.map((p) => p.toJson()).toList());
-    await SettingsStorageService.saveUserPlaylists(json);
+    try {
+      final userPlaylists = state.where((p) => !p.isSmartPlaylist).toList();
+      final json = jsonEncode(userPlaylists.map((p) => p.toJson()).toList());
+      await SettingsStorageService.saveUserPlaylists(json);
+    } catch (e) {
+      debugPrint('[PlaylistNotifier] persist error: $e');
+    }
   }
 
   // ── CRUD ──
@@ -115,12 +127,14 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
 
   /// Deletar playlist (não permite deletar smart playlists).
   void deletePlaylist(String id) {
-    // Remove imagem customizada se existir
-    final pl = state.firstWhere((p) => p.id == id, orElse: () => state.first);
+    final pl = state.where((p) => p.id == id && !p.isSmartPlaylist).firstOrNull;
+    if (pl == null) return; // Playlist not found or is smart — do nothing
     if (pl.hasCustomImage) {
-      try { File(pl.imagePath!).deleteSync(); } catch (_) {}
+      try {
+        File(pl.imagePath!).deleteSync();
+      } catch (_) {}
     }
-    state = state.where((p) => p.id != id || p.isSmartPlaylist).toList();
+    state = state.where((p) => p.id != id).toList();
     _persist();
   }
 
@@ -154,14 +168,22 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
   Future<void> setPlaylistImage(String id, String sourcePath) async {
     final dir = await getApplicationDocumentsDirectory();
     final ext = sourcePath.split('.').last;
-    final destPath = '${dir.path}/playlist_images/${id}_${DateTime.now().millisecondsSinceEpoch}.$ext';
+    final destPath =
+        '${dir.path}/playlist_images/${id}_${DateTime.now().millisecondsSinceEpoch}.$ext';
     final destDir = Directory('${dir.path}/playlist_images');
     if (!destDir.existsSync()) destDir.createSync(recursive: true);
 
-    // Remove imagem antiga se existir
-    final oldPl = state.firstWhere((p) => p.id == id, orElse: () => state.first);
+    // Remove imagem antiga se existir e limpa cache de imagem do Flutter
+    final oldPl = state.where((p) => p.id == id).firstOrNull ?? state.first;
     if (oldPl.hasCustomImage) {
-      try { File(oldPl.imagePath!).deleteSync(); } catch (_) {}
+      // Evict via provider + global imageCache para garantir que nenhum
+      // widget com referência antiga continue exibindo a imagem excluída
+      FileImage(File(oldPl.imagePath!)).evict();
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+      try {
+        File(oldPl.imagePath!).deleteSync();
+      } catch (_) {}
     }
 
     // Copia arquivo
@@ -178,9 +200,12 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
 
   /// Remove imagem personalizada da playlist.
   void removePlaylistImage(String id) {
-    final pl = state.firstWhere((p) => p.id == id, orElse: () => state.first);
+    final pl = state.where((p) => p.id == id).firstOrNull;
+    if (pl == null) return;
     if (pl.hasCustomImage) {
-      try { File(pl.imagePath!).deleteSync(); } catch (_) {}
+      try {
+        File(pl.imagePath!).deleteSync();
+      } catch (_) {}
     }
     state = state.map((p) {
       if (p.id == id) {
@@ -219,8 +244,10 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
         final allSongs = <String, Song>{for (final s in p.songs) s.id: s};
         allSongs[song.id] = song;
         final sorted = allSongs.values.toList()
-          ..sort((a, b) =>
-              (_playCounts[b.id] ?? 0).compareTo(_playCounts[a.id] ?? 0));
+          ..sort(
+            (a, b) =>
+                (_playCounts[b.id] ?? 0).compareTo(_playCounts[a.id] ?? 0),
+          );
         return p.copyWith(songs: sorted.take(50).toList(), updatedAt: now);
       }
       return p;
@@ -235,8 +262,17 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     });
     if (_history.length > 500) _history = _history.sublist(0, 500);
-    SettingsStorageService.saveHistory(_history);
-    SettingsStorageService.savePlayCounts(_playCounts);
+    // Fire-and-forget persistence — errors logged, never crash
+    SettingsStorageService.saveHistory(
+      _history,
+    ).timeout(const Duration(seconds: 5)).catchError((e) {
+      debugPrint('[PlaylistNotifier] saveHistory error: $e');
+    });
+    SettingsStorageService.savePlayCounts(
+      _playCounts,
+    ).timeout(const Duration(seconds: 5)).catchError((e) {
+      debugPrint('[PlaylistNotifier] savePlayCounts error: $e');
+    });
   }
 
   /// Limpar histórico de reprodução.
@@ -248,7 +284,8 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
 
   /// Export playlist as M3U format string.
   String exportPlaylistM3U(String playlistId) {
-    final playlist = state.firstWhere((p) => p.id == playlistId);
+    final playlist = state.where((p) => p.id == playlistId).firstOrNull;
+    if (playlist == null) return '';
     final buf = StringBuffer('#EXTM3U\n#PLAYLIST:${playlist.name}\n');
     for (final song in playlist.songs) {
       final secs = song.duration.inSeconds;
@@ -262,7 +299,9 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
   void syncFavorites(List<Song> allSongs) {
     final favs = allSongs.where((s) => s.isFavorite).toList();
     state = state.map((p) {
-      if (p.id == 'fav') return p.copyWith(songs: favs, updatedAt: DateTime.now());
+      if (p.id == 'fav') {
+        return p.copyWith(songs: favs, updatedAt: DateTime.now());
+      }
       return p;
     }).toList();
   }
@@ -286,7 +325,9 @@ class PlaylistNotifier extends StateNotifier<List<Playlist>> {
     state = state.map((p) {
       if (p.id == playlistId && !p.isSmartPlaylist) {
         final list = [...p.songs];
+        if (oldIndex < 0 || oldIndex >= list.length) return p;
         if (newIndex > oldIndex) newIndex--;
+        if (newIndex < 0 || newIndex > list.length) return p;
         final item = list.removeAt(oldIndex);
         list.insert(newIndex, item);
         return p.copyWith(songs: list, updatedAt: DateTime.now());

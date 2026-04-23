@@ -15,6 +15,7 @@ import 'package:constanza_player/presentation/widgets/song_tile/song_tile.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
+import 'package:go_router/go_router.dart';
 
 /// Página de Playlists — Smart + Minhas Playlists.
 class PlaylistsPage extends ConsumerWidget {
@@ -45,58 +46,74 @@ class PlaylistsPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.only(top: AppSpacing.xs),
-        children: [
-          ...smartPlaylists.map((p) => _SmartPlaylistTile(playlist: p)),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.md,
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.only(top: AppSpacing.xs),
+            sliver: SliverList.builder(
+              itemCount: smartPlaylists.length,
+              itemBuilder: (_, i) =>
+                  _SmartPlaylistTile(playlist: smartPlaylists[i]),
             ),
-            child: Row(
-              children: [
-                Text(
-                  'MINHAS PLAYLISTS',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.35),
-                    letterSpacing: 1.5,
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    'MINHAS PLAYLISTS',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.35),
+                      letterSpacing: 1.5,
+                    ),
                   ),
-                ),
-                if (userPlaylists.isNotEmpty) ...[
-                  const SizedBox(width: AppSpacing.xs),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 1,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.onSurface.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${userPlaylists.length}',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.35),
-                        fontSize: 10,
+                  if (userPlaylists.isNotEmpty) ...[
+                    const SizedBox(width: AppSpacing.xs),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1,
                       ),
+                      decoration: BoxDecoration(
+                        color: colors.onSurface.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${userPlaylists.length}',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.onSurface.withValues(alpha: 0.35),
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Divider(
+                      color: colors.outline.withValues(alpha: 0.2),
                     ),
                   ),
                 ],
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Divider(
-                      color: colors.outline.withValues(alpha: 0.2)),
-                ),
-              ],
+              ),
             ),
           ),
           if (userPlaylists.isEmpty)
-            _EmptyPlaylists(
-                onCreateTap: () => _showCreateDialog(context, ref))
+            SliverToBoxAdapter(
+              child: _EmptyPlaylists(
+                onCreateTap: () => _showCreateDialog(context, ref),
+              ),
+            )
           else
-            ...userPlaylists.map((p) => _UserPlaylistTile(playlist: p)),
-          const SizedBox(height: AppSpacing.xl),
+            SliverList.builder(
+              itemCount: userPlaylists.length,
+              itemBuilder: (_, i) =>
+                  _UserPlaylistTile(playlist: userPlaylists[i]),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
         ],
       ),
     );
@@ -150,7 +167,9 @@ class PlaylistsPage extends ConsumerWidget {
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: BorderSide(color: colors.outline.withValues(alpha: 0.5)),
+                  borderSide: BorderSide(
+                    color: colors.outline.withValues(alpha: 0.5),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -162,11 +181,10 @@ class PlaylistsPage extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => ctx.pop(),
             child: Text(
               'Cancelar',
-              style:
-                  TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
+              style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
             ),
           ),
           TextButton(
@@ -174,15 +192,16 @@ class PlaylistsPage extends ConsumerWidget {
               final name = nameController.text.trim();
               if (name.isNotEmpty) {
                 final desc = descController.text.trim();
-                ref.read(playlistProvider.notifier).createPlaylist(
-                  name,
-                  description: desc.isEmpty ? null : desc,
-                );
-                Navigator.pop(ctx);
+                ref
+                    .read(playlistProvider.notifier)
+                    .createPlaylist(
+                      name,
+                      description: desc.isEmpty ? null : desc,
+                    );
+                ctx.pop();
               }
             },
-            child:
-                Text('Criar', style: TextStyle(color: colors.onSurface)),
+            child: Text('Criar', style: TextStyle(color: colors.onSurface)),
           ),
         ],
       ),
@@ -278,11 +297,9 @@ class _SmartPlaylistTile extends ConsumerWidget {
         color: colors.onSurface.withValues(alpha: 0.2),
       ),
       onTap: () {
-        Navigator.of(context).push(
-          AppPageRoute(
-            page: PlaylistDetailPage(playlist: playlist),
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(AppPageRoute(page: PlaylistDetailPage(playlist: playlist)));
       },
     );
   }
@@ -313,6 +330,7 @@ class _PlaylistThumbnail extends StatelessWidget {
         borderRadius: radius,
         child: Image.file(
           File(playlist.imagePath!),
+          key: ValueKey(playlist.imagePath),
           width: size,
           height: size,
           fit: BoxFit.cover,
@@ -366,10 +384,21 @@ class _UserPlaylistTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final timeAgo = _formatTimeAgo(playlist.updatedAt);
+
+    // Watch live data from provider to ensure image updates propagate
+    final livePlaylist = ref.watch(
+      playlistProvider.select(
+        (playlists) => playlists.firstWhere(
+          (p) => p.id == playlist.id,
+          orElse: () => playlist,
+        ),
+      ),
+    );
+
+    final timeAgo = _formatTimeAgo(livePlaylist.updatedAt);
 
     // Calcular duração
-    final totalDuration = playlist.songs.fold<Duration>(
+    final totalDuration = livePlaylist.songs.fold<Duration>(
       Duration.zero,
       (sum, s) => sum + s.duration,
     );
@@ -379,9 +408,9 @@ class _UserPlaylistTile extends ConsumerWidget {
 
     // Montar subtitle
     final parts = <String>[
-      '${playlist.songCount} música${playlist.songCount != 1 ? 's' : ''}',
+      '${livePlaylist.songCount} música${livePlaylist.songCount != 1 ? 's' : ''}',
     ];
-    if (playlist.songs.isNotEmpty) parts.add(durationStr);
+    if (livePlaylist.songs.isNotEmpty) parts.add(durationStr);
     if (timeAgo.isNotEmpty) parts.add(timeAgo);
 
     return ListTile(
@@ -389,18 +418,18 @@ class _UserPlaylistTile extends ConsumerWidget {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xxs,
       ),
-      leading: _PlaylistThumbnail(playlist: playlist),
+      leading: _PlaylistThumbnail(playlist: livePlaylist),
       title: Text(
-        playlist.name,
-        style:
-            theme.textTheme.titleSmall?.copyWith(color: colors.onSurface),
+        livePlaylist.name,
+        style: theme.textTheme.titleSmall?.copyWith(color: colors.onSurface),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (playlist.description != null && playlist.description!.isNotEmpty)
+          if (livePlaylist.description != null &&
+              livePlaylist.description!.isNotEmpty)
             Text(
-              playlist.description!,
+              livePlaylist.description!,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.5),
                 fontStyle: FontStyle.italic,
@@ -424,11 +453,9 @@ class _UserPlaylistTile extends ConsumerWidget {
         color: colors.onSurface.withValues(alpha: 0.2),
       ),
       onTap: () {
-        Navigator.of(context).push(
-          AppPageRoute(
-            page: PlaylistDetailPage(playlist: playlist),
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(AppPageRoute(page: PlaylistDetailPage(playlist: livePlaylist)));
       },
       onLongPress: () => _showOptions(context, ref),
     );
@@ -451,95 +478,96 @@ class _UserPlaylistTile extends ConsumerWidget {
           maxHeight: MediaQuery.sizeOf(context).height * 0.7,
         ),
         child: SafeArea(
-        child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: AppSpacing.xs),
-            Container(
-              width: 32,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.outline.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            // Header
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Row(
-                children: [
-                  _PlaylistThumbnail(playlist: playlist, size: 40),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          playlist.name,
-                          style: theme.textTheme.titleSmall,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          '${playlist.songCount} música${playlist.songCount != 1 ? 's' : ''}',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurface
-                                .withValues(alpha: 0.5),
-                          ),
-                        ),
-                      ],
-                    ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: AppSpacing.xs),
+                Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.outline.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
+                  child: Row(
+                    children: [
+                      _PlaylistThumbnail(playlist: playlist, size: 40),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              playlist.name,
+                              style: theme.textTheme.titleSmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${playlist.songCount} música${playlist.songCount != 1 ? 's' : ''}',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colors.onSurface.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Divider(color: colors.outline.withValues(alpha: 0.15)),
+                ListTile(
+                  leading: const Icon(Icons.edit_outlined),
+                  title: const Text('Editar Playlist'),
+                  onTap: () {
+                    ctx.pop();
+                    _showEditDialog(context, ref);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.image_outlined),
+                  title: const Text('Alterar Imagem'),
+                  onTap: () {
+                    ctx.pop();
+                    _pickImage(context, ref);
+                  },
+                ),
+                if (playlist.hasCustomImage)
+                  ListTile(
+                    leading: Icon(
+                      Icons.hide_image_outlined,
+                      color: colors.onSurface.withValues(alpha: 0.7),
+                    ),
+                    title: const Text('Remover Imagem'),
+                    onTap: () {
+                      ctx.pop();
+                      ref
+                          .read(playlistProvider.notifier)
+                          .removePlaylistImage(playlist.id);
+                      _showSnack(context, 'Imagem removida');
+                    },
+                  ),
+                ListTile(
+                  leading: Icon(Icons.delete_outline, color: colors.error),
+                  title: Text('Excluir', style: TextStyle(color: colors.error)),
+                  onTap: () {
+                    ctx.pop();
+                    _showDeleteConfirmation(context, ref);
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Divider(color: colors.outline.withValues(alpha: 0.15)),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: const Text('Editar Playlist'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showEditDialog(context, ref);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.image_outlined),
-              title: const Text('Alterar Imagem'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickImage(context, ref);
-              },
-            ),
-            if (playlist.hasCustomImage)
-              ListTile(
-                leading: Icon(Icons.hide_image_outlined,
-                    color: colors.onSurface.withValues(alpha: 0.7)),
-                title: const Text('Remover Imagem'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  ref
-                      .read(playlistProvider.notifier)
-                      .removePlaylistImage(playlist.id);
-                  _showSnack(context, 'Imagem removida');
-                },
-              ),
-            ListTile(
-              leading: Icon(Icons.delete_outline, color: colors.error),
-              title:
-                  Text('Excluir', style: TextStyle(color: colors.error)),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showDeleteConfirmation(context, ref);
-              },
-            ),
-            const SizedBox(height: AppSpacing.md),
-          ],
-        ),
-        ),
+          ),
         ),
       ),
     );
@@ -577,23 +605,21 @@ class _UserPlaylistTile extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
         title: const Text('Excluir Playlist'),
-        content:
-            Text('Deseja excluir "${playlist.name}"? Essa ação não pode ser desfeita.'),
+        content: Text(
+          'Deseja excluir "${playlist.name}"? Essa ação não pode ser desfeita.',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => ctx.pop(),
             child: Text(
               'Cancelar',
-              style:
-                  TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
+              style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
             ),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(ctx);
-              ref
-                  .read(playlistProvider.notifier)
-                  .deletePlaylist(playlist.id);
+              ctx.pop();
+              ref.read(playlistProvider.notifier).deletePlaylist(playlist.id);
             },
             child: Text('Excluir', style: TextStyle(color: colors.error)),
           ),
@@ -604,8 +630,9 @@ class _UserPlaylistTile extends ConsumerWidget {
 
   void _showEditDialog(BuildContext context, WidgetRef ref) {
     final nameController = TextEditingController(text: playlist.name);
-    final descController =
-        TextEditingController(text: playlist.description ?? '');
+    final descController = TextEditingController(
+      text: playlist.description ?? '',
+    );
     final colors = Theme.of(context).colorScheme;
     showDialog(
       context: context,
@@ -647,7 +674,8 @@ class _UserPlaylistTile extends ConsumerWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   borderSide: BorderSide(
-                      color: colors.outline.withValues(alpha: 0.5)),
+                    color: colors.outline.withValues(alpha: 0.5),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -659,11 +687,10 @@ class _UserPlaylistTile extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => ctx.pop(),
             child: Text(
               'Cancelar',
-              style:
-                  TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
+              style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
             ),
           ),
           TextButton(
@@ -676,11 +703,10 @@ class _UserPlaylistTile extends ConsumerWidget {
                   playlist.id,
                   descController.text.trim(),
                 );
-                Navigator.pop(ctx);
+                ctx.pop();
               }
             },
-            child: Text('Salvar',
-                style: TextStyle(color: colors.onSurface)),
+            child: Text('Salvar', style: TextStyle(color: colors.onSurface)),
           ),
         ],
       ),
@@ -766,8 +792,7 @@ class _EmptyPlaylists extends StatelessWidget {
                 border: Border.all(
                   color: colors.outline.withValues(alpha: 0.3),
                 ),
-                borderRadius:
-                    BorderRadius.circular(AppSpacing.radiusFull),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
               ),
               child: Text(
                 '+ Nova Playlist',
@@ -842,19 +867,15 @@ class PlaylistDetailPage extends ConsumerWidget {
     final favCount = songs.where((s) => s.isFavorite).length;
 
     // Ouvindo agora?
-    final currentSong = ref.watch(
-      playerProvider.select((s) => s.currentSong),
-    );
-    final isPlaylistPlaying = currentSong != null &&
-        songs.any((s) => s.id == currentSong.id);
+    final currentSong = ref.watch(playerProvider.select((s) => s.currentSong));
+    final isPlaylistPlaying =
+        currentSong != null && songs.any((s) => s.id == currentSong.id);
 
     final emptyMessage = switch (playlist.id) {
-      'fav' =>
-        'Nenhuma música favorita\nToque ♥ em uma música para adicionar',
+      'fav' => 'Nenhuma música favorita\nToque ♥ em uma música para adicionar',
       'recent' =>
         'Nenhuma música tocada ainda\nReproduza músicas para ver aqui',
-      'most' =>
-        'Nenhuma música tocada ainda\nReproduza músicas para ver aqui',
+      'most' => 'Nenhuma música tocada ainda\nReproduza músicas para ver aqui',
       _ => 'Playlist vazia\nAdicione músicas pelo menu ⋮ de qualquer música',
     };
 
@@ -867,16 +888,14 @@ class PlaylistDetailPage extends ConsumerWidget {
 
     return BackgroundWrapper(
       child: Scaffold(
-        backgroundColor:
-            BackgroundHelper.scaffoldColor(colors, themeState),
+        backgroundColor: BackgroundHelper.scaffoldColor(colors, themeState),
         body: CustomScrollView(
           slivers: [
             // ─── HEADER PREMIUM ───
             SliverAppBar(
               expandedHeight: 300,
               pinned: true,
-              backgroundColor:
-                  BackgroundHelper.appBarColor(colors, themeState),
+              backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
               leading: _BackButton(colors: colors),
               actions: [
                 Padding(
@@ -1007,10 +1026,7 @@ class PlaylistDetailPage extends ConsumerWidget {
                               onTap: () {
                                 ref
                                     .read(playerProvider.notifier)
-                                    .playSong(
-                                      songs.first,
-                                      queue: songs,
-                                    );
+                                    .playSong(songs.first, queue: songs);
                               },
                             ),
                           ),
@@ -1071,8 +1087,7 @@ class PlaylistDetailPage extends ConsumerWidget {
                         Text(
                           emptyMessage,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colors.onSurface
-                                .withValues(alpha: 0.4),
+                            color: colors.onSurface.withValues(alpha: 0.4),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -1094,8 +1109,7 @@ class PlaylistDetailPage extends ConsumerWidget {
                       direction: DismissDirection.endToStart,
                       background: Container(
                         alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(
-                            right: AppSpacing.lg),
+                        padding: const EdgeInsets.only(right: AppSpacing.lg),
                         color: colors.error.withValues(alpha: 0.15),
                         child: Icon(
                           Icons.delete_outline_rounded,
@@ -1106,8 +1120,7 @@ class PlaylistDetailPage extends ConsumerWidget {
                       onDismissed: (_) {
                         ref
                             .read(playlistProvider.notifier)
-                            .removeSongFromPlaylist(
-                                playlist.id, song.id);
+                            .removeSongFromPlaylist(playlist.id, song.id);
                         _showSnack(
                           context,
                           'Removido de "${currentPlaylist.name}"',
@@ -1169,173 +1182,186 @@ class PlaylistDetailPage extends ConsumerWidget {
           maxHeight: MediaQuery.sizeOf(context).height * 0.7,
         ),
         child: SafeArea(
-        child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: AppSpacing.xs),
-            Container(
-              width: 32,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.outline.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            // Header
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Row(
-                children: [
-                  _PlaylistThumbnail(
-                    playlist: currentPlaylist,
-                    size: 48,
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusSm),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: AppSpacing.xs),
+                Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.outline.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          currentPlaylist.name,
-                          style: theme.textTheme.titleSmall,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
+                  child: Row(
+                    children: [
+                      _PlaylistThumbnail(
+                        playlist: currentPlaylist,
+                        size: 48,
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusSm,
                         ),
-                        Text(
-                          '${songs.length} música${songs.length != 1 ? 's' : ''} · $durationLabel',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurface
-                                .withValues(alpha: 0.5),
-                          ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              currentPlaylist.name,
+                              style: theme.textTheme.titleSmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${songs.length} música${songs.length != 1 ? 's' : ''} · $durationLabel',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colors.onSurface.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Divider(color: colors.outline.withValues(alpha: 0.15)),
+                if (songs.isNotEmpty) ...[
+                  ListTile(
+                    leading: const Icon(Icons.playlist_play_rounded),
+                    title: const Text('Reproduzir em seguida'),
+                    onTap: () {
+                      ctx.pop();
+                      final player = ref.read(playerProvider.notifier);
+                      for (final song in songs.reversed) {
+                        player.addNextInQueue(song);
+                      }
+                      _showSnack(context, 'Adicionado à fila');
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.queue_music_rounded),
+                    title: const Text('Adicionar à fila'),
+                    onTap: () {
+                      ctx.pop();
+                      final player = ref.read(playerProvider.notifier);
+                      for (final song in songs) {
+                        player.addToQueue(song);
+                      }
+                      _showSnack(context, 'Adicionado à fila');
+                    },
                   ),
                 ],
-              ),
+                ListTile(
+                  leading: const Icon(Icons.share_outlined),
+                  title: const Text('Partilhar'),
+                  onTap: () {
+                    ctx.pop();
+                    final buf = StringBuffer()
+                      ..writeln(currentPlaylist.name)
+                      ..writeln(
+                        '${songs.length} música${songs.length != 1 ? 's' : ''} · $durationLabel',
+                      )
+                      ..writeln();
+                    if (songs.isNotEmpty) {
+                      buf.writeln('Músicas:');
+                      for (var i = 0; i < songs.length; i++) {
+                        buf.writeln(
+                          '${i + 1}. ${songs[i].title} — ${songs[i].artist}',
+                        );
+                      }
+                    }
+                    Clipboard.setData(
+                      ClipboardData(text: buf.toString().trim()),
+                    );
+                    _showSnack(context, 'Info da playlist copiada!');
+                  },
+                ),
+                if (songs.isNotEmpty)
+                  ListTile(
+                    leading: const Icon(Icons.file_upload_outlined),
+                    title: const Text('Exportar Playlist (M3U)'),
+                    onTap: () {
+                      ctx.pop();
+                      final m3u = ref
+                          .read(playlistProvider.notifier)
+                          .exportPlaylistM3U(currentPlaylist.id);
+                      Clipboard.setData(ClipboardData(text: m3u));
+                      _showSnack(
+                        context,
+                        'Playlist copiada para a area de transferencia',
+                      );
+                    },
+                  ),
+                // Imagem (todas as playlists)
+                ListTile(
+                  leading: const Icon(Icons.image_outlined),
+                  title: const Text('Alterar Imagem'),
+                  onTap: () {
+                    ctx.pop();
+                    _pickImage(context, ref, currentPlaylist.id);
+                  },
+                ),
+                if (currentPlaylist.hasCustomImage)
+                  ListTile(
+                    leading: Icon(
+                      Icons.hide_image_outlined,
+                      color: colors.onSurface.withValues(alpha: 0.7),
+                    ),
+                    title: const Text('Remover Imagem'),
+                    onTap: () {
+                      ctx.pop();
+                      ref
+                          .read(playlistProvider.notifier)
+                          .removePlaylistImage(currentPlaylist.id);
+                      _showSnack(context, 'Imagem removida');
+                    },
+                  ),
+                // Editar/excluir (somente user playlists)
+                if (!currentPlaylist.isSmartPlaylist) ...[
+                  ListTile(
+                    leading: const Icon(Icons.edit_outlined),
+                    title: const Text('Editar Playlist'),
+                    onTap: () {
+                      ctx.pop();
+                      _showEditDialog(context, ref, currentPlaylist);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.delete_outline, color: colors.error),
+                    title: Text(
+                      'Excluir Playlist',
+                      style: TextStyle(color: colors.error),
+                    ),
+                    onTap: () {
+                      ctx.pop();
+                      _showDeleteConfirmation(context, ref, currentPlaylist);
+                    },
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.md),
+              ],
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Divider(color: colors.outline.withValues(alpha: 0.15)),
-            if (songs.isNotEmpty) ...[
-              ListTile(
-                leading: const Icon(Icons.playlist_play_rounded),
-                title: const Text('Reproduzir em seguida'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  final player = ref.read(playerProvider.notifier);
-                  for (final song in songs.reversed) {
-                    player.addNextInQueue(song);
-                  }
-                  _showSnack(context, 'Adicionado à fila');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.queue_music_rounded),
-                title: const Text('Adicionar à fila'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  final player = ref.read(playerProvider.notifier);
-                  for (final song in songs) {
-                    player.addToQueue(song);
-                  }
-                  _showSnack(context, 'Adicionado à fila');
-                },
-              ),
-            ],
-            ListTile(
-              leading: const Icon(Icons.share_outlined),
-              title: const Text('Partilhar'),
-              onTap: () {
-                Navigator.pop(ctx);
-                final buf = StringBuffer()
-                  ..writeln(currentPlaylist.name)
-                  ..writeln(
-                    '${songs.length} música${songs.length != 1 ? 's' : ''} · $durationLabel',
-                  )
-                  ..writeln();
-                if (songs.isNotEmpty) {
-                  buf.writeln('Músicas:');
-                  for (var i = 0; i < songs.length; i++) {
-                    buf.writeln(
-                        '${i + 1}. ${songs[i].title} — ${songs[i].artist}');
-                  }
-                }
-                Clipboard.setData(
-                    ClipboardData(text: buf.toString().trim()));
-                _showSnack(context, 'Info da playlist copiada!');
-              },
-            ),
-            if (songs.isNotEmpty)
-              ListTile(
-                leading: const Icon(Icons.file_upload_outlined),
-                title: const Text('Exportar Playlist (M3U)'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  final m3u = ref.read(playlistProvider.notifier)
-                      .exportPlaylistM3U(currentPlaylist.id);
-                  Clipboard.setData(ClipboardData(text: m3u));
-                  _showSnack(context, 'Playlist copiada para a area de transferencia');
-                },
-              ),
-            // Imagem (todas as playlists)
-            ListTile(
-              leading: const Icon(Icons.image_outlined),
-              title: const Text('Alterar Imagem'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickImage(context, ref, currentPlaylist.id);
-              },
-            ),
-            if (currentPlaylist.hasCustomImage)
-              ListTile(
-                leading: Icon(Icons.hide_image_outlined,
-                    color: colors.onSurface.withValues(alpha: 0.7)),
-                title: const Text('Remover Imagem'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  ref
-                      .read(playlistProvider.notifier)
-                      .removePlaylistImage(currentPlaylist.id);
-                  _showSnack(context, 'Imagem removida');
-                },
-              ),
-            // Editar/excluir (somente user playlists)
-            if (!currentPlaylist.isSmartPlaylist) ...[
-              ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: const Text('Editar Playlist'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showEditDialog(context, ref, currentPlaylist);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.delete_outline, color: colors.error),
-                title: Text('Excluir Playlist',
-                    style: TextStyle(color: colors.error)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showDeleteConfirmation(
-                      context, ref, currentPlaylist);
-                },
-              ),
-            ],
-            const SizedBox(height: AppSpacing.md),
-          ],
-        ),
-        ),
+          ),
         ),
       ),
     );
   }
 
   Future<void> _pickImage(
-      BuildContext context, WidgetRef ref, String playlistId) async {
+    BuildContext context,
+    WidgetRef ref,
+    String playlistId,
+  ) async {
     try {
       final picker = ImagePicker();
       final picked = await picker.pickImage(
@@ -1358,7 +1384,10 @@ class PlaylistDetailPage extends ConsumerWidget {
   }
 
   void _showDeleteConfirmation(
-      BuildContext context, WidgetRef ref, Playlist pl) {
+    BuildContext context,
+    WidgetRef ref,
+    Playlist pl,
+  ) {
     final colors = Theme.of(context).colorScheme;
     showDialog(
       context: context,
@@ -1368,24 +1397,22 @@ class PlaylistDetailPage extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
         title: const Text('Excluir Playlist'),
-        content:
-            Text('Deseja excluir "${pl.name}"? Essa ação não pode ser desfeita.'),
+        content: Text(
+          'Deseja excluir "${pl.name}"? Essa ação não pode ser desfeita.',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => ctx.pop(),
             child: Text(
               'Cancelar',
-              style: TextStyle(
-                  color: colors.onSurface.withValues(alpha: 0.5)),
+              style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
             ),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(ctx);
-              ref
-                  .read(playlistProvider.notifier)
-                  .deletePlaylist(pl.id);
-              Navigator.pop(context); // Volta da detail page
+              ctx.pop();
+              ref.read(playlistProvider.notifier).deletePlaylist(pl.id);
+              context.pop(); // Volta da detail page
             },
             child: Text('Excluir', style: TextStyle(color: colors.error)),
           ),
@@ -1400,8 +1427,9 @@ class PlaylistDetailPage extends ConsumerWidget {
     Playlist currentPlaylist,
   ) {
     final nameController = TextEditingController(text: currentPlaylist.name);
-    final descController =
-        TextEditingController(text: currentPlaylist.description ?? '');
+    final descController = TextEditingController(
+      text: currentPlaylist.description ?? '',
+    );
     final colors = Theme.of(context).colorScheme;
     showDialog(
       context: context,
@@ -1443,7 +1471,8 @@ class PlaylistDetailPage extends ConsumerWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   borderSide: BorderSide(
-                      color: colors.outline.withValues(alpha: 0.5)),
+                    color: colors.outline.withValues(alpha: 0.5),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -1455,11 +1484,10 @@ class PlaylistDetailPage extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => ctx.pop(),
             child: Text(
               'Cancelar',
-              style: TextStyle(
-                  color: colors.onSurface.withValues(alpha: 0.5)),
+              style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
             ),
           ),
           TextButton(
@@ -1472,11 +1500,10 @@ class PlaylistDetailPage extends ConsumerWidget {
                   playlist.id,
                   descController.text.trim(),
                 );
-                Navigator.pop(ctx);
+                ctx.pop();
               }
             },
-            child: Text('Salvar',
-                style: TextStyle(color: colors.onSurface)),
+            child: Text('Salvar', style: TextStyle(color: colors.onSurface)),
           ),
         ],
       ),
@@ -1578,9 +1605,7 @@ class _PlaylistHeaderBackground extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: accent.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  border: Border.all(
-                    color: accent.withValues(alpha: 0.15),
-                  ),
+                  border: Border.all(color: accent.withValues(alpha: 0.15)),
                 ),
                 child: Icon(
                   icon,
@@ -1594,14 +1619,14 @@ class _PlaylistHeaderBackground extends StatelessWidget {
     );
   }
 
-  bool get _hasImage =>
-      playlist.hasCustomImage || songs.isNotEmpty;
+  bool get _hasImage => playlist.hasCustomImage || songs.isNotEmpty;
 
   Widget _buildBackground() {
     // 1. Custom image — full-width cover
     if (playlist.hasCustomImage) {
       return Image.file(
         File(playlist.imagePath!),
+        key: ValueKey(playlist.imagePath),
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) => _gradientFallback(),
       );
@@ -1699,16 +1724,14 @@ class _BackButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: GestureDetector(
-        onTap: () => Navigator.pop(context),
+        onTap: () => context.pop(),
         child: Container(
           width: 36,
           height: 36,
           decoration: BoxDecoration(
             color: colors.surface.withValues(alpha: 0.8),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: colors.outline.withValues(alpha: 0.1),
-            ),
+            border: Border.all(color: colors.outline.withValues(alpha: 0.1)),
           ),
           child: Icon(
             Icons.arrow_back_rounded,
@@ -1758,8 +1781,7 @@ class _PremiumActionButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           border: filled
               ? null
-              : Border.all(
-                  color: colors.primary.withValues(alpha: 0.25)),
+              : Border.all(color: colors.primary.withValues(alpha: 0.25)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

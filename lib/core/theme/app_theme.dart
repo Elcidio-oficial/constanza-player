@@ -34,10 +34,7 @@ abstract final class AppTheme {
       colorScheme = AppColors.lightScheme();
     }
 
-    return _buildTheme(
-      colorScheme: colorScheme,
-      brightness: Brightness.light,
-    );
+    return _buildTheme(colorScheme: colorScheme, brightness: Brightness.light);
   }
 
   /// Tema escuro. [accentColor] opcional para personalização.
@@ -54,10 +51,7 @@ abstract final class AppTheme {
         // Neutralizamos APENAS as superfícies para um cinza escuro confortável.
         // onSurface (texto) jamais deve ser neutralizado.
         surface: _neutralize(base.surface, Brightness.dark),
-        surfaceContainer: _neutralize(
-          base.surfaceContainer,
-          Brightness.dark,
-        ),
+        surfaceContainer: _neutralize(base.surfaceContainer, Brightness.dark),
         surfaceContainerLow: _neutralize(
           base.surfaceContainerLow,
           Brightness.dark,
@@ -71,10 +65,7 @@ abstract final class AppTheme {
       colorScheme = AppColors.darkScheme();
     }
 
-    return _buildTheme(
-      colorScheme: colorScheme,
-      brightness: Brightness.dark,
-    );
+    return _buildTheme(colorScheme: colorScheme, brightness: Brightness.dark);
   }
 
   // ─────────────────────────────────────────────────────────
@@ -99,10 +90,7 @@ abstract final class AppTheme {
       lum = lum.clamp(0.08, 0.20);
     }
 
-    return hsl
-        .withSaturation(neutralSat)
-        .withLightness(lum)
-        .toColor();
+    return hsl.withSaturation(neutralSat).withLightness(lum).toColor();
   }
 
   /// Constrói o ThemeData completo a partir do colorScheme.
@@ -181,16 +169,12 @@ abstract final class AppTheme {
 
       // ── TextButton ──────────────────────────────────────
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: colorScheme.primary,
-        ),
+        style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
       ),
 
       // ── IconButton ──────────────────────────────────────
       iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(
-          foregroundColor: colorScheme.primary,
-        ),
+        style: IconButton.styleFrom(foregroundColor: colorScheme.primary),
       ),
 
       // ── Switch ──────────────────────────────────────────
@@ -247,9 +231,7 @@ abstract final class AppTheme {
       // ── Dialog ──────────────────────────────────────────
       dialogTheme: DialogThemeData(
         backgroundColor: colorScheme.surfaceContainer,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
 
       // ── Input ───────────────────────────────────────────
