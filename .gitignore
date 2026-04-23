@@ -12,6 +12,11 @@
 .swiftpm/
 migrate_working_dir/
 
+# Local working artifacts
+analyze_output.txt
+migrate_nav.py
+.claude/scheduled_tasks.lock
+
 # IntelliJ related
 *.iml
 *.ipr
