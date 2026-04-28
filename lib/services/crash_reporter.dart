@@ -161,4 +161,18 @@ class CrashReporter {
       debugPrint('[CrashReporter] clear failed: $e');
     }
   }
+
+  /// Caminho do arquivo de log (para usar em compartilhamento).
+  static String? get logFilePath => _logFile?.path;
+
+  /// Conta entradas no log sem precisar deserializar tudo.
+  static Future<int> countLogs() async {
+    if (_logFile == null || !await _logFile!.exists()) return 0;
+    try {
+      final lines = await _logFile!.readAsLines();
+      return lines.where((l) => l.isNotEmpty).length;
+    } catch (_) {
+      return 0;
+    }
+  }
 }

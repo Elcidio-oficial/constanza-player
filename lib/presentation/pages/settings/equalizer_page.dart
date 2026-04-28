@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,7 +46,7 @@ class EqualizerPage extends ConsumerWidget {
               child: Switch.adaptive(
                 value: audioState.eqEnabled,
                 onChanged: (_) => notifier.toggleEq(),
-                activeColor: accentColor ?? colors.onSurface,
+                activeThumbColor: accentColor ?? colors.onSurface,
               ),
             ),
           ],

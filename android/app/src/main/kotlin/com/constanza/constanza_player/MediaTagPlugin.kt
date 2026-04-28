@@ -73,6 +73,10 @@ class MediaTagPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
                     result.error("INVALID_ARGS", "filePath and tags required", null)
                     return
                 }
+                if (!isSafeAudioPath(filePath)) {
+                    result.error("INVALID_PATH", "Path rejected (traversal or non-audio)", null)
+                    return
+                }
                 writeTags(filePath, tags, coverBytes, result)
             }
             "deleteSong" -> {
@@ -82,10 +86,31 @@ class MediaTagPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
                     result.error("INVALID_ARGS", "filePath required", null)
                     return
                 }
+                if (!isSafeAudioPath(filePath)) {
+                    result.error("INVALID_PATH", "Path rejected (traversal or non-audio)", null)
+                    return
+                }
                 deleteSong(filePath, songId, result)
             }
             else -> result.notImplemented()
         }
+    }
+
+    /**
+     * Boundary validation: rejeita path traversal e extensões não-áudio.
+     * Defesa em profundidade — Dart lado só envia paths de scans próprios, mas
+     * o canal nativo não pode confiar no chamador.
+     */
+    private fun isSafeAudioPath(path: String): Boolean {
+        // Bloqueia path traversal
+        if (path.contains("..")) return false
+        // Resolve para canonical e confere coincidência com a entrada (sem symlinks suspeitos)
+        val canonical = try { File(path).canonicalPath } catch (_: Exception) { return false }
+        if (!canonical.equals(File(path).absolutePath, ignoreCase = true)) return false
+        // Whitelist de extensões de áudio
+        val lower = canonical.lowercase()
+        val allowedExt = listOf(".mp3", ".m4a", ".aac", ".flac", ".ogg", ".opus", ".wav", ".wma")
+        return allowedExt.any { lower.endsWith(it) }
     }
 
     // ════════════════════════════════════════════════════════════

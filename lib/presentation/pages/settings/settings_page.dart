@@ -1,10 +1,14 @@
-// ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:constanza_player/core/constants/app_constants.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/theme/app_backgrounds.dart';
+import 'package:constanza_player/services/crash_reporter.dart';
+import 'package:constanza_player/services/backup_service.dart';
+import 'package:constanza_player/services/permission_service.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/providers/audio_settings_provider.dart';
@@ -256,7 +260,7 @@ class SettingsPage extends ConsumerWidget {
                   onChanged: (_) => ref
                       .read(audioSettingsProvider.notifier)
                       .toggleVolumeNormalization(),
-                  activeColor: accentColor ?? colors.primary,
+                  activeThumbColor: accentColor ?? colors.primary,
                   activeTrackColor: accentColor?.withValues(alpha: 0.3),
                   trackOutlineColor: WidgetStatePropertyAll(
                     colors.onSurface.withValues(alpha: 0.15),
@@ -292,12 +296,21 @@ class SettingsPage extends ConsumerWidget {
                   value: audioState.gaplessPlayback,
                   onChanged: (_) =>
                       ref.read(audioSettingsProvider.notifier).toggleGapless(),
-                  activeColor: accentColor ?? colors.primary,
+                  activeThumbColor: accentColor ?? colors.primary,
                   activeTrackColor: accentColor?.withValues(alpha: 0.3),
                   trackOutlineColor: WidgetStatePropertyAll(
                     colors.onSurface.withValues(alpha: 0.15),
                   ),
                 ),
+              ),
+              _divider(colors),
+              _SettingsTile(
+                icon: Icons.battery_charging_full_rounded,
+                title: 'Reprodução em background',
+                subtitle: 'Isentar de otimização de bateria',
+                colors: colors,
+                theme: theme,
+                onTap: () => _requestBatteryExemption(context),
               ),
             ],
           ),
@@ -381,6 +394,24 @@ class SettingsPage extends ConsumerWidget {
               ),
               _divider(colors),
               _SettingsTile(
+                icon: Icons.cloud_sync_outlined,
+                title: 'Backup & Restauração',
+                subtitle: 'Exportar/importar playlists, favoritos e ajustes',
+                colors: colors,
+                theme: theme,
+                onTap: () => _showBackupSheet(context),
+              ),
+              _divider(colors),
+              _SettingsTile(
+                icon: Icons.bug_report_outlined,
+                title: 'Diagnóstico',
+                subtitle: 'Ver e enviar logs de erros',
+                colors: colors,
+                theme: theme,
+                onTap: () => _showDiagnosticsSheet(context),
+              ),
+              _divider(colors),
+              _SettingsTile(
                 icon: Icons.description_outlined,
                 title: 'Licenças',
                 subtitle: 'Licenças de código aberto',
@@ -432,6 +463,60 @@ class SettingsPage extends ConsumerWidget {
   // ============================================================
   // DIALOGS
   // ============================================================
+
+  void _showDiagnosticsSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusXl),
+        ),
+      ),
+      builder: (_) => const _DiagnosticsSheet(),
+    );
+  }
+
+  void _showBackupSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusXl),
+        ),
+      ),
+      builder: (_) => const _BackupSheet(),
+    );
+  }
+
+  Future<void> _requestBatteryExemption(BuildContext context) async {
+    final already = await PermissionService.isIgnoringBatteryOptimizations();
+    if (!context.mounted) return;
+    if (already) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('App já está isento de otimização de bateria'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+    final granted = await PermissionService.requestIgnoreBatteryOptimizations();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          granted
+              ? 'Isenção concedida. Reprodução em background mais estável.'
+              : 'Isenção não concedida. Reprodução pode ser interrompida.',
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
 
   void _showCrossfadeDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
@@ -1334,7 +1419,7 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
               ),
               value: themeState.useCustomNpColors,
               onChanged: (_) => notifier.toggleCustomNpColors(),
-              activeColor: accentColor ?? colors.primary,
+              activeThumbColor: accentColor ?? colors.primary,
               activeTrackColor: accentColor?.withValues(alpha: 0.3),
               trackOutlineColor: WidgetStatePropertyAll(
                 colors.onSurface.withValues(alpha: 0.15),
@@ -1452,7 +1537,7 @@ class _NpColorRow extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (_, i) {
               final c = presetColors[i];
-              final isSelected = color != null && color!.value == c.value;
+              final isSelected = color != null && color!.toARGB32() == c.toARGB32();
               return GestureDetector(
                 onTap: () => onColorSelected(c),
                 child: Container(
@@ -1486,6 +1571,274 @@ class _NpColorRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ============================================================
+// DIAGNOSTICS SHEET — view + share + clear crash logs
+// ============================================================
+
+class _DiagnosticsSheet extends StatefulWidget {
+  const _DiagnosticsSheet();
+
+  @override
+  State<_DiagnosticsSheet> createState() => _DiagnosticsSheetState();
+}
+
+class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
+  int _count = -1;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    final n = await CrashReporter.countLogs();
+    if (mounted) setState(() => _count = n);
+  }
+
+  Future<void> _share() async {
+    final path = CrashReporter.logFilePath;
+    if (path == null) return;
+    setState(() => _busy = true);
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(path, mimeType: 'application/json')],
+          text: 'Logs de diagnóstico — ${AppConstants.appName} v${AppConstants.appVersion}',
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _clear() async {
+    setState(() => _busy = true);
+    await CrashReporter.clear();
+    await _refresh();
+    if (mounted) setState(() => _busy = false);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Logs limpos'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final hasLogs = _count > 0;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colors.outline.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Diagnóstico',
+              style: theme.textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              _count < 0
+                  ? 'Carregando...'
+                  : hasLogs
+                      ? '$_count entrada${_count == 1 ? '' : 's'} de log'
+                      : 'Nenhum erro registrado',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.5),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'O app grava localmente erros não-fatais e crashes em release. '
+              'Compartilhe o arquivo se algo estranho acontecer — ajuda a diagnosticar.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.45),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            FilledButton.icon(
+              onPressed: !hasLogs || _busy ? null : _share,
+              icon: const Icon(Icons.ios_share_rounded, size: 18),
+              label: const Text('Compartilhar logs'),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
+              onPressed: !hasLogs || _busy ? null : _clear,
+              icon: const Icon(Icons.delete_outline_rounded, size: 18),
+              label: const Text('Limpar logs'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// BACKUP SHEET — export via share, import via clipboard
+// ============================================================
+
+class _BackupSheet extends StatefulWidget {
+  const _BackupSheet();
+
+  @override
+  State<_BackupSheet> createState() => _BackupSheetState();
+}
+
+class _BackupSheetState extends State<_BackupSheet> {
+  bool _busy = false;
+
+  Future<void> _export() async {
+    setState(() => _busy = true);
+    final ok = await BackupService.exportAndShare();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Falha ao gerar backup'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _importFromClipboard() async {
+    setState(() => _busy = true);
+    try {
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      final text = data?.text?.trim();
+      if (text == null || text.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Área de transferência vazia'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+      final restored = await BackupService.importFromString(text);
+      if (!mounted) return;
+      if (restored == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Formato de backup inválido'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '$restored chave${restored == 1 ? '' : 's'} restaurada${restored == 1 ? '' : 's'}. Reinicie o app para aplicar.',
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        Navigator.of(context).pop();
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colors.outline.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Backup & Restauração',
+              style: theme.textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Exporte playlists, favoritos, exclusões e ajustes para um arquivo '
+              'JSON. Para restaurar, copie o conteúdo do arquivo e use "Importar".',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.5),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            FilledButton.icon(
+              onPressed: _busy ? null : _export,
+              icon: const Icon(Icons.upload_rounded, size: 18),
+              label: const Text('Exportar backup'),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _importFromClipboard,
+              icon: const Icon(Icons.content_paste_go_rounded, size: 18),
+              label: const Text('Importar (da área de transferência)'),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'O Android também faz backup automático na conta Google. Esta '
+              'opção é portátil e independente da conta.',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.35),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

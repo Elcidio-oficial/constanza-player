@@ -20,6 +20,10 @@ class SettingsStorageService {
   /// Whether init() has been called and completed.
   static bool get isInitialized => _prefs != null;
 
+  /// Acesso público (somente leitura) ao SharedPreferences. Para uso de
+  /// serviços auxiliares que precisam iterar chaves (ex.: BackupService).
+  static SharedPreferences get safePrefs => _safePrefs;
+
   /// Acesso seguro ao SharedPreferences — nunca retorna null após init().
   static SharedPreferences get _safePrefs {
     final p = _prefs;
