@@ -294,9 +294,7 @@ ArtworkPalette? _computePaletteInIsolate(Uint8List rgbaBytes) {
     final c = Color.fromARGB(255, r, g, b);
     final hsl = HSLColor.fromColor(c);
     // Filter achromatic / near-black / near-white
-    if (hsl.saturation < 0.10 ||
-        hsl.lightness < 0.05 ||
-        hsl.lightness > 0.95) {
+    if (hsl.saturation < 0.10 || hsl.lightness < 0.05 || hsl.lightness > 0.95) {
       continue;
     }
 

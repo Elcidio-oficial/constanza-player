@@ -181,4 +181,3 @@ class _AuroraPainter extends CustomPainter {
 // ============================================================
 // ELEGANT ALBUM ART — double border, warm shadow, refined
 // ============================================================
-

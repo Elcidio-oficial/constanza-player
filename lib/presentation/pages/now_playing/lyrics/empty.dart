@@ -114,7 +114,9 @@ class _EmptyLyrics extends StatelessWidget {
         // Em landscape (tight), permite scroll. Em portrait, centraliza.
         return isTight
             ? SingleChildScrollView(padding: padding, child: col)
-            : Center(child: Padding(padding: padding, child: col));
+            : Center(
+                child: Padding(padding: padding, child: col),
+              );
       },
     );
   }
@@ -123,4 +125,3 @@ class _EmptyLyrics extends StatelessWidget {
 // ============================================================
 // ESTILO 5: VINYL — disco giratório animado
 // ============================================================
-

@@ -245,30 +245,30 @@ class _AppShellState extends ConsumerState<AppShell>
         );
       },
       child: BackgroundWrapper(
-      child: Scaffold(
-        backgroundColor: themeState.hasBackground
-            ? Colors.transparent
-            : colors.surface,
-        body: widget.navigationShell,
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const MiniPlayer(),
-            _PremiumNavBar(
-              currentIndex: currentIndex,
-              onTap: (i) {
-                HapticFeedback.lightImpact();
-                widget.navigationShell.goBranch(
-                  i,
-                  initialLocation: i == widget.navigationShell.currentIndex,
-                );
-              },
-              colors: colors,
-              hasBackground: themeState.hasBackground,
-            ),
-          ],
+        child: Scaffold(
+          backgroundColor: themeState.hasBackground
+              ? Colors.transparent
+              : colors.surface,
+          body: widget.navigationShell,
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const MiniPlayer(),
+              _PremiumNavBar(
+                currentIndex: currentIndex,
+                onTap: (i) {
+                  HapticFeedback.lightImpact();
+                  widget.navigationShell.goBranch(
+                    i,
+                    initialLocation: i == widget.navigationShell.currentIndex,
+                  );
+                },
+                colors: colors,
+                hasBackground: themeState.hasBackground,
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

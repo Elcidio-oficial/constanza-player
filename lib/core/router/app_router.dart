@@ -177,19 +177,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/artists',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(
-          context,
-          state,
-          const ArtistsPage(),
-        ),
+        pageBuilder: (context, state) =>
+            buildPageWithDefaultTransition(context, state, const ArtistsPage()),
       ),
       GoRoute(
         path: '/albums',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(
-          context,
-          state,
-          const AlbumsPage(),
-        ),
+        pageBuilder: (context, state) =>
+            buildPageWithDefaultTransition(context, state, const AlbumsPage()),
       ),
       GoRoute(
         path: '/genres',
@@ -235,11 +229,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/folders',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(
-          context,
-          state,
-          const FoldersPage(),
-        ),
+        pageBuilder: (context, state) =>
+            buildPageWithDefaultTransition(context, state, const FoldersPage()),
       ),
     ],
   );

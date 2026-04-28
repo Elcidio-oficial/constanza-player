@@ -46,14 +46,19 @@ class WidgetService {
 
   /// Regista o handler de navegação por deeplink e drena qualquer rota
   /// pendente que o widget tenha pedido antes do app estar pronto.
-  static void registerNavigationHandler(void Function(String route) onNavigate) {
+  static void registerNavigationHandler(
+    void Function(String route) onNavigate,
+  ) {
     _onNavigate = onNavigate;
     _ensureHandlerRegistered();
-    _channel.invokeMethod<String>('consumePendingRoute').then((route) {
-      if (route != null) onNavigate(route);
-    }).catchError((Object e) {
-      debugPrint('[WidgetService] consumePendingRoute error: $e');
-    });
+    _channel
+        .invokeMethod<String>('consumePendingRoute')
+        .then((route) {
+          if (route != null) onNavigate(route);
+        })
+        .catchError((Object e) {
+          debugPrint('[WidgetService] consumePendingRoute error: $e');
+        });
   }
 
   static Future<void> update({

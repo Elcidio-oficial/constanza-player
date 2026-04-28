@@ -61,7 +61,9 @@ class _NowPlayingHero extends StatelessWidget {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: colors.primary.withValues(alpha: 0.2),
@@ -73,7 +75,9 @@ class _NowPlayingHero extends StatelessWidget {
                       child: ArtworkImage.song(
                         songId: song.numericId,
                         size: 64,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                         placeholderIcon: Icons.music_note_rounded,
                         placeholderIconSize: 28,
                       ),
@@ -94,7 +98,9 @@ class _NowPlayingHero extends StatelessWidget {
                                 child: Text(
                                   isPlaying ? 'Tocando agora' : 'Pausado',
                                   style: theme.textTheme.labelSmall?.copyWith(
-                                    color: colors.primary.withValues(alpha: 0.7),
+                                    color: colors.primary.withValues(
+                                      alpha: 0.7,
+                                    ),
                                     fontWeight: FontWeight.w600,
                                     fontSize: 10,
                                     letterSpacing: 0.5,
@@ -142,7 +148,9 @@ class _NowPlayingHero extends StatelessWidget {
                           ],
                         ),
                         child: Icon(
-                          isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          isPlaying
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
                           color: colors.onPrimary,
                           size: 24,
                         ),
@@ -176,4 +184,3 @@ class _NowPlayingHero extends StatelessWidget {
 // ============================================================
 // PREMIUM SONG CARD — with BPM/Key badge
 // ============================================================
-

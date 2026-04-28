@@ -48,4 +48,3 @@ class _MinimalistAlbumArt extends ConsumerWidget {
 // ============================================================
 // AURORA ALBUM ART — circle + animated aurora gradient behind
 // ============================================================
-

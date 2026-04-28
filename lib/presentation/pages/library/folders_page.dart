@@ -104,9 +104,9 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
     // 1. Salvar exclusões individuais
     await ref.read(libraryProvider.notifier).setExcludedSongs(_excludedSongIds);
     // 2. Salvar pastas selecionadas e re-escanear
-    await ref.read(libraryProvider.notifier).setSelectedFolders(
-      _selectedFolders.toList(),
-    );
+    await ref
+        .read(libraryProvider.notifier)
+        .setSelectedFolders(_selectedFolders.toList());
 
     if (mounted) {
       setState(() => _loading = false);
@@ -128,9 +128,9 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
     final allFolders = ref.watch(libraryProvider.select((s) => s.allFolders));
 
     // Se ainda não descobriu as pastas, usa as que já conhece
-    final folders = allFolders.isNotEmpty
-        ? allFolders
-        : _folderSongs.keys.toList()..sort();
+    final folders =
+        allFolders.isNotEmpty ? allFolders : _folderSongs.keys.toList()
+          ..sort();
 
     return PopScope(
       canPop: !_dirty,
@@ -404,9 +404,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Descartar alterações?'),
-        content: const Text(
-          'Tens alterações não guardadas. Sair sem aplicar?',
-        ),
+        content: const Text('Tens alterações não guardadas. Sair sem aplicar?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -483,9 +481,7 @@ class _FolderTile extends StatelessWidget {
                   height: 22,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(6),
-                    color: isSelected
-                        ? colors.primary
-                        : Colors.transparent,
+                    color: isSelected ? colors.primary : Colors.transparent,
                     border: Border.all(
                       color: isSelected
                           ? colors.primary
@@ -631,10 +627,16 @@ class _FolderMosaic extends StatelessWidget {
           children: [
             Row(
               children: [
-                ArtworkImage.song(songId: picks[0].numericId, size: half, borderRadius: BorderRadius.zero),
+                ArtworkImage.song(
+                  songId: picks[0].numericId,
+                  size: half,
+                  borderRadius: BorderRadius.zero,
+                ),
                 const SizedBox(width: 1.5),
                 ArtworkImage.song(
-                  songId: picks.length > 1 ? picks[1].numericId : picks[0].numericId,
+                  songId: picks.length > 1
+                      ? picks[1].numericId
+                      : picks[0].numericId,
                   size: half,
                   borderRadius: BorderRadius.zero,
                 ),
@@ -644,13 +646,17 @@ class _FolderMosaic extends StatelessWidget {
             Row(
               children: [
                 ArtworkImage.song(
-                  songId: picks.length > 2 ? picks[2].numericId : picks[0].numericId,
+                  songId: picks.length > 2
+                      ? picks[2].numericId
+                      : picks[0].numericId,
                   size: half,
                   borderRadius: BorderRadius.zero,
                 ),
                 const SizedBox(width: 1.5),
                 ArtworkImage.song(
-                  songId: picks.length > 3 ? picks[3].numericId : picks[0].numericId,
+                  songId: picks.length > 3
+                      ? picks[3].numericId
+                      : picks[0].numericId,
                   size: half,
                   borderRadius: BorderRadius.zero,
                 ),
@@ -685,8 +691,7 @@ class _FolderSongsSelectionPage extends StatefulWidget {
       _FolderSongsSelectionPageState();
 }
 
-class _FolderSongsSelectionPageState
-    extends State<_FolderSongsSelectionPage> {
+class _FolderSongsSelectionPageState extends State<_FolderSongsSelectionPage> {
   late Set<String> _excluded;
   late bool _folderSelected;
 
@@ -787,10 +792,7 @@ class _FolderSongsSelectionPageState
             onPressed: allIncluded ? _deselectAll : _selectAll,
             child: Text(
               allIncluded ? 'Desmarcar tudo' : 'Selecionar tudo',
-              style: TextStyle(
-                color: colors.primary,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: colors.primary, fontSize: 12),
             ),
           ),
         ],
@@ -833,7 +835,11 @@ class _FolderSongsSelectionPageState
                   ),
                 ),
                 child: _folderSelected
-                    ? Icon(Icons.check_rounded, size: 14, color: colors.onPrimary)
+                    ? Icon(
+                        Icons.check_rounded,
+                        size: 14,
+                        color: colors.onPrimary,
+                      )
                     : null,
               ),
               title: Text(
@@ -869,7 +875,9 @@ class _FolderSongsSelectionPageState
                   child: Divider(color: colors.outline.withValues(alpha: 0.15)),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                  ),
                   child: Text(
                     'MÚSICAS',
                     style: theme.textTheme.labelSmall?.copyWith(
@@ -985,7 +993,9 @@ class _SongCheckTile extends StatelessWidget {
               margin: const EdgeInsets.only(right: AppSpacing.sm),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: effectivelyIncluded ? colors.primary : Colors.transparent,
+                color: effectivelyIncluded
+                    ? colors.primary
+                    : Colors.transparent,
                 border: Border.all(
                   color: effectivelyIncluded
                       ? colors.primary

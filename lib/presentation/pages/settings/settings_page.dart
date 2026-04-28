@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -345,9 +344,7 @@ class SettingsPage extends ConsumerWidget {
                         ref.read(libraryProvider.notifier).rescan();
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(
-                              'Re-escaneando biblioteca...',
-                            ),
+                            content: Text('Re-escaneando biblioteca...'),
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -1537,7 +1534,8 @@ class _NpColorRow extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (_, i) {
               final c = presetColors[i];
-              final isSelected = color != null && color!.toARGB32() == c.toARGB32();
+              final isSelected =
+                  color != null && color!.toARGB32() == c.toARGB32();
               return GestureDetector(
                 onTap: () => onColorSelected(c),
                 child: Container(
@@ -1609,7 +1607,8 @@ class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(path, mimeType: 'application/json')],
-          text: 'Logs de diagnóstico — ${AppConstants.appName} v${AppConstants.appVersion}',
+          text:
+              'Logs de diagnóstico — ${AppConstants.appName} v${AppConstants.appVersion}',
         ),
       );
     } finally {
@@ -1671,8 +1670,8 @@ class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
               _count < 0
                   ? 'Carregando...'
                   : hasLogs
-                      ? '$_count entrada${_count == 1 ? '' : 's'} de log'
-                      : 'Nenhum erro registrado',
+                  ? '$_count entrada${_count == 1 ? '' : 's'} de log'
+                  : 'Nenhum erro registrado',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.5),
               ),

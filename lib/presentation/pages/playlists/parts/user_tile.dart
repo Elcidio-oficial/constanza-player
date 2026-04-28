@@ -340,10 +340,7 @@ class _UserPlaylistTile extends ConsumerWidget {
 
   void _showSnack(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
   }
 
@@ -364,4 +361,3 @@ class _UserPlaylistTile extends ConsumerWidget {
 // ============================================================
 // EMPTY STATE
 // ============================================================
-

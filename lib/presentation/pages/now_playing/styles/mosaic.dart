@@ -110,9 +110,7 @@ class _MosaicAlbumArt extends ConsumerWidget {
                 IgnorePointer(
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(
-                        AppSpacing.radiusMd,
-                      ),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.10),
                         width: 0.8,
@@ -132,4 +130,3 @@ class _MosaicAlbumArt extends ConsumerWidget {
 // ============================================================
 // SLEEP TIMER VISUAL CIRCLE
 // ============================================================
-

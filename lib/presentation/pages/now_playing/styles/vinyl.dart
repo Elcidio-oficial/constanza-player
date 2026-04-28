@@ -153,4 +153,3 @@ class _VinylPainter extends CustomPainter {
 }
 
 // ── Gradient track shape for MediaBarStyle.gradient ───────────
-

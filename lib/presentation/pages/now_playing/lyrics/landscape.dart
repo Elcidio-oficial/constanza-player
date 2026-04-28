@@ -22,11 +22,7 @@ class _LyricsLandscapeBody extends ConsumerWidget {
         // ── Painel esquerdo: artwork + info + controles mini ──
         Expanded(
           flex: 4,
-          child: _LyricsSidePanel(
-            song: song,
-            colors: colors,
-            theme: theme,
-          ),
+          child: _LyricsSidePanel(song: song, colors: colors, theme: theme),
         ),
         // Divisor vertical sutil
         Container(
@@ -57,9 +53,7 @@ class _LyricsSidePanel extends ConsumerWidget {
     final isPlaying = ref.watch(playerProvider.select((s) => s.isPlaying));
     final position = ref.watch(playerProvider.select((s) => s.position));
     final duration = ref.watch(playerProvider.select((s) => s.duration));
-    final shuffleOn = ref.watch(
-      playerProvider.select((s) => s.shuffleEnabled),
-    );
+    final shuffleOn = ref.watch(playerProvider.select((s) => s.shuffleEnabled));
     final palette = ref.watch(artworkPaletteProvider);
     final isFavorite = ref.watch(
       libraryProvider.select(
@@ -83,8 +77,10 @@ class _LyricsSidePanel extends ConsumerWidget {
         // Reserva conservadora p/ título+artista+slider+tempos+transport.
         final isTight = constraints.maxHeight < 420;
         final reservedBelowArt = isTight ? 230.0 : 260.0;
-        final maxArtByHeight =
-            (constraints.maxHeight - reservedBelowArt).clamp(80.0, 320.0);
+        final maxArtByHeight = (constraints.maxHeight - reservedBelowArt).clamp(
+          80.0,
+          320.0,
+        );
         final maxArtByWidth = constraints.maxWidth * 0.82;
         final artSize = maxArtByHeight < maxArtByWidth
             ? maxArtByHeight
@@ -113,16 +109,12 @@ class _LyricsSidePanel extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(
-                        AppSpacing.radiusLg,
-                      ),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                     ),
                     child: ArtworkImage.song(
                       songId: song.numericId,
                       size: artSize,
-                      borderRadius: BorderRadius.circular(
-                        AppSpacing.radiusLg,
-                      ),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                       placeholderIconSize: 56,
                     ),
                   ),
@@ -175,8 +167,8 @@ class _LyricsSidePanel extends ConsumerWidget {
                           .read(playerProvider.notifier)
                           .seek(
                             Duration(
-                              milliseconds:
-                                  (v * duration.inMilliseconds).round(),
+                              milliseconds: (v * duration.inMilliseconds)
+                                  .round(),
                             ),
                           );
                     }
@@ -266,4 +258,3 @@ class _LyricsSidePanel extends ConsumerWidget {
 // ============================================================
 // QUICK SYNC PAGE — tela dedicada para sincronização rápida
 // ============================================================
-

@@ -54,8 +54,9 @@ class ShareService {
 
     Uint8List? pngBytes;
     try {
-      final boundary = posterKey.currentContext?.findRenderObject()
-          as RenderRepaintBoundary?;
+      final boundary =
+          posterKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
       if (boundary != null) {
         final image = await boundary.toImage(pixelRatio: 3.0);
         final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -73,7 +74,9 @@ class ShareService {
 
     // Salva em ficheiro temporário
     final tmp = await getTemporaryDirectory();
-    final file = File('${tmp.path}/constanza_share_${DateTime.now().millisecondsSinceEpoch}.png');
+    final file = File(
+      '${tmp.path}/constanza_share_${DateTime.now().millisecondsSinceEpoch}.png',
+    );
     await file.writeAsBytes(pngBytes);
 
     final text = isSingle
@@ -143,9 +146,12 @@ class _SharePoster extends StatelessWidget {
     const h = 600.0;
 
     final c1 = palette?.dominant ?? const Color(0xFF1A1A2E);
-    final c2 = palette?.secondary ?? palette?.muted ??
+    final c2 =
+        palette?.secondary ??
+        palette?.muted ??
         HSLColor.fromColor(c1).withLightness(0.25).toColor();
-    final c3 = palette?.tertiary ??
+    final c3 =
+        palette?.tertiary ??
         HSLColor.fromColor(c1).withLightness(0.12).toColor();
 
     return SizedBox(

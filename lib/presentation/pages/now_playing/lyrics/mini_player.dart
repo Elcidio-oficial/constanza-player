@@ -12,9 +12,7 @@ class _LyricsMiniPlayer extends ConsumerWidget {
     final isPlaying = ref.watch(playerProvider.select((s) => s.isPlaying));
     final position = ref.watch(playerProvider.select((s) => s.position));
     final duration = ref.watch(playerProvider.select((s) => s.duration));
-    final shuffleOn = ref.watch(
-      playerProvider.select((s) => s.shuffleEnabled),
-    );
+    final shuffleOn = ref.watch(playerProvider.select((s) => s.shuffleEnabled));
     final palette = ref.watch(artworkPaletteProvider);
     final isFavorite = ref.watch(
       libraryProvider.select(
@@ -101,12 +99,8 @@ class _LyricsMiniPlayer extends ConsumerWidget {
                 inactiveTrackColor: Colors.white.withValues(alpha: 0.15),
                 thumbColor: accent,
                 overlayColor: accent.withValues(alpha: 0.15),
-                thumbShape: const RoundSliderThumbShape(
-                  enabledThumbRadius: 5,
-                ),
-                overlayShape: const RoundSliderOverlayShape(
-                  overlayRadius: 12,
-                ),
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
               ),
               child: Slider(
                 value: progress,
@@ -116,8 +110,7 @@ class _LyricsMiniPlayer extends ConsumerWidget {
                         .read(playerProvider.notifier)
                         .seek(
                           Duration(
-                            milliseconds:
-                                (v * duration.inMilliseconds).round(),
+                            milliseconds: (v * duration.inMilliseconds).round(),
                           ),
                         );
                   }
@@ -272,4 +265,3 @@ class _MiniPlayButton extends StatelessWidget {
 // VIEW MODE — Spotify-premium: linha atual centralizada, bold,
 // linhas anteriores sobem com fade, tap-to-seek
 // ============================================================
-

@@ -31,9 +31,7 @@ class _QuickChip extends StatelessWidget {
             ],
           ),
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          border: Border.all(
-            color: colors.primary.withValues(alpha: 0.18),
-          ),
+          border: Border.all(color: colors.primary.withValues(alpha: 0.18)),
           boxShadow: [
             BoxShadow(
               color: colors.primary.withValues(alpha: 0.08),

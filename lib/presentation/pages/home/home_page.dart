@@ -132,34 +132,34 @@ class HomePage extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-                Icons.folder_off_rounded,
-                size: 64,
-                color: colors.onSurface.withValues(alpha: 0.15),
+              Icons.folder_off_rounded,
+              size: 64,
+              color: colors.onSurface.withValues(alpha: 0.15),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Permissão necessária',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.6),
+                fontWeight: FontWeight.w400,
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'Permissão necessária',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w400,
-                ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Permita o acesso aos ficheiros de áudio para ver a sua biblioteca.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.35),
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Permita o acesso aos ficheiros de áudio para ver a sua biblioteca.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              FilledButton.tonal(
-                onPressed: () =>
-                    ref.read(libraryProvider.notifier).retryPermission(),
-                child: const Text('Permitir Acesso'),
-              ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            FilledButton.tonal(
+              onPressed: () =>
+                  ref.read(libraryProvider.notifier).retryPermission(),
+              child: const Text('Permitir Acesso'),
+            ),
+          ],
+        ),
       );
     }
 
@@ -170,33 +170,33 @@ class HomePage extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-                Icons.folder_open_rounded,
-                size: 64,
-                color: colors.onSurface.withValues(alpha: 0.15),
+              Icons.folder_open_rounded,
+              size: 64,
+              color: colors.onSurface.withValues(alpha: 0.15),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Selecione suas pastas',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.6),
+                fontWeight: FontWeight.w400,
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'Selecione suas pastas',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w400,
-                ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Escolha as pastas que contêm suas músicas para começar.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.35),
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Escolha as pastas que contêm suas músicas para começar.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              FilledButton.tonal(
-                onPressed: () => context.push('/folders'),
-                child: const Text('Selecionar Pastas'),
-              ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            FilledButton.tonal(
+              onPressed: () => context.push('/folders'),
+              child: const Text('Selecionar Pastas'),
+            ),
+          ],
+        ),
       );
     }
 
@@ -208,33 +208,33 @@ class HomePage extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-                Icons.music_off_rounded,
-                size: 64,
-                color: colors.onSurface.withValues(alpha: 0.15),
+              Icons.music_off_rounded,
+              size: 64,
+              color: colors.onSurface.withValues(alpha: 0.15),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Nenhuma música encontrada',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.6),
+                fontWeight: FontWeight.w400,
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'Nenhuma música encontrada',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w400,
-                ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Adicione ficheiros de áudio ao dispositivo e tente novamente.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.35),
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Adicione ficheiros de áudio ao dispositivo e tente novamente.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              FilledButton.tonal(
-                onPressed: () => ref.read(libraryProvider.notifier).rescan(),
-                child: const Text('Re-escanear'),
-              ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            FilledButton.tonal(
+              onPressed: () => ref.read(libraryProvider.notifier).rescan(),
+              child: const Text('Re-escanear'),
+            ),
+          ],
+        ),
       );
     }
 
@@ -284,18 +284,20 @@ class HomePage extends ConsumerWidget {
         // ─── NOW PLAYING HERO CARD ───────────────────────────
         if (currentSong != null)
           SliverToBoxAdapter(
-            child: _NowPlayingHero(
-              song: currentSong,
-              isPlaying: playerState.isPlaying,
-              progress: playerState.progress,
-              colors: colors,
-              theme: theme,
-              onTap: () => _openNowPlaying(context),
-              onPlayPause: () => ref.read(playerProvider.notifier).togglePlayPause(),
-            )
-                .animate()
-                .fadeIn(duration: 400.ms, curve: Curves.easeOut)
-                .slideY(begin: 0.03, end: 0, duration: 400.ms),
+            child:
+                _NowPlayingHero(
+                      song: currentSong,
+                      isPlaying: playerState.isPlaying,
+                      progress: playerState.progress,
+                      colors: colors,
+                      theme: theme,
+                      onTap: () => _openNowPlaying(context),
+                      onPlayPause: () =>
+                          ref.read(playerProvider.notifier).togglePlayPause(),
+                    )
+                    .animate()
+                    .fadeIn(duration: 400.ms, curve: Curves.easeOut)
+                    .slideY(begin: 0.03, end: 0, duration: 400.ms),
           ),
 
         // ─── QUICK ACTION CHIPS ──────────────────────────────
@@ -443,10 +445,7 @@ class HomePage extends ConsumerWidget {
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [
-                            colors.primary,
-                            colors.tertiary,
-                          ],
+                          colors: [colors.primary, colors.tertiary],
                         ),
                         shape: BoxShape.circle,
                         boxShadow: [
@@ -915,4 +914,3 @@ class HomePage extends ConsumerWidget {
 // ============================================================
 // NOW PLAYING HERO CARD
 // ============================================================
-

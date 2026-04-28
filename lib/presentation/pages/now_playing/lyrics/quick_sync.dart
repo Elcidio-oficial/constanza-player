@@ -224,4 +224,3 @@ class _QuickSyncPageState extends ConsumerState<_QuickSyncPage> {
 // ============================================================
 // EDIT MODE — editor de linhas com timestamp + reorder
 // ============================================================
-

@@ -209,7 +209,8 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
                   final useColor = c1 != _kDark;
                   final npStyle = themeState.nowPlayingStyle;
                   final colorStyle = themeState.nowPlayingColorStyle;
-                  final isGradient = colorStyle == NowPlayingColorStyle.gradient;
+                  final isGradient =
+                      colorStyle == NowPlayingColorStyle.gradient;
 
                   // For degradê mode: use c1 as single base color with bright top
                   final dgBase = c1;
@@ -218,7 +219,9 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
                     final hsl = HSLColor.fromColor(c1);
                     dgTop = hsl
                         .withLightness((hsl.lightness * 1.3).clamp(0.18, 0.50))
-                        .withSaturation((hsl.saturation * 1.1).clamp(0.25, 0.85))
+                        .withSaturation(
+                          (hsl.saturation * 1.1).clamp(0.25, 0.85),
+                        )
                         .toColor();
                   } else {
                     dgTop = c1;
@@ -235,141 +238,145 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
                       // DEGRADÊ MODE — Single-color linear gradient
                       // ═══════════════════════════════════════════
                       if (useColor && !isGradient) ...[
-                  // Linear gradient — faithful to artwork color
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          dgTop.withValues(alpha: 0.90),
-                          dgBase.withValues(alpha: 0.80),
-                          dgBase.withValues(alpha: 0.60),
-                          Color.lerp(dgBase, const Color(0xFF080808), 0.55)!,
-                          const Color(0xFF080808).withValues(alpha: 0.95),
-                        ],
-                        stops: const [0.0, 0.25, 0.50, 0.75, 1.0],
-                      ),
-                    ),
-                  ),
-                  // Subtle radial glow from top-center
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(0.0, -0.55),
-                        radius: 1.4,
-                        colors: [
-                          dgTop.withValues(alpha: 0.30),
-                          dgTop.withValues(alpha: 0.08),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.5, 1.0],
-                      ),
-                    ),
-                  ),
-                ],
+                        // Linear gradient — faithful to artwork color
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                dgTop.withValues(alpha: 0.90),
+                                dgBase.withValues(alpha: 0.80),
+                                dgBase.withValues(alpha: 0.60),
+                                Color.lerp(
+                                  dgBase,
+                                  const Color(0xFF080808),
+                                  0.55,
+                                )!,
+                                const Color(0xFF080808).withValues(alpha: 0.95),
+                              ],
+                              stops: const [0.0, 0.25, 0.50, 0.75, 1.0],
+                            ),
+                          ),
+                        ),
+                        // Subtle radial glow from top-center
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              center: const Alignment(0.0, -0.55),
+                              radius: 1.4,
+                              colors: [
+                                dgTop.withValues(alpha: 0.30),
+                                dgTop.withValues(alpha: 0.08),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.5, 1.0],
+                            ),
+                          ),
+                        ),
+                      ],
 
-                // ═══════════════════════════════════════════
-                // GRADIENT MODE — Multi-color radial blobs
-                // ═══════════════════════════════════════════
-                if (useColor && isGradient) ...[
-                  // Blob 1 — Top-left (color 1)
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(-0.85, -0.65),
-                        radius: 1.35,
-                        colors: [
-                          c1.withValues(alpha: 0.45),
-                          c1.withValues(alpha: 0.18),
-                          c1.withValues(alpha: 0.04),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.3, 0.6, 1.0],
-                      ),
-                    ),
-                  ),
-                  // Blob 2 — Top-right (color 2)
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(0.85, -0.40),
-                        radius: 1.15,
-                        colors: [
-                          c2.withValues(alpha: 0.40),
-                          c2.withValues(alpha: 0.15),
-                          c2.withValues(alpha: 0.03),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.3, 0.6, 1.0],
-                      ),
-                    ),
-                  ),
-                  // Blob 3 — Bottom-right (color 3)
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(0.60, 0.85),
-                        radius: 1.20,
-                        colors: [
-                          c3.withValues(alpha: 0.35),
-                          c3.withValues(alpha: 0.12),
-                          c3.withValues(alpha: 0.03),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.3, 0.6, 1.0],
-                      ),
-                    ),
-                  ),
-                  // Blob 4 — Center (blend c1+c2)
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(0.0, -0.05),
-                        radius: 0.90,
-                        colors: [
-                          cMix12.withValues(alpha: 0.20),
-                          cMix12.withValues(alpha: 0.05),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.45, 1.0],
-                      ),
-                    ),
-                  ),
-                  // Blob 5 — Bottom-left (blend c1+c3)
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(-0.70, 0.75),
-                        radius: 1.0,
-                        colors: [
-                          cMix13.withValues(alpha: 0.25),
-                          cMix13.withValues(alpha: 0.06),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.4, 1.0],
-                      ),
-                    ),
-                  ),
-                ],
+                      // ═══════════════════════════════════════════
+                      // GRADIENT MODE — Multi-color radial blobs
+                      // ═══════════════════════════════════════════
+                      if (useColor && isGradient) ...[
+                        // Blob 1 — Top-left (color 1)
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              center: const Alignment(-0.85, -0.65),
+                              radius: 1.35,
+                              colors: [
+                                c1.withValues(alpha: 0.45),
+                                c1.withValues(alpha: 0.18),
+                                c1.withValues(alpha: 0.04),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.3, 0.6, 1.0],
+                            ),
+                          ),
+                        ),
+                        // Blob 2 — Top-right (color 2)
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              center: const Alignment(0.85, -0.40),
+                              radius: 1.15,
+                              colors: [
+                                c2.withValues(alpha: 0.40),
+                                c2.withValues(alpha: 0.15),
+                                c2.withValues(alpha: 0.03),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.3, 0.6, 1.0],
+                            ),
+                          ),
+                        ),
+                        // Blob 3 — Bottom-right (color 3)
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              center: const Alignment(0.60, 0.85),
+                              radius: 1.20,
+                              colors: [
+                                c3.withValues(alpha: 0.35),
+                                c3.withValues(alpha: 0.12),
+                                c3.withValues(alpha: 0.03),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.3, 0.6, 1.0],
+                            ),
+                          ),
+                        ),
+                        // Blob 4 — Center (blend c1+c2)
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              center: const Alignment(0.0, -0.05),
+                              radius: 0.90,
+                              colors: [
+                                cMix12.withValues(alpha: 0.20),
+                                cMix12.withValues(alpha: 0.05),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.45, 1.0],
+                            ),
+                          ),
+                        ),
+                        // Blob 5 — Bottom-left (blend c1+c3)
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              center: const Alignment(-0.70, 0.75),
+                              radius: 1.0,
+                              colors: [
+                                cMix13.withValues(alpha: 0.25),
+                                cMix13.withValues(alpha: 0.06),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.4, 1.0],
+                            ),
+                          ),
+                        ),
+                      ],
 
-                // ── Subtle vignette for controls readability ──
-                if (useColor)
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.transparent,
-                          const Color(0xFF080808).withValues(alpha: 0.30),
-                          const Color(0xFF080808).withValues(alpha: 0.70),
-                        ],
-                        stops: const [0.0, 0.55, 0.82, 1.0],
-                      ),
-                    ),
-                  ),
+                      // ── Subtle vignette for controls readability ──
+                      if (useColor)
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.transparent,
+                                const Color(0xFF080808).withValues(alpha: 0.30),
+                                const Color(0xFF080808).withValues(alpha: 0.70),
+                              ],
+                              stops: const [0.0, 0.55, 0.82, 1.0],
+                            ),
+                          ),
+                        ),
                       // ── Vinyl: extra radial glow center ──
                       if (npStyle == NowPlayingStyle.vinyl && useColor)
                         Container(
@@ -534,11 +541,9 @@ class _NowPlayingContent extends ConsumerWidget {
                         )
                         .firstOrNull;
                     if (album != null) {
-                      Navigator.of(context).push(
-                        AppPageRoute(
-                          page: AlbumDetailPage(album: album),
-                        ),
-                      );
+                      Navigator.of(
+                        context,
+                      ).push(AppPageRoute(page: AlbumDetailPage(album: album)));
                     }
                   },
                   child: Text(
@@ -709,10 +714,7 @@ class _LandscapeLayout extends StatelessWidget {
                           accentColor: accentColor,
                         ),
                         const SizedBox(height: AppSpacing.sm),
-                        _MainControls(
-                          colors: colors,
-                          accentColor: accentColor,
-                        ),
+                        _MainControls(colors: colors, accentColor: accentColor),
                         const SizedBox(height: AppSpacing.md),
                         _SecondaryActions(
                           colors: colors,
@@ -753,10 +755,7 @@ class _LandscapeArtworkCarousel extends ConsumerWidget {
     // ou metade da largura. O _ArtworkCarousel interno já usa width do
     // MediaQuery; envolver em SizedBox quadrado mantém proporção.
     final mq = MediaQuery.of(context);
-    final targetSize = (mq.size.height * 0.78).clamp(
-      0.0,
-      mq.size.width * 0.48,
-    );
+    final targetSize = (mq.size.height * 0.78).clamp(0.0, mq.size.width * 0.48);
     return SizedBox(
       width: targetSize,
       height: targetSize,
@@ -1165,9 +1164,7 @@ class _Header extends ConsumerWidget {
                     Clipboard.setData(ClipboardData(text: text));
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
-                          'Info da música copiada!',
-                        ),
+                        content: Text('Info da música copiada!'),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -1510,21 +1507,17 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
 // ESTILO 1: CLASSIC — square 74% + vivid colored shadow
 // ============================================================
 
-
 // ============================================================
 // ESTILO 2: CIRCULAR — breathing pulse + colored glow
 // ============================================================
-
 
 // ============================================================
 // ESTILO 3: LARGE — edge-to-edge + colored glow
 // ============================================================
 
-
 // ============================================================
 // ESTILO 4: FULL BLUR — circle + immersive colored glow
 // ============================================================
-
 
 // ── Blurred artwork background ──
 class _BlurredArtworkBg extends ConsumerWidget {

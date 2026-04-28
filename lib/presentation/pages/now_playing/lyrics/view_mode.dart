@@ -140,4 +140,3 @@ class _LyricLineItem extends StatelessWidget {
 // ============================================================
 // LYRICS LANDSCAPE BODY — artwork+controles à esquerda, letras à direita
 // ============================================================
-

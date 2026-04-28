@@ -61,9 +61,7 @@ class _CircularAlbumArtState extends ConsumerState<_CircularAlbumArt>
       child: Container(
         width: size,
         height: size,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-        ),
+        decoration: const BoxDecoration(shape: BoxShape.circle),
         child: Stack(
           alignment: Alignment.center,
           children: [

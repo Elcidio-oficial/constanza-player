@@ -76,142 +76,146 @@ class _SongTileState extends ConsumerState<SongTile> {
             onTapCancel: () => setState(() => _pressed = false),
             onTapUp: (_) => setState(() => _pressed = false),
             child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: verticalPad,
-            ),
-            child: Row(
-              children: [
-                // Thumbnail ou índice
-                if (showArt)
-                  Stack(
-                    children: [
-                      ArtworkImage.song(
-                        songId: song.numericId,
-                        size: thumbSize,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusSm,
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: verticalPad,
+              ),
+              child: Row(
+                children: [
+                  // Thumbnail ou índice
+                  if (showArt)
+                    Stack(
+                      children: [
+                        ArtworkImage.song(
+                          songId: song.numericId,
+                          size: thumbSize,
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusSm,
+                          ),
                         ),
-                      ),
-                      if (isPlaying && playingState)
-                        Semantics(
-                          label: 'Tocando agora: ${song.title}',
-                          excludeSemantics: true,
-                          child: Container(
-                            width: thumbSize,
-                            height: thumbSize,
-                            decoration: BoxDecoration(
-                              color: colors.tertiary.withValues(alpha: 0.85),
-                              borderRadius: BorderRadius.circular(
-                                AppSpacing.radiusSm,
+                        if (isPlaying && playingState)
+                          Semantics(
+                            label: 'Tocando agora: ${song.title}',
+                            excludeSemantics: true,
+                            child: Container(
+                              width: thumbSize,
+                              height: thumbSize,
+                              decoration: BoxDecoration(
+                                color: colors.tertiary.withValues(alpha: 0.85),
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.radiusSm,
+                                ),
                               ),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.equalizer_rounded,
-                                color: Colors.white,
-                                size: 20,
+                              child: const Center(
+                                child: Icon(
+                                  Icons.equalizer_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                               ),
                             ),
                           ),
+                      ],
+                    )
+                  else if (showIndex != null)
+                    SizedBox(
+                      width: 32,
+                      child: Center(
+                        child: isPlaying && playingState
+                            ? Semantics(
+                                label: 'Tocando agora',
+                                child: Icon(
+                                  Icons.equalizer_rounded,
+                                  color: colors.tertiary,
+                                  size: 18,
+                                ),
+                              )
+                            : Text(
+                                '$showIndex',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: colors.onSurface.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                ),
+                              ),
+                      ),
+                    ),
+
+                  SizedBox(width: showArt ? AppSpacing.sm : AppSpacing.xs),
+
+                  // Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          song.title,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: isPlaying
+                                ? colors.tertiary
+                                : colors.onSurface,
+                            fontWeight: isPlaying
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                    ],
-                  )
-                else if (showIndex != null)
-                  SizedBox(
-                    width: 32,
-                    child: Center(
-                      child: isPlaying && playingState
-                          ? Semantics(
-                              label: 'Tocando agora',
-                              child: Icon(
-                                Icons.equalizer_rounded,
-                                color: colors.tertiary,
-                                size: 18,
-                              ),
-                            )
-                          : Text(
-                              '$showIndex',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.onSurface.withValues(alpha: 0.3),
-                              ),
+                        const SizedBox(height: 2),
+                        if (useArtistLinks)
+                          ArtistLinksText(
+                            artist: song.artist,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: isPlaying
+                                  ? colors.tertiary.withValues(alpha: 0.7)
+                                  : colors.onSurface.withValues(alpha: 0.45),
                             ),
+                            suffix: ' · ${song.album}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )
+                        else
+                          Text(
+                            '${song.artist} · ${song.album}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: isPlaying
+                                  ? colors.tertiary.withValues(alpha: 0.7)
+                                  : colors.onSurface.withValues(alpha: 0.45),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
                     ),
                   ),
 
-                SizedBox(width: showArt ? AppSpacing.sm : AppSpacing.xs),
-
-                // Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        song.title,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: isPlaying ? colors.tertiary : colors.onSurface,
-                          fontWeight: isPlaying
-                              ? FontWeight.w600
-                              : FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      if (useArtistLinks)
-                        ArtistLinksText(
-                          artist: song.artist,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: isPlaying
-                                ? colors.tertiary.withValues(alpha: 0.7)
-                                : colors.onSurface.withValues(alpha: 0.45),
-                          ),
-                          suffix: ' · ${song.album}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        )
-                      else
-                        Text(
-                          '${song.artist} · ${song.album}',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: isPlaying
-                                ? colors.tertiary.withValues(alpha: 0.7)
-                                : colors.onSurface.withValues(alpha: 0.45),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                    ],
-                  ),
-                ),
-
-                // Duração
-                Text(
-                  song.durationFormatted,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.3),
-                  ),
-                ),
-
-                // Menu
-                GestureDetector(
-                  onTap:
-                      onMoreTap ??
-                      () => SongOptionsBottomSheet.show(context, song, onTap),
-                  behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: AppSpacing.xs),
-                    child: Icon(
-                      Icons.more_vert_rounded,
-                      size: 20,
+                  // Duração
+                  Text(
+                    song.durationFormatted,
+                    style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.3),
                     ),
                   ),
-                ),
-              ],
+
+                  // Menu
+                  GestureDetector(
+                    onTap:
+                        onMoreTap ??
+                        () => SongOptionsBottomSheet.show(context, song, onTap),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: AppSpacing.xs),
+                      child: Icon(
+                        Icons.more_vert_rounded,
+                        size: 20,
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
           ),
         )
         .animate()

@@ -159,12 +159,7 @@ class _PremiumAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: SweepGradient(
-          colors: [
-            accent,
-            accent2 ?? accent3,
-            accent3,
-            accent,
-          ],
+          colors: [accent, accent2 ?? accent3, accent3, accent],
         ),
         boxShadow: [
           BoxShadow(
@@ -184,10 +179,8 @@ class _PremiumAvatar extends StatelessWidget {
               ? Image.file(
                   File(profile.photoPath!),
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _InitialsTile(
-                    initials: profile.initials,
-                    accent: accent,
-                  ),
+                  errorBuilder: (_, __, ___) =>
+                      _InitialsTile(initials: profile.initials, accent: accent),
                 )
               : _InitialsTile(initials: profile.initials, accent: accent),
         ),
@@ -257,8 +250,9 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
   }
 
   Future<void> _pick(ImageSource source) async {
-    final ok =
-        await ref.read(userProfileProvider.notifier).pickPhoto(source: source);
+    final ok = await ref
+        .read(userProfileProvider.notifier)
+        .pickPhoto(source: source);
     if (!mounted) return;
     if (!ok) return;
   }
@@ -293,9 +287,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             decoration: BoxDecoration(
               color: colors.surface.withValues(alpha: 0.85),
               border: Border(
-                top: BorderSide(
-                  color: colors.outline.withValues(alpha: 0.15),
-                ),
+                top: BorderSide(color: colors.outline.withValues(alpha: 0.15)),
               ),
             ),
             padding: EdgeInsets.fromLTRB(
@@ -341,10 +333,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: accent,
-                          border: Border.all(
-                            color: colors.surface,
-                            width: 2,
-                          ),
+                          border: Border.all(color: colors.surface, width: 2),
                           boxShadow: [
                             BoxShadow(
                               color: accent.withValues(alpha: 0.4),
@@ -402,8 +391,9 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
                     ),
                     child: const Text(
@@ -426,8 +416,9 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
       context: context,
       backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusLg)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusLg),
+        ),
       ),
       builder: (ctx) => SafeArea(
         child: Column(
