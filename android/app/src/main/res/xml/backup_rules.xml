@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Auto Backup (Android 6.0+, legacy schema).
+    Inclui apenas SharedPreferences (playlists, favoritos, settings).
+    Exclui caches transitórios e arquivos temporários.
+-->
+<full-backup-content>
+    <include domain="sharedpref" path="."/>
+    <exclude domain="cache" path="."/>
+    <exclude domain="file" path="crashes.jsonl"/>
+</full-backup-content>

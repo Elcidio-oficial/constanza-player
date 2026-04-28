@@ -52,4 +52,18 @@ class PermissionService {
     final result = await Permission.notification.request();
     return result.isGranted;
   }
+
+  /// Indica se o app está isento de battery optimization (Doze mode).
+  /// Sem isenção, sessões longas em background podem ser interrompidas
+  /// (volume baixo, pausa abrupta) por agressividade do OEM.
+  static Future<bool> isIgnoringBatteryOptimizations() async {
+    final status = await Permission.ignoreBatteryOptimizations.status;
+    return status.isGranted;
+  }
+
+  /// Pede ao usuário a isenção de battery optimization. Abre diálogo do sistema.
+  static Future<bool> requestIgnoreBatteryOptimizations() async {
+    final status = await Permission.ignoreBatteryOptimizations.request();
+    return status.isGranted;
+  }
 }
