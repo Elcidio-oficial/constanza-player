@@ -171,11 +171,12 @@ class _PermissionPageState extends State<PermissionPage>
       body: AnimatedBuilder(
         animation: _entryController,
         builder: (context, _) => SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Spacer(flex: 2),
+                const SizedBox(height: 24),
 
                 // === ICON ===
                 Opacity(
@@ -270,7 +271,7 @@ class _PermissionPageState extends State<PermissionPage>
                   ),
                 ),
 
-                const Spacer(flex: 2),
+                const SizedBox(height: 40),
 
                 // === BUTTON ===
                 Opacity(

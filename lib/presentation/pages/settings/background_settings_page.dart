@@ -331,11 +331,6 @@ class BackgroundSettingsPage extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Fundo atualizado com sucesso'),
-            backgroundColor: colors.onSurface,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            ),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -346,10 +341,6 @@ class BackgroundSettingsPage extends ConsumerWidget {
           SnackBar(
             content: const Text('Erro ao selecionar imagem'),
             backgroundColor: colors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            ),
             duration: const Duration(seconds: 2),
           ),
         );

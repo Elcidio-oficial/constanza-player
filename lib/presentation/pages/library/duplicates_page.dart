@@ -98,10 +98,6 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
                 : '$successCount removida${successCount != 1 ? 's' : ''}, $failCount falhou (permissão negada)',
           ),
           backgroundColor: failCount == 0 ? colors.primary : Colors.orange,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
         ),
       );
       // Re-escaneia após remoção

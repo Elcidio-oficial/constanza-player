@@ -20,11 +20,6 @@ class PlaylistSelectorBottomSheet extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Crie uma playlist primeiro'),
-          backgroundColor: colors.onSurface,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -114,13 +109,6 @@ class PlaylistSelectorBottomSheet extends ConsumerWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Adicionado a "${p.name}"'),
-                        backgroundColor: colors.onSurface,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusSm,
-                          ),
-                        ),
                         duration: const Duration(seconds: 2),
                       ),
                     );

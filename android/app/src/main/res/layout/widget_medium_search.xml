@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/widget_bg_dark"
+        android:padding="14dp">
+
+        <!-- Top row: artwork + info + controls + note icon -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <!-- Artwork -->
+            <ImageView
+                android:id="@+id/widget_artwork"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:scaleType="centerCrop"
+                android:src="@mipmap/ic_launcher"
+                android:background="@drawable/widget_artwork_bg"
+                android:contentDescription="Album art" />
+
+            <!-- Music note (top-right) -->
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:src="@drawable/ic_widget_play"
+                android:tint="#AAFFFFFF"
+                android:contentDescription="Note" />
+
+            <!-- Controls: prev / play / next — far right, vertically centered -->
+            <LinearLayout
+                android:id="@+id/controls_row"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginTop="24dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageButton
+                    android:id="@+id/widget_prev"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_widget_prev"
+                    android:tint="#FFFFFF"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Previous"
+                    android:scaleType="centerInside"
+                    android:padding="4dp" />
+
+                <ImageButton
+                    android:id="@+id/widget_play_pause"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_widget_play"
+                    android:tint="#FFFFFF"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Play/Pause"
+                    android:scaleType="centerInside"
+                    android:padding="4dp" />
+
+                <ImageButton
+                    android:id="@+id/widget_next"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_widget_next"
+                    android:tint="#FFFFFF"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Next"
+                    android:scaleType="centerInside"
+                    android:padding="4dp" />
+
+            </LinearLayout>
+
+            <!-- Song info between artwork and controls -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/widget_artwork"
+                android:layout_toStartOf="@id/controls_row"
+                android:layout_centerVertical="true"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="8dp">
+
+                <TextView
+                    android:id="@+id/widget_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Constanza Músicas"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/widget_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Artista"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <!-- Divider (FrameLayout — RemoteViews não aceita View puro) -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="#1FFFFFFF" />
+
+        <!-- Search bar -->
+        <LinearLayout
+            android:id="@+id/widget_search"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/widget_btn_bg"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_widget_search"
+                android:tint="#AAFFFFFF"
+                android:contentDescription="Search" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Pesquisar músicas, playlists..."
+                android:textColor="#88FFFFFF"
+                android:textSize="13sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</FrameLayout>

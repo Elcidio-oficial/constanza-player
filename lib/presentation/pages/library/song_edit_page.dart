@@ -187,10 +187,6 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
             'Salvo no app — arquivo físico não pôde ser modificado',
           ),
           backgroundColor: Colors.orange.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -199,10 +195,6 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
         SnackBar(
           content: const Text('Metadados gravados no arquivo'),
           backgroundColor: Theme.of(context).colorScheme.primary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -245,10 +237,6 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
         SnackBar(
           content: const Text('Música excluída do dispositivo'),
           backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
         ),
       );
       context.pop(true); // true = deleted
@@ -257,10 +245,6 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
         SnackBar(
           content: const Text('Não foi possível excluir a música'),
           backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
         ),
       );
     }

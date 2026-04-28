@@ -121,13 +121,6 @@ class SongOptionsBottomSheet extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: const Text('Adicionado à fila'),
-                      backgroundColor: colors.onSurface,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusSm,
-                        ),
-                      ),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -221,13 +214,6 @@ class SongOptionsBottomSheet extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: const Text('Info da música copiada!'),
-                      backgroundColor: colors.onSurface,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusSm,
-                        ),
-                      ),
                       duration: const Duration(seconds: 2),
                     ),
                   );

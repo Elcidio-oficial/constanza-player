@@ -257,6 +257,31 @@ abstract final class AppTheme {
         thickness: 0.5,
       ),
 
+      // ── SnackBar (premium, Material 3) ──────────────────
+      // Usa inverseSurface/onInverseSurface — garante contraste em ambos os
+      // temas (dark-on-light no light mode, light-on-dark no dark mode).
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: colorScheme.inverseSurface,
+        contentTextStyle: TextStyle(
+          color: colorScheme.onInverseSurface,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.1,
+        ),
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        // insetPadding bottom pequeno: o Scaffold já empurra o snackbar
+        // acima de bottomNavigationBar/MiniPlayer; este padding adiciona
+        // apenas a folga visual final.
+        insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        dismissDirection: DismissDirection.endToStart,
+        actionTextColor: colorScheme.inversePrimary,
+        showCloseIcon: false,
+      ),
+
       splashFactory: InkSparkle.splashFactory,
     );
   }

@@ -426,6 +426,7 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
     state = state.copyWith(autoCarMode: !state.autoCarMode);
     _save();
   }
+
 }
 
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeState>(

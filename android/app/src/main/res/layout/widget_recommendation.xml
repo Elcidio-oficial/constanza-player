@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="12dp">
+
+    <!-- Dark background -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_bg_dark">
+
+        <!-- Artwork fills most of the card -->
+        <ImageView
+            android:id="@+id/widget_artwork"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="Album art"
+            android:alpha="0.6" />
+
+        <!-- Dark overlay (FrameLayout em vez de View — RemoteViews não aceita View puro) -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#88000000" />
+
+        <!-- Music note top-right -->
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="12dp"
+            android:src="@drawable/ic_widget_play"
+            android:tint="#CCFFFFFF"
+            android:contentDescription="Note" />
+
+        <!-- Daily Recommendation label — bottom-left -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:orientation="vertical"
+            android:layout_margin="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Daily"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Recommendation"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Play button center -->
+        <ImageButton
+            android:id="@+id/widget_play_pause"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_widget_play"
+            android:tint="#FFFFFF"
+            android:background="@drawable/widget_btn_bg"
+            android:contentDescription="Play"
+            android:scaleType="centerInside"
+            android:padding="10dp" />
+
+    </FrameLayout>
+</FrameLayout>
