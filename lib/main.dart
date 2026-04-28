@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:constanza_player/services/widget_service.dart';
 import 'package:constanza_player/core/theme/app_theme.dart';
 import 'package:constanza_player/core/router/app_router.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
@@ -18,11 +20,15 @@ import 'package:audio_session/audio_session.dart';
 
 void main() async {
   // Captura erros globais — garante que o app nunca crashe silenciosamente.
-  // Em release builds, debugPrint não vai a lugar algum; o CrashReporter
-  // persiste os erros em <AppDir>/crashes.jsonl para diagnóstico posterior.
+  // Em release builds, silenciamos debugPrint para não vazar logs em logcat;
+  // o CrashReporter persiste os erros em <AppDir>/crashes.jsonl para diagnóstico.
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+
+      if (kReleaseMode) {
+        debugPrint = (String? message, {int? wrapWidth}) {};
+      }
 
       // Inicializa reporter ANTES de instalar handlers, para não perder erros
       // precoces (p.ex. falha na inicialização do SharedPreferences).
@@ -44,20 +50,23 @@ void main() async {
         }),
       ]);
 
-      // Configura AudioSession — duck volume em notificações, retomar após chamadas
+      // AudioSession configurada para MIXAR com outros apps: não tomamos
+      // audio focus exclusivo, então quando YouTube/WhatsApp/etc tocarem som,
+      // o Constanza continua tocando em paralelo sem pausar.
       try {
         final session = await AudioSession.instance;
         await session.configure(
           const AudioSessionConfiguration(
             avAudioSessionCategory: AVAudioSessionCategory.playback,
             avAudioSessionCategoryOptions:
-                AVAudioSessionCategoryOptions.duckOthers,
+                AVAudioSessionCategoryOptions.mixWithOthers,
             avAudioSessionMode: AVAudioSessionMode.defaultMode,
             androidAudioAttributes: AndroidAudioAttributes(
               contentType: AndroidAudioContentType.music,
               usage: AndroidAudioUsage.media,
             ),
-            androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+            androidAudioFocusGainType: AndroidAudioFocusGainType.gainTransientMayDuck,
+            androidWillPauseWhenDucked: false,
           ),
         );
       } catch (e) {
@@ -116,11 +125,25 @@ void main() async {
   );
 }
 
-class ConstanzaApp extends ConsumerWidget {
+class ConstanzaApp extends ConsumerStatefulWidget {
   const ConstanzaApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConstanzaApp> createState() => _ConstanzaAppState();
+}
+
+class _ConstanzaAppState extends ConsumerState<ConstanzaApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final router = ref.read(appRouterProvider);
+      WidgetService.registerNavigationHandler(router.go);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeState = ref.watch(themeProvider);
     final accent = themeState.accentColor;
     final router = ref.watch(appRouterProvider);

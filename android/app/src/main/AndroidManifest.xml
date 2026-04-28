@@ -23,8 +23,7 @@
     <application
         android:label="Constanza Músicas"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:requestLegacyExternalStorage="true">
+        android:icon="@mipmap/ic_launcher">
 
         <activity
             android:name=".MainActivity"
@@ -63,16 +62,67 @@
             </intent-filter>
         </receiver>
 
-        <!-- Home Screen Widget -->
-        <receiver
-            android:name=".MusicWidgetProvider"
-            android:exported="true">
+        <!-- Home Screen Widgets -->
+        <receiver android:name=".MusicWidgetProvider" android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_PREV" />
+                <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_NEXT" />
+                <action android:name="com.constanza.constanza_player.WIDGET_TOGGLE_FAV" />
             </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/music_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/music_widget_info" />
+        </receiver>
+
+        <receiver android:name=".WidgetLargeProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_PREV" />
+                <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_NEXT" />
+                <action android:name="com.constanza.constanza_player.WIDGET_TOGGLE_FAV" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_large_info" />
+        </receiver>
+
+        <receiver android:name=".WidgetMediumSearchProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_PREV" />
+                <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_NEXT" />
+                <action android:name="com.constanza.constanza_player.WIDGET_OPEN_SEARCH" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_medium_search_info" />
+        </receiver>
+
+        <receiver android:name=".WidgetCapsuleProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_NEXT" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_capsule_info" />
+        </receiver>
+
+        <receiver android:name=".WidgetRecommendationProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_recommendation_info" />
+        </receiver>
+
+        <receiver android:name=".WidgetRecommendedProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_PREV" />
+                <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_NEXT" />
+                <action android:name="com.constanza.constanza_player.WIDGET_TOGGLE_FAV" />
+                <action android:name="com.constanza.constanza_player.WIDGET_OPEN_QUEUE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_recommended_info" />
         </receiver>
 
         <meta-data
