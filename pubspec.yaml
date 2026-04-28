@@ -1,7 +1,7 @@
 name: constanza_player
 description: "Constanza Músicas — Sua música. Seu silêncio. Seu momento."
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.2.2+8
 
 environment:
   sdk: ^3.10.7
@@ -17,14 +17,14 @@ dependencies:
   go_router: ^14.8.1
 
   # === AUDIO ===
-  just_audio: ^0.9.43
+  just_audio: ^0.10.5
   just_audio_background: ^0.0.1-beta.12
   audio_service: ^0.18.15
   audio_session: ^0.1.21
   on_audio_query: ^2.9.0
 
   # === STORAGE ===
-  permission_handler: ^11.3.1
+  permission_handler: ^12.0.1
   path_provider: ^2.1.5
   shared_preferences: ^2.3.3
 
@@ -39,8 +39,16 @@ dependencies:
   http: ^1.2.2
   cached_network_image: ^3.4.1
 
+  # === SHARE ===
+  # v12+ exige AGP >=8.12.1 + Kotlin 2.2.0. Mantemos v11 (mesma API SharePlus.instance).
+  share_plus: ^11.1.0
+
   # === UTILS ===
   equatable: ^2.0.7
+
+  # Necessário para resolver warning de fontes do Flutter (algum widget transitivo
+  # referencia a família CupertinoIcons sem bundle-la).
+  cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:

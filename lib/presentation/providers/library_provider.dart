@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:developer' as dev;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/domain/entities/song.dart';
@@ -31,9 +31,10 @@ class LibraryState {
     this.artists = const [],
     this.errorMessage,
     this.sortOrder = SortOrder.title,
-    this.filterShortTracks = false,
+    this.minTrackDurationSec = 0,
     this.allFolders = const [],
     this.selectedFolders = const [],
+    this.excludedSongIds = const {},
   });
 
   final LibraryStatus status;
@@ -42,13 +43,18 @@ class LibraryState {
   final List<Artist> artists;
   final String? errorMessage;
   final SortOrder sortOrder;
-  final bool filterShortTracks;
+
+  /// Duração mínima (em segundos) para filtrar faixas curtas. 0 = desativado.
+  final int minTrackDurationSec;
 
   /// Todas as pastas descobertas no scan.
   final List<String> allFolders;
 
-  /// Pastas selecionadas pelo usuário.
+  /// Pastas selecionadas pelo usuário para inclusão no scan.
   final List<String> selectedFolders;
+
+  /// IDs de músicas explicitamente excluídas do scan (dentro de pastas selecionadas).
+  final Set<String> excludedSongIds;
 
   // Memoized genres/composers — invalidados junto com _sortedSongsCache
   List<String>? _genresCache;
@@ -95,9 +101,11 @@ class LibraryState {
     if (_sortedSongsCache != null) return _sortedSongsCache!;
     var result = List<Song>.of(songs);
 
-    // Filtrar faixas curtas (< 30s) se ativado
-    if (filterShortTracks) {
-      result = result.where((s) => s.duration.inSeconds >= 30).toList();
+    // Filtrar faixas curtas se ativado (minTrackDurationSec > 0)
+    if (minTrackDurationSec > 0) {
+      result = result
+          .where((s) => s.duration.inSeconds >= minTrackDurationSec)
+          .toList();
     }
 
     // Ordenar
@@ -143,13 +151,14 @@ class LibraryState {
     List<Artist>? artists,
     String? errorMessage,
     SortOrder? sortOrder,
-    bool? filterShortTracks,
+    int? minTrackDurationSec,
     List<String>? allFolders,
     List<String>? selectedFolders,
+    Set<String>? excludedSongIds,
   }) {
     // Invalidate sorted cache when any input that affects it changes
     final invalidateCache =
-        songs != null || sortOrder != null || filterShortTracks != null;
+        songs != null || sortOrder != null || minTrackDurationSec != null;
     final newState = LibraryState(
       status: status ?? this.status,
       songs: songs ?? this.songs,
@@ -157,9 +166,10 @@ class LibraryState {
       artists: artists ?? this.artists,
       errorMessage: errorMessage ?? this.errorMessage,
       sortOrder: sortOrder ?? this.sortOrder,
-      filterShortTracks: filterShortTracks ?? this.filterShortTracks,
+      minTrackDurationSec: minTrackDurationSec ?? this.minTrackDurationSec,
       allFolders: allFolders ?? this.allFolders,
       selectedFolders: selectedFolders ?? this.selectedFolders,
+      excludedSongIds: excludedSongIds ?? this.excludedSongIds,
     );
     if (!invalidateCache) {
       newState._sortedSongsCache = _sortedSongsCache;
@@ -177,11 +187,18 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
 
   final _scanner = AudioScannerService();
 
-  /// Músicas do último scan completo (antes de filtrar por pastas).
+  /// Músicas do último scan completo (antes de filtrar por pastas ou exclusões).
   List<Song> _allScannedSongs = [];
 
   // IDs de favoritos persistidos (carregados antes do scan)
   Set<String> _savedFavoriteIds = {};
+
+  // IDs de músicas explicitamente excluídas do scan
+  Set<String> _savedExcludedIds = {};
+
+  /// Exposição somente-leitura das músicas brutas do scan (todas as pastas).
+  /// Usado pela FoldersPage para mostrar músicas antes do filtro de exclusões.
+  List<Song> get allScannedSongs => List.unmodifiable(_allScannedSongs);
 
   /// Timer para debounce do cache — evita re-serializar durante operações em lote.
   Timer? _cacheSaveTimer;
@@ -191,21 +208,26 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     if (json != null) {
       state = state.copyWith(
         sortOrder: SortOrder.values[json['sortOrder'] as int? ?? 0],
-        filterShortTracks: json['filterShortTracks'] as bool? ?? false,
+        minTrackDurationSec: json['minTrackDurationSec'] as int? ??
+            ((json['filterShortTracks'] as bool? ?? false) ? 30 : 0),
       );
     }
     _savedFavoriteIds = SettingsStorageService.loadFavorites();
-    // Carregar pastas selecionadas
+    _savedExcludedIds = SettingsStorageService.loadExcludedSongs();
+    // Carregar pastas selecionadas e exclusões no estado inicial
     final savedFolders = SettingsStorageService.loadMusicFolders();
     if (savedFolders != null) {
-      state = state.copyWith(selectedFolders: savedFolders);
+      state = state.copyWith(
+        selectedFolders: savedFolders,
+        excludedSongIds: _savedExcludedIds,
+      );
     }
   }
 
   void _saveSettings() {
     SettingsStorageService.saveLibrarySettings({
       'sortOrder': state.sortOrder.index,
-      'filterShortTracks': state.filterShortTracks,
+      'minTrackDurationSec': state.minTrackDurationSec,
     });
   }
 
@@ -217,7 +239,7 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     if (SettingsStorageService.hasLibraryCache) {
       final loaded = _loadFromCache();
       if (loaded) {
-        dev.log('Library: loaded ${state.songs.length} songs from cache');
+        debugPrint('Library: loaded ${state.songs.length} songs from cache');
         return;
       }
     }
@@ -282,9 +304,11 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     _saveSettings();
   }
 
-  /// Toggle filtro de faixas curtas.
-  void toggleFilterShortTracks() {
-    state = state.copyWith(filterShortTracks: !state.filterShortTracks);
+  /// Define a duração mínima (segundos) para filtrar faixas curtas. 0 = desativado.
+  void setMinTrackDuration(int seconds) {
+    final clamped = seconds < 0 ? 0 : seconds;
+    if (clamped == state.minTrackDurationSec) return;
+    state = state.copyWith(minTrackDurationSec: clamped);
     _saveSettings();
   }
 
@@ -334,7 +358,7 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
       }
       return countMap;
     } catch (e) {
-      dev.log('Folder discovery failed: $e');
+      debugPrint('Folder discovery failed: $e');
       return {};
     }
   }
@@ -500,7 +524,7 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
       );
       return true;
     } catch (e) {
-      dev.log('Library cache load failed: $e');
+      debugPrint('Library cache load failed: $e');
       return false;
     }
   }
@@ -540,7 +564,7 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
         'artists': artists.map((a) => a.toJson()).toList(),
       });
     } catch (e) {
-      dev.log('Library cache save failed: $e');
+      debugPrint('Library cache save failed: $e');
     }
   }
 
@@ -577,11 +601,24 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     }
   }
 
+  /// Persiste o conjunto de músicas excluídas e reaaplica o filtro da biblioteca.
+  Future<void> setExcludedSongs(Set<String> ids) async {
+    _savedExcludedIds = ids;
+    await SettingsStorageService.saveExcludedSongs(ids);
+    state = state.copyWith(excludedSongIds: ids);
+    final folders = state.selectedFolders;
+    if (folders.isNotEmpty) {
+      await _applyFolderFilter(folders);
+    }
+  }
+
   /// Filtra músicas escaneadas por pastas e atualiza estado + cache.
   Future<void> _applyFolderFilter(List<String> folders) async {
     final folderSet = Set<String>.from(folders);
     final filtered = _allScannedSongs
-        .where((s) => folderSet.contains(s.folderPath))
+        .where((s) =>
+            folderSet.contains(s.folderPath) &&
+            !_savedExcludedIds.contains(s.id))
         .toList();
 
     if (filtered.isEmpty) {
@@ -612,11 +649,13 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
       albums: albums,
       artists: artists,
       allFolders: _extractFolders(_allScannedSongs),
+      excludedSongIds: _savedExcludedIds,
     );
 
     await _saveToCache(restored, albums, artists, immediate: true);
-    dev.log(
-      'Library: filtered ${restored.length} songs from ${folders.length} folders',
+    debugPrint(
+      'Library: filtered ${restored.length} songs from ${folders.length} folders'
+      ' (${_savedExcludedIds.length} songs excluded)',
     );
   }
 

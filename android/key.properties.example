@@ -1,0 +1,19 @@
+# Template de configuração de signing release.
+#
+# COMO USAR:
+# 1. Gerar a keystore (uma vez, guarde com vida — sem ela não há update na Play Store):
+#
+#    keytool -genkey -v -keystore ~/constanza-release.jks \
+#      -keyalg RSA -keysize 2048 -validity 10000 \
+#      -alias constanza
+#
+# 2. Copiar este arquivo para android/key.properties e preencher:
+#
+#    cp android/key.properties.example android/key.properties
+#
+# 3. Editar com os valores reais. NÃO COMMITAR — já está no .gitignore.
+
+storePassword=SUA_STORE_PASSWORD
+keyPassword=SUA_KEY_PASSWORD
+keyAlias=constanza
+storeFile=/caminho/absoluto/para/constanza-release.jks
