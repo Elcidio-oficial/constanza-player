@@ -134,10 +134,7 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
     }
 
     if (_genre != null) {
-      final albumNames = lib
-          .songsByGenre(_genre!)
-          .map((s) => s.album)
-          .toSet();
+      final albumNames = lib.songsByGenre(_genre!).map((s) => s.album).toSet();
       list = list.where((a) => albumNames.contains(a.name)).toList();
     }
 
@@ -301,14 +298,15 @@ class _AlbumsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final cross = columns ??
+    final cross =
+        columns ??
         (width < 380
             ? 2
             : width < 600
-                ? 3
-                : width < 900
-                    ? 4
-                    : 5);
+            ? 3
+            : width < 900
+            ? 4
+            : 5);
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,

@@ -136,16 +136,13 @@ class CrashReporter {
     if (_logFile == null || !await _logFile!.exists()) return const [];
     try {
       final lines = await _logFile!.readAsLines();
-      return lines
-          .where((l) => l.isNotEmpty)
-          .map((l) {
-            try {
-              return jsonDecode(l) as Map<String, dynamic>;
-            } catch (_) {
-              return <String, dynamic>{'error': l, 'source': 'malformed'};
-            }
-          })
-          .toList();
+      return lines.where((l) => l.isNotEmpty).map((l) {
+        try {
+          return jsonDecode(l) as Map<String, dynamic>;
+        } catch (_) {
+          return <String, dynamic>{'error': l, 'source': 'malformed'};
+        }
+      }).toList();
     } catch (e) {
       debugPrint('[CrashReporter] read failed: $e');
       return const [];

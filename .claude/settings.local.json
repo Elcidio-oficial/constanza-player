@@ -51,7 +51,17 @@
       "Bash(set PYTHONIOENCODING=utf-8)",
       "Bash(python \"C:/Users/Dev/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"music player premium minimal immersive dark\" --design-system -p \"Constanza Player\" -f markdown)",
       "Bash(PYTHONIOENCODING=utf-8 python \"C:/Users/Dev/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"music player premium minimal immersive dark\" --design-system -f markdown)",
-      "Bash(PYTHONIOENCODING=utf-8 python \"C:/Users/Dev/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"animation transitions\" --stack flutter)"
+      "Bash(PYTHONIOENCODING=utf-8 python \"C:/Users/Dev/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"animation transitions\" --stack flutter)",
+      "Bash(git checkout *)",
+      "Bash(flutter --version)",
+      "Bash(./gradlew --stop)",
+      "Bash(rm -rf ~/.gradle/caches/build-cache-*)",
+      "Bash(flutter clean *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(sed -i 's/activeColor: accentColor ?? colors\\\\.onSurface,/activeThumbColor: accentColor ?? colors.onSurface,/g' lib/presentation/pages/settings/equalizer_page.dart)",
+      "Bash(sed -i 's/activeColor: accentColor ?? colors\\\\.primary,/activeThumbColor: accentColor ?? colors.primary,/g' lib/presentation/pages/settings/settings_page.dart)",
+      "Bash(sed -i 's/color != null && color!\\\\.value == c\\\\.value/color != null \\\\&\\\\& color!.toARGB32\\(\\) == c.toARGB32\\(\\)/' lib/presentation/pages/settings/settings_page.dart)"
     ]
   }
 }

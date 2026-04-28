@@ -65,7 +65,8 @@ void main() async {
               contentType: AndroidAudioContentType.music,
               usage: AndroidAudioUsage.media,
             ),
-            androidAudioFocusGainType: AndroidAudioFocusGainType.gainTransientMayDuck,
+            androidAudioFocusGainType:
+                AndroidAudioFocusGainType.gainTransientMayDuck,
             androidWillPauseWhenDucked: false,
           ),
         );

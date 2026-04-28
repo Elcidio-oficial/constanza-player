@@ -208,7 +208,8 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     if (json != null) {
       state = state.copyWith(
         sortOrder: SortOrder.values[json['sortOrder'] as int? ?? 0],
-        minTrackDurationSec: json['minTrackDurationSec'] as int? ??
+        minTrackDurationSec:
+            json['minTrackDurationSec'] as int? ??
             ((json['filterShortTracks'] as bool? ?? false) ? 30 : 0),
       );
     }
@@ -616,9 +617,11 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
   Future<void> _applyFolderFilter(List<String> folders) async {
     final folderSet = Set<String>.from(folders);
     final filtered = _allScannedSongs
-        .where((s) =>
-            folderSet.contains(s.folderPath) &&
-            !_savedExcludedIds.contains(s.id))
+        .where(
+          (s) =>
+              folderSet.contains(s.folderPath) &&
+              !_savedExcludedIds.contains(s.id),
+        )
         .toList();
 
     if (filtered.isEmpty) {

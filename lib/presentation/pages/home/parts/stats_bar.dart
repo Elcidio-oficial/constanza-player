@@ -173,4 +173,3 @@ class _PulsingDotState extends State<_PulsingDot>
 // ============================================================
 // STANDARD SONG CARD (unchanged from original)
 // ============================================================
-

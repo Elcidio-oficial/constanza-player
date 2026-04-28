@@ -270,9 +270,7 @@ abstract final class AppTheme {
           letterSpacing: 0.1,
         ),
         elevation: 6,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         // insetPadding bottom pequeno: o Scaffold já empurra o snackbar
         // acima de bottomNavigationBar/MiniPlayer; este padding adiciona
         // apenas a folga visual final.

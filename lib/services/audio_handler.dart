@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
@@ -336,7 +335,9 @@ class ConstanzaAudioHandler extends BaseAudioHandler
   void _runFadeOut(Duration over) {
     const steps = 20;
     final interval = over ~/ steps;
-    if (interval <= Duration.zero) return; // evita Timer.periodic com zero-interval
+    if (interval <= Duration.zero) {
+      return; // evita Timer.periodic com zero-interval
+    }
     var step = 0;
     _crossfadeTimer?.cancel();
     _crossfadeTimer = Timer.periodic(interval, (t) {

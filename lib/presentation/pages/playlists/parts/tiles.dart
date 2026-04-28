@@ -163,4 +163,3 @@ class _PlaylistThumbnail extends StatelessWidget {
 // ============================================================
 // USER PLAYLIST TILE — thumbnail + descrição + stats
 // ============================================================
-

@@ -140,7 +140,11 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                             ? null
                             : () => ref
                                   .read(playerProvider.notifier)
-                                  .playSong(songs.first, queue: songs, shuffle: true),
+                                  .playSong(
+                                    songs.first,
+                                    queue: songs,
+                                    shuffle: true,
+                                  ),
                       ),
                       IconButton(
                         icon: Icon(
@@ -318,9 +322,8 @@ class _LongPressSongTile extends ConsumerWidget {
       onLongPress: onLongPress,
       child: SongTile(
         song: song,
-        onTap: () => ref
-            .read(playerProvider.notifier)
-            .playSong(song, queue: songs),
+        onTap: () =>
+            ref.read(playerProvider.notifier).playSong(song, queue: songs),
       ),
     );
   }
@@ -362,9 +365,7 @@ class _SelectableSongTile extends StatelessWidget {
               margin: const EdgeInsets.only(right: AppSpacing.sm),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected
-                    ? accentColor
-                    : Colors.transparent,
+                color: isSelected ? accentColor : Colors.transparent,
                 border: Border.all(
                   color: isSelected
                       ? accentColor
@@ -373,7 +374,11 @@ class _SelectableSongTile extends StatelessWidget {
                 ),
               ),
               child: isSelected
-                  ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    )
                   : null,
             ),
             ArtworkImage.song(
@@ -390,7 +395,9 @@ class _SelectableSongTile extends StatelessWidget {
                     song.title,
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: isSelected ? accentColor : colors.onSurface,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -541,10 +548,8 @@ class _SelectionActionBar extends ConsumerWidget {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => _MultiAddToPlaylistSheet(
-        songs: selectedSongs,
-        onDone: onDone,
-      ),
+      builder: (_) =>
+          _MultiAddToPlaylistSheet(songs: selectedSongs, onDone: onDone),
     );
   }
 
@@ -622,8 +627,9 @@ class _MultiAddToPlaylistSheet extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final playlists = ref.watch(playlistProvider);
-    final userPlaylists = playlists.where((p) =>
-        p.id != 'fav' && p.id != 'recent' && p.id != 'most').toList();
+    final userPlaylists = playlists
+        .where((p) => p.id != 'fav' && p.id != 'recent' && p.id != 'most')
+        .toList();
 
     return Container(
       decoration: BoxDecoration(
@@ -632,9 +638,7 @@ class _MultiAddToPlaylistSheet extends ConsumerWidget {
           top: Radius.circular(AppSpacing.radiusXl),
         ),
       ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.paddingOf(context).bottom,
-      ),
+      padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -674,7 +678,9 @@ class _MultiAddToPlaylistSheet extends ConsumerWidget {
                 onTap: () {
                   HapticFeedback.lightImpact();
                   for (final s in songs) {
-                    ref.read(playlistProvider.notifier).addSongToPlaylist(pl.id, s);
+                    ref
+                        .read(playlistProvider.notifier)
+                        .addSongToPlaylist(pl.id, s);
                   }
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -843,17 +849,14 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                             data: SliderTheme.of(context).copyWith(
                               activeTrackColor: activeColor,
                               thumbColor: activeColor,
-                              overlayColor:
-                                  activeColor.withValues(alpha: 0.15),
+                              overlayColor: activeColor.withValues(alpha: 0.15),
                             ),
                             child: Slider(
                               value: minDur.toDouble().clamp(0, 120),
                               min: 0,
                               max: 120,
                               divisions: 24,
-                              label: minDur == 0
-                                  ? 'Desativado'
-                                  : '${minDur}s',
+                              label: minDur == 0 ? 'Desativado' : '${minDur}s',
                               onChanged: (v) => ref
                                   .read(libraryProvider.notifier)
                                   .setMinTrackDuration(v.round()),
@@ -919,20 +922,20 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
   }
 
   IconData _iconFor(SortOrder o) => switch (o) {
-        SortOrder.title => Icons.sort_by_alpha_rounded,
-        SortOrder.artist => Icons.person_rounded,
-        SortOrder.album => Icons.album_rounded,
-        SortOrder.dateAdded => Icons.schedule_rounded,
-        SortOrder.duration => Icons.timer_outlined,
-      };
+    SortOrder.title => Icons.sort_by_alpha_rounded,
+    SortOrder.artist => Icons.person_rounded,
+    SortOrder.album => Icons.album_rounded,
+    SortOrder.dateAdded => Icons.schedule_rounded,
+    SortOrder.duration => Icons.timer_outlined,
+  };
 
   String _labelFor(SortOrder o) => switch (o) {
-        SortOrder.title => 'Título',
-        SortOrder.artist => 'Artista',
-        SortOrder.album => 'Álbum',
-        SortOrder.dateAdded => 'Data adicionada',
-        SortOrder.duration => 'Duração',
-      };
+    SortOrder.title => 'Título',
+    SortOrder.artist => 'Artista',
+    SortOrder.album => 'Álbum',
+    SortOrder.dateAdded => 'Data adicionada',
+    SortOrder.duration => 'Duração',
+  };
 }
 
 class _SectionLabel extends StatelessWidget {
@@ -943,12 +946,12 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        text,
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: colors.onSurface.withValues(alpha: 0.35),
-          letterSpacing: 1.5,
-        ),
-      );
+    text,
+    style: theme.textTheme.labelSmall?.copyWith(
+      color: colors.onSurface.withValues(alpha: 0.35),
+      letterSpacing: 1.5,
+    ),
+  );
 }
 
 class _DensityChip extends StatelessWidget {

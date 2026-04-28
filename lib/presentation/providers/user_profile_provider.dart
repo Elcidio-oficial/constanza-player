@@ -23,7 +23,11 @@ class UserProfile {
         .toUpperCase();
   }
 
-  UserProfile copyWith({String? name, String? photoPath, bool clearPhoto = false}) {
+  UserProfile copyWith({
+    String? name,
+    String? photoPath,
+    bool clearPhoto = false,
+  }) {
     return UserProfile(
       name: name ?? this.name,
       photoPath: clearPhoto ? null : (photoPath ?? this.photoPath),
@@ -95,5 +99,5 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
 
 final userProfileProvider =
     StateNotifierProvider<UserProfileNotifier, UserProfile>(
-  (ref) => UserProfileNotifier(),
-);
+      (ref) => UserProfileNotifier(),
+    );

@@ -216,18 +216,18 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
         ref.watch(playerProvider.select((s) => s.currentSong)) ?? widget.song;
     final songId = currentSong.numericId;
 
-    ref.listen<String?>(
-      playerProvider.select((s) => s.currentSong?.id),
-      (prev, next) {
-        if (next != null && next != prev) {
-          _lineKeys.clear();
-          _lastScrolledIndex = -1;
-          _userScrollTimer?.cancel();
-          _userIsScrolling = false;
-          ref.read(lyricsProvider.notifier).loadForSong(next);
-        }
-      },
-    );
+    ref.listen<String?>(playerProvider.select((s) => s.currentSong?.id), (
+      prev,
+      next,
+    ) {
+      if (next != null && next != prev) {
+        _lineKeys.clear();
+        _lastScrolledIndex = -1;
+        _userScrollTimer?.cancel();
+        _userIsScrolling = false;
+        ref.read(lyricsProvider.notifier).loadForSong(next);
+      }
+    });
 
     // Auto-scroll no view mode
     if (!lyrics.isEditing && curIdx >= 0) {
@@ -260,9 +260,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             onUserScrollStart: _onUserScrollStart,
             onUserScrollEnd: _onUserScrollEnd,
             keyFor: _keyFor,
-            horizontalPadding: isLandscape
-                ? AppSpacing.xl
-                : AppSpacing.lg,
+            horizontalPadding: isLandscape ? AppSpacing.xl : AppSpacing.lg,
             textAlign: isLandscape ? TextAlign.left : TextAlign.left,
           );
 
@@ -745,4 +743,3 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
 // LYRICS MINI-PLAYER — barra inferior fixa na tela de letras
 // Premium: título/artista + heart, slider e transport compacto.
 // ============================================================
-

@@ -79,4 +79,3 @@ class _ElegantAlbumArt extends ConsumerWidget {
 // ============================================================
 // WAVE ALBUM ART — square art with animated sine waves below
 // ============================================================
-

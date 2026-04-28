@@ -919,10 +919,7 @@ class PlaylistDetailPage extends ConsumerWidget {
 
   void _showSnack(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
   }
 }
@@ -930,4 +927,3 @@ class PlaylistDetailPage extends ConsumerWidget {
 // ============================================================
 // HEADER BACKGROUND — imagem custom → mosaico → artwork → ícone
 // ============================================================
-

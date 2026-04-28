@@ -149,9 +149,8 @@ class _ArtistsPageState extends ConsumerState<ArtistsPage> {
         }
         list = list.where((a) => (favByArtist[a.name] ?? 0) > 0).toList();
         list.sort(
-          (a, b) => (favByArtist[b.name] ?? 0).compareTo(
-            favByArtist[a.name] ?? 0,
-          ),
+          (a, b) =>
+              (favByArtist[b.name] ?? 0).compareTo(favByArtist[a.name] ?? 0),
         );
     }
     return list;
@@ -294,14 +293,15 @@ class _ArtistsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final cross = columns ??
+    final cross =
+        columns ??
         (width < 380
             ? 2
             : width < 600
-                ? 3
-                : width < 900
-                    ? 4
-                    : 5);
+            ? 3
+            : width < 900
+            ? 4
+            : 5);
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -450,4 +450,3 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
-
