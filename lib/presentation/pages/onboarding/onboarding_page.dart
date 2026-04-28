@@ -292,11 +292,12 @@ class _WelcomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Spacer(flex: 2),
+          const SizedBox(height: 24),
 
           // Logo
           Container(
@@ -354,7 +355,7 @@ class _WelcomePage extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
 
-          const Spacer(flex: 3),
+          const SizedBox(height: 32),
         ],
       ),
     );
@@ -372,11 +373,12 @@ class _FeaturesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Spacer(flex: 2),
+          const SizedBox(height: 16),
 
           Text(
             'Tudo o que precisa',
@@ -432,7 +434,7 @@ class _FeaturesPage extends StatelessWidget {
             theme: theme,
           ),
 
-          const Spacer(flex: 3),
+          const SizedBox(height: 32),
         ],
       ),
     );
@@ -523,11 +525,12 @@ class _PermissionRequestPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Spacer(flex: 2),
+          const SizedBox(height: 16),
 
           // Shield icon
           Container(
@@ -603,7 +606,7 @@ class _PermissionRequestPage extends StatelessWidget {
             ),
           ),
 
-          const Spacer(flex: 3),
+          const SizedBox(height: 32),
         ],
       ),
     );

@@ -33,6 +33,7 @@ class _AppShellState extends ConsumerState<AppShell>
   bool _playlistsRestored = false;
   int _lastColorSongId = -1;
   Timer? _colorDebounce;
+  DateTime? _lastBackPress;
 
   /// Token para invalidar extrações de palette em voo. Cada troca rápida
   /// de música incrementa o token; quando a extração anterior termina, se
@@ -218,7 +219,32 @@ class _AppShellState extends ConsumerState<AppShell>
       }
     });
 
-    return BackgroundWrapper(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        // Em qualquer aba que não seja a Home, o back volta pra Home
+        // em vez de tentar sair do app.
+        if (widget.navigationShell.currentIndex != 0) {
+          widget.navigationShell.goBranch(0);
+          return;
+        }
+        final now = DateTime.now();
+        final lastPress = _lastBackPress;
+        if (lastPress != null &&
+            now.difference(lastPress) < const Duration(seconds: 2)) {
+          SystemNavigator.pop();
+          return;
+        }
+        _lastBackPress = now;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Toque duas vezes para sair'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
+      child: BackgroundWrapper(
       child: Scaffold(
         backgroundColor: themeState.hasBackground
             ? Colors.transparent
@@ -242,6 +268,7 @@ class _AppShellState extends ConsumerState<AppShell>
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -337,6 +364,11 @@ class _PremiumNavBar extends ConsumerWidget {
 
   static const _items = [
     _NavItem(Icons.home_outlined, Icons.home_rounded, 'Home'),
+    _NavItem(
+      Icons.library_music_outlined,
+      Icons.library_music_rounded,
+      'Músicas',
+    ),
     _NavItem(
       Icons.queue_music_outlined,
       Icons.queue_music_rounded,

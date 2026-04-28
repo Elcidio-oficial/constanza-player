@@ -714,15 +714,9 @@ class _UserPlaylistTile extends ConsumerWidget {
   }
 
   void _showSnack(BuildContext context, String message) {
-    final colors = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: colors.onSurface,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        ),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -1511,15 +1505,9 @@ class PlaylistDetailPage extends ConsumerWidget {
   }
 
   void _showSnack(BuildContext context, String message) {
-    final colors = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: colors.onSurface,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        ),
         duration: const Duration(seconds: 2),
       ),
     );

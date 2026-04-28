@@ -22,7 +22,13 @@ class ConstanzaAudioHandler extends BaseAudioHandler
   // CAMPOS
   // ──────────────────────────────────────────────────────────
 
-  final AudioPlayer _player = AudioPlayer();
+  // handleInterruptions:false → just_audio não pausa automaticamente quando
+  // outro app ganha audio focus (ex.: YouTube, WhatsApp). Permite reprodução
+  // simultânea/misturada com outras fontes de áudio do sistema.
+  final AudioPlayer _player = AudioPlayer(
+    handleInterruptions: false,
+    handleAudioSessionActivation: false,
+  );
 
   int _eqSessionId = 0;
   _EqConfig? _lastEqConfig;

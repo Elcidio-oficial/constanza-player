@@ -103,6 +103,10 @@ enum RepeatMode { off, all, one }
 class PlayerNotifier extends StateNotifier<PlayerState> {
   PlayerNotifier(this._handler, this._ref) : super(const PlayerState()) {
     _bindHandler();
+    WidgetService.registerActionHandlers(
+      onToggleFavorite: toggleFavorite,
+      onCycleRepeatMode: cycleRepeatMode,
+    );
   }
 
   final ConstanzaAudioHandler _handler;
@@ -407,6 +411,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
         RepeatMode.one => RepeatMode.off,
       },
     );
+    _updateWidget();
   }
 
   void toggleFavorite() {
@@ -435,6 +440,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     );
     // Sync notification icon
     _handler.setFavorite(newFav);
+    _updateWidget();
   }
 
   /// Atualiza metadados da música atual no player (título, artista, etc).
@@ -642,6 +648,8 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       title: song?.title ?? 'Constanza Músicas',
       artist: song?.artist ?? '',
       isPlaying: state.isPlaying,
+      isFavorite: song?.isFavorite ?? false,
+      repeatMode: state.repeatMode.index,
       artworkPath: artworkPath,
     );
   }

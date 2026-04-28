@@ -139,6 +139,19 @@ class SettingsStorageService {
   /// Verifica se o usuário já configurou pastas.
   static bool get hasMusicFolders => _safePrefs.containsKey(_keyMusicFolders);
 
+  // ─── EXCLUDED SONGS (blacklist por ID dentro de pastas selecionadas) ───
+
+  static const _keyExcludedSongs = 'constanza_excluded_songs';
+
+  static Set<String> loadExcludedSongs() {
+    final list = _safePrefs.getStringList(_keyExcludedSongs);
+    return list != null ? Set<String>.from(list) : {};
+  }
+
+  static Future<void> saveExcludedSongs(Set<String> ids) async {
+    await _safePrefs.setStringList(_keyExcludedSongs, ids.toList());
+  }
+
   // ─── USER PLAYLISTS ───
 
   static String? loadUserPlaylists() {
@@ -202,6 +215,31 @@ class SettingsStorageService {
       return jsonDecode(json) as Map<String, dynamic>;
     } catch (_) {
       return null;
+    }
+  }
+
+  // ─── USER PROFILE ───
+
+  static const _keyProfileName = 'constanza_profile_name';
+  static const _keyProfilePhoto = 'constanza_profile_photo';
+
+  static String? loadProfileName() => _safePrefs.getString(_keyProfileName);
+
+  static Future<void> saveProfileName(String? name) async {
+    if (name == null || name.isEmpty) {
+      await _safePrefs.remove(_keyProfileName);
+    } else {
+      await _safePrefs.setString(_keyProfileName, name);
+    }
+  }
+
+  static String? loadProfilePhoto() => _safePrefs.getString(_keyProfilePhoto);
+
+  static Future<void> saveProfilePhoto(String? path) async {
+    if (path == null || path.isEmpty) {
+      await _safePrefs.remove(_keyProfilePhoto);
+    } else {
+      await _safePrefs.setString(_keyProfilePhoto, path);
     }
   }
 

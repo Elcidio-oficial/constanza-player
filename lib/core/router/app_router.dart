@@ -11,6 +11,7 @@ import 'package:constanza_player/presentation/pages/onboarding/onboarding_page.d
 import 'package:constanza_player/presentation/pages/app_shell.dart';
 import 'package:constanza_player/presentation/pages/home/home_page.dart';
 import 'package:constanza_player/presentation/pages/playlists/playlists_page.dart';
+import 'package:constanza_player/presentation/pages/songs/songs_page.dart';
 import 'package:constanza_player/presentation/pages/search/search_page.dart';
 import 'package:constanza_player/presentation/pages/settings/settings_page.dart';
 import 'package:constanza_player/presentation/pages/now_playing/now_playing_page.dart';
@@ -19,11 +20,14 @@ import 'package:constanza_player/presentation/pages/library/artist_detail_page.d
 import 'package:constanza_player/presentation/pages/library/song_edit_page.dart';
 import 'package:constanza_player/presentation/pages/library/song_list_page.dart';
 import 'package:constanza_player/presentation/pages/library/genres_page.dart';
+import 'package:constanza_player/presentation/pages/library/artists_page.dart';
+import 'package:constanza_player/presentation/pages/library/albums_page.dart';
 import 'package:constanza_player/presentation/pages/library/composers_page.dart';
 import 'package:constanza_player/presentation/pages/library/statistics_page.dart';
 import 'package:constanza_player/presentation/pages/library/history_page.dart';
 import 'package:constanza_player/presentation/pages/library/duplicates_page.dart';
 import 'package:constanza_player/presentation/pages/settings/equalizer_page.dart';
+import 'package:constanza_player/presentation/pages/library/folders_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -61,6 +65,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   context,
                   state,
                   const HomePage(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/songs',
+                pageBuilder: (context, state) => buildPageWithDefaultTransition(
+                  context,
+                  state,
+                  const SongsPage(),
                 ),
               ),
             ],
@@ -160,6 +176,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/artists',
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(
+          context,
+          state,
+          const ArtistsPage(),
+        ),
+      ),
+      GoRoute(
+        path: '/albums',
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(
+          context,
+          state,
+          const AlbumsPage(),
+        ),
+      ),
+      GoRoute(
         path: '/genres',
         pageBuilder: (context, state) =>
             buildPageWithDefaultTransition(context, state, const GenresPage()),
@@ -199,6 +231,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           context,
           state,
           const EqualizerPage(),
+        ),
+      ),
+      GoRoute(
+        path: '/folders',
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(
+          context,
+          state,
+          const FoldersPage(),
         ),
       ),
     ],

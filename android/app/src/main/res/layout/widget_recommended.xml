@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:background="@drawable/widget_bg_dark"
+        android:padding="14dp">
+
+        <!-- Left: artwork + title + artist + transport -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Artwork -->
+            <ImageView
+                android:id="@+id/widget_artwork"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:scaleType="centerCrop"
+                android:src="@mipmap/ic_launcher"
+                android:background="@drawable/widget_artwork_bg"
+                android:contentDescription="Album art" />
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/widget_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Music"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Artist -->
+            <TextView
+                android:id="@+id/widget_artist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Artist"
+                android:textColor="#99FFFFFF"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Spacer (FrameLayout vazio — universalmente aceito por RemoteViews) -->
+            <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+
+            <!-- Transport controls -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageButton
+                    android:id="@+id/widget_prev"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:src="@drawable/ic_widget_prev"
+                    android:tint="#FFFFFF"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Previous"
+                    android:scaleType="centerInside"
+                    android:padding="4dp" />
+
+                <ImageButton
+                    android:id="@+id/widget_play_pause"
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_widget_play"
+                    android:tint="#FFFFFF"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Play/Pause"
+                    android:scaleType="centerInside"
+                    android:padding="4dp" />
+
+                <ImageButton
+                    android:id="@+id/widget_next"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:src="@drawable/ic_widget_next"
+                    android:tint="#FFFFFF"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Next"
+                    android:scaleType="centerInside"
+                    android:padding="4dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Right: 2×2 action grid -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp"
+            android:gravity="center">
+
+            <!-- Row 1 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/widget_action_queue"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:src="@android:drawable/ic_menu_sort_by_size"
+                    android:tint="#FFFFFF"
+                    android:background="@drawable/widget_btn_bg"
+                    android:contentDescription="Queue"
+                    android:scaleType="centerInside"
+                    android:padding="12dp" />
+
+                <ImageButton
+                    android:id="@+id/widget_action_playlist"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@android:drawable/ic_menu_gallery"
+                    android:tint="#FFFFFF"
+                    android:background="@drawable/widget_btn_bg"
+                    android:contentDescription="Playlist"
+                    android:scaleType="centerInside"
+                    android:padding="12dp" />
+
+            </LinearLayout>
+
+            <!-- Row 2 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/widget_action_sleep"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:src="@android:drawable/ic_menu_recent_history"
+                    android:tint="#FFFFFF"
+                    android:background="@drawable/widget_btn_bg"
+                    android:contentDescription="Sleep timer"
+                    android:scaleType="centerInside"
+                    android:padding="12dp" />
+
+                <ImageButton
+                    android:id="@+id/widget_favorite"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_favorite_border"
+                    android:tint="#FFFFFF"
+                    android:background="@drawable/widget_btn_bg"
+                    android:contentDescription="Favorite"
+                    android:scaleType="centerInside"
+                    android:padding="12dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</FrameLayout>

@@ -553,13 +553,6 @@ class ArtistDetailPage extends ConsumerWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('Adicionado à fila'),
-                        backgroundColor: colors.onSurface,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusSm,
-                          ),
-                        ),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -577,13 +570,6 @@ class ArtistDetailPage extends ConsumerWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('Adicionado à fila'),
-                        backgroundColor: colors.onSurface,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusSm,
-                          ),
-                        ),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -619,13 +605,6 @@ class ArtistDetailPage extends ConsumerWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('Info do artista copiada!'),
-                        backgroundColor: colors.onSurface,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusSm,
-                          ),
-                        ),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -653,11 +632,6 @@ class ArtistDetailPage extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Crie uma playlist primeiro'),
-          backgroundColor: colors.onSurface,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -734,13 +708,6 @@ class ArtistDetailPage extends ConsumerWidget {
                         SnackBar(
                           content: Text(
                             '${songs.length} música${songs.length != 1 ? 's' : ''} adicionada${songs.length != 1 ? 's' : ''} a "${p.name}"',
-                          ),
-                          backgroundColor: colors.onSurface,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppSpacing.radiusSm,
-                            ),
                           ),
                           duration: const Duration(seconds: 2),
                         ),
