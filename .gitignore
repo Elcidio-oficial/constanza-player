@@ -53,3 +53,6 @@ app.*.map.json
 /android/key.properties
 *.jks
 *.keystore
+
+# Localizations — gerados a partir de lib/l10n/*.arb via flutter gen-l10n
+/lib/l10n/gen/

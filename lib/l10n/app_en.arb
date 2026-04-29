@@ -1,0 +1,334 @@
+{
+  "@@locale": "en",
+
+  "appName": "Constanza Music",
+  "appTagline": "Your music. Your silence. Your moment.",
+
+  "navHome": "Home",
+  "navSongs": "Songs",
+  "navAlbums": "Albums",
+  "navArtists": "Artists",
+  "navPlaylists": "Playlists",
+  "navSearch": "Search",
+  "navSettings": "Settings",
+  "navLibrary": "Library",
+  "navHistory": "History",
+  "navStatistics": "Statistics",
+  "navGenres": "Genres",
+  "navComposers": "Composers",
+
+  "commonOk": "OK",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonDelete": "Delete",
+  "commonRemove": "Remove",
+  "commonClose": "Close",
+  "commonBack": "Back",
+  "commonRetry": "Try again",
+  "commonApply": "Apply",
+  "commonShare": "Share",
+  "commonNext": "Next",
+  "commonPrevious": "Previous",
+  "commonPlay": "Play",
+  "commonPause": "Pause",
+  "commonShuffle": "Shuffle",
+  "commonClearAll": "Clear all",
+  "commonSelectAll": "Select all",
+  "commonDeselectAll": "Deselect all",
+  "commonDone": "Done",
+  "commonEdit": "Edit",
+  "commonRename": "Rename",
+  "commonAddToQueue": "Add to queue",
+  "commonAddToPlaylist": "Add to playlist",
+  "commonPlayNext": "Play next",
+  "commonGoToAlbum": "Go to album",
+  "commonGoToArtist": "Go to artist",
+  "commonInfo": "Info",
+  "commonImport": "Import",
+  "commonExport": "Export",
+
+  "settingsAppearance": "APPEARANCE",
+  "settingsThemes": "THEMES",
+  "settingsInterface": "INTERFACE",
+  "settingsPlayback": "PLAYBACK",
+  "settingsLibrary": "LIBRARY",
+  "settingsAbout": "ABOUT",
+  "settingsAppBackground": "App background",
+  "settingsBackgroundOff": "Disabled",
+  "settingsBackgroundCustomImage": "Custom image",
+  "settingsBackgroundGradient": "Gradient",
+  "settingsThemeApplied": "Theme \"{name}\" applied",
+  "@settingsThemeApplied": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "settingsNowPlayingStyle": "Now Playing style",
+  "settingsNowPlayingColor": "Now Playing color",
+  "settingsNavBar": "Navigation bar",
+  "settingsMiniPlayer": "Mini player",
+  "settingsProgressBar": "Progress bar",
+  "settingsCustomColors": "Custom colors",
+  "settingsCustomColorsActive": "Custom colors active",
+  "settingsCustomColorsExtract": "Extract from album cover",
+  "settingsEqualizer": "Equalizer",
+  "settingsEqualizerOff": "Off",
+  "settingsCrossfade": "Crossfade",
+  "settingsCrossfadeOff": "Off",
+  "settingsCrossfadeSeconds": "{seconds} seconds",
+  "@settingsCrossfadeSeconds": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "settingsVolumeNormalization": "Volume normalization",
+  "settingsVolumeNormalizationDesc": "Even out volume between tracks",
+  "settingsPlaybackSpeed": "Playback speed",
+  "settingsSleepTimer": "Sleep timer",
+  "settingsSleepTimerOff": "Off",
+  "settingsSleepTimerDisable": "Disable timer",
+  "settingsSleepTimerMinutes": "{minutes} minutes",
+  "@settingsSleepTimerMinutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "settingsGapless": "Gapless playback",
+  "settingsGaplessDesc": "No silence between tracks",
+  "settingsBackgroundPlayback": "Background playback",
+  "settingsBackgroundPlaybackDesc": "Exempt from battery optimization",
+  "settingsBackgroundExemptionGranted": "Exemption granted. More stable playback.",
+  "settingsBackgroundExemptionDenied": "Exemption not granted. Playback may be interrupted.",
+  "settingsBackgroundExemptionAlready": "App is already exempt from battery optimization",
+  "settingsMusicFolders": "Music folders",
+  "settingsFoldersNone": "No folder selected",
+  "settingsFoldersCount": "{count, plural, =1{1 folder selected} other{{count} folders selected}}",
+  "@settingsFoldersCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "settingsRescan": "Re-scan library",
+  "settingsRescanScanning": "Scanning...",
+  "settingsRescanCount": "{count} songs found",
+  "@settingsRescanCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "settingsRescanRunning": "Re-scanning library...",
+  "settingsDuplicates": "Duplicate songs",
+  "settingsDuplicatesDesc": "Detect and remove copies",
+  "settingsBackup": "Backup & restore",
+  "settingsBackupDesc": "Export/import playlists, favorites and settings",
+  "settingsDiagnostics": "Diagnostics",
+  "settingsDiagnosticsDesc": "View and send error logs",
+  "settingsAboutApp": "About {appName}",
+  "@settingsAboutApp": {
+    "placeholders": { "appName": { "type": "String" } }
+  },
+  "settingsRate": "Rate on Play Store",
+  "settingsRateDesc": "Help us with your review",
+  "settingsLicenses": "Licenses",
+  "settingsLicensesDesc": "Open-source licenses",
+  "settingsLanguage": "Language",
+  "settingsLanguageSystem": "System default",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguagePortuguese": "Portuguese",
+  "settingsMadeBy": "Made with ♡ by {author}",
+  "@settingsMadeBy": {
+    "placeholders": { "author": { "type": "String" } }
+  },
+
+  "permissionTitle": "Access to your music",
+  "permissionDescription": "Constanza needs permission to find and play music stored on your device.",
+  "permissionFeatureDiscover": "Discover music on your device",
+  "permissionFeatureColors": "Extract colors from album covers",
+  "permissionFeaturePlaylists": "Create playlists and favorites",
+  "permissionAllow": "Allow access",
+  "permissionRetry": "Try again",
+  "permissionPermanentlyDenied": "Permission required",
+  "permissionPermanentlyDeniedDesc": "Permission was permanently denied. Open app settings to grant access.",
+  "permissionOpenSettings": "Settings",
+  "permissionMissing": "Permission required",
+  "permissionMissingDesc": "Allow access to audio files to view your library.",
+
+  "libraryEmpty": "No music found",
+  "libraryEmptyDesc": "Add songs to your device or pick a different folder.",
+  "libraryNeedsFolderSetup": "Pick your folders",
+  "libraryNeedsFolderSetupDesc": "Choose folders that contain your music to get started.",
+  "libraryFolderPicker": "Pick folders",
+  "libraryLoading": "Loading library...",
+  "librarySongCount": "{count, plural, =1{1 song} other{{count} songs}}",
+  "@librarySongCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "librarySongsAndDuration": "{count} songs · {duration}",
+  "@librarySongsAndDuration": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "duration": { "type": "String" }
+    }
+  },
+  "libraryHoursMinutes": "{hours}h {minutes}min",
+  "@libraryHoursMinutes": {
+    "placeholders": {
+      "hours": { "type": "int" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "libraryMinutes": "{minutes} min",
+  "@libraryMinutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "libraryPlayAll": "Play all",
+  "libraryNoSongs": "No songs",
+  "libraryFilterShortTracks": "Filter short tracks",
+  "libraryFilterShortTracksHidden": "Hide tracks shorter than {seconds}s",
+  "@libraryFilterShortTracksHidden": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "libraryFilterDisabled": "Disabled",
+  "libraryDensity": "DENSITY",
+  "libraryDensityCompact": "Compact",
+  "libraryDensityNormal": "Normal",
+  "libraryDensityComfortable": "Comfortable",
+  "libraryAlbumArt": "Album cover",
+  "libraryAlbumArtDesc": "Show thumbnail in songs",
+  "librarySorting": "SORTING",
+  "librarySortTitle": "Title",
+  "librarySortArtist": "Artist",
+  "librarySortAlbum": "Album",
+  "librarySortDateAdded": "Date added",
+  "librarySortDuration": "Duration",
+  "librarySelected": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "@librarySelected": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "librarySectionMusic": "Songs",
+  "librarySectionLibrary": "LIBRARY",
+
+  "homeRecentlyPlayed": "Recently played",
+  "homeMostPlayed": "Most played",
+  "homeFavorites": "Favorites",
+  "homeRecentlyAdded": "Recently added",
+  "homeAlbumsSection": "Albums",
+  "homeArtistsSection": "Artists",
+  "homeSeeAll": "See all",
+  "homeMoodMorning": "Start the day with energy",
+  "homeMoodMidday": "Rhythm for your day",
+  "homeMoodAfternoon": "Afternoon sounds",
+  "homeMoodEvening": "Relax with your favorites",
+  "homeMoodNight": "End-of-day sounds",
+  "homeMoodLateNight": "Calm tunes for the small hours",
+  "homeShuffleAll": "Shuffle all",
+
+  "playlistsTitle": "Playlists",
+  "playlistsMyPlaylists": "MY PLAYLISTS",
+  "playlistsNewTitle": "New playlist",
+  "playlistsNamePlaceholder": "Playlist name",
+  "playlistsDescriptionPlaceholder": "Description (optional)",
+  "playlistsCreate": "Create",
+  "playlistsRename": "Rename playlist",
+  "playlistsDelete": "Delete playlist",
+  "playlistsDeleteConfirmation": "Delete \"{name}\"? Songs will not be removed from your library.",
+  "@playlistsDeleteConfirmation": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "playlistsEmpty": "No playlist yet",
+  "playlistsEmptyDesc": "Create a playlist to organize your music.",
+  "playlistsEmptyAction": "Create playlist",
+  "playlistsCount": "{count, plural, =1{1 song} other{{count} songs}}",
+  "@playlistsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistsAddedToPlaylist": "Added to {name}",
+  "@playlistsAddedToPlaylist": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "playlistsAddedToQueue": "{count, plural, =1{1 song added to queue} other{{count} songs added to queue}}",
+  "@playlistsAddedToQueue": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistsAddManyTo": "Add {count} songs to…",
+  "@playlistsAddManyTo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistsNoUserPlaylists": "No playlists created",
+  "playlistsSmartFavorites": "Favorites",
+  "playlistsSmartRecent": "Recently played",
+  "playlistsSmartMost": "Most played",
+
+  "songOptionsPlay": "Play now",
+  "songOptionsPlayNext": "Play next",
+  "songOptionsAddToQueue": "Add to queue",
+  "songOptionsAddToPlaylist": "Add to playlist",
+  "songOptionsShare": "Share",
+  "songOptionsGoToAlbum": "Go to album",
+  "songOptionsGoToArtist": "Go to artist",
+  "songOptionsEdit": "Edit metadata",
+  "songOptionsToggleFavorite": "Toggle favorite",
+  "songOptionsExclude": "Exclude from scan",
+  "songOptionsDelete": "Delete file",
+  "songOptionsDeleteConfirm": "Delete \"{title}\" from device? This cannot be undone.",
+  "@songOptionsDeleteConfirm": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+
+  "nowPlayingQueue": "Up next",
+  "nowPlayingQueueEmpty": "No songs in queue",
+  "nowPlayingLyrics": "Lyrics",
+  "nowPlayingLyricsEmpty": "No lyrics for this song",
+  "nowPlayingLyricsAdd": "Add lyrics",
+  "nowPlayingLyricsFetch": "Fetch online",
+  "nowPlayingLyricsFetchError": "Could not fetch lyrics",
+  "nowPlayingLyricsEdit": "Edit lyrics",
+  "nowPlayingLyricsQuickSync": "Quick sync",
+  "nowPlayingShare": "Share",
+  "nowPlayingFavorited": "Favorited",
+  "nowPlayingUnfavorited": "Unfavorited",
+  "nowPlayingSpeed": "Speed",
+  "nowPlayingEq": "Equalizer",
+  "nowPlayingTimer": "Timer",
+  "nowPlayingPlayback": "Playback",
+
+  "searchTitle": "Search",
+  "searchHint": "Search songs, artists, albums...",
+  "searchAllResults": "All",
+  "searchSongs": "Songs",
+  "searchAlbums": "Albums",
+  "searchArtists": "Artists",
+  "searchPlaylists": "Playlists",
+  "searchEmpty": "Type something to search",
+  "searchNoResults": "No results for \"{query}\"",
+  "@searchNoResults": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "searchRecent": "Recent searches",
+  "searchClearRecent": "Clear",
+
+  "diagnosticsTitle": "Diagnostics",
+  "diagnosticsLoading": "Loading...",
+  "diagnosticsCount": "{count, plural, =1{1 log entry} other{{count} log entries}}",
+  "@diagnosticsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "diagnosticsNone": "No errors recorded",
+  "diagnosticsExplanation": "The app records non-fatal errors and crashes locally in release builds. Share the file if something looks off — it helps diagnose.",
+  "diagnosticsShare": "Share logs",
+  "diagnosticsClear": "Clear logs",
+  "diagnosticsCleared": "Logs cleared",
+
+  "backupTitle": "Backup & Restore",
+  "backupDescription": "Export playlists, favorites, exclusions and settings to a JSON file. To restore, copy the file content and use \"Import\".",
+  "backupExport": "Export backup",
+  "backupImport": "Import (from clipboard)",
+  "backupNote": "Android also auto-backs up to your Google account. This option is portable and account-independent.",
+  "backupClipboardEmpty": "Clipboard is empty",
+  "backupInvalidFormat": "Invalid backup format",
+  "backupRestored": "{count, plural, =1{1 key restored. Restart to apply.} other{{count} keys restored. Restart to apply.}}",
+  "@backupRestored": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "backupExportFailed": "Failed to generate backup",
+
+  "snackbarExitTwice": "Tap back twice to exit",
+  "snackbarThemeApplied": "Theme \"{name}\" applied",
+  "@snackbarThemeApplied": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "snackbarSongAddedNext": "{title} will play next",
+  "@snackbarSongAddedNext": {
+    "placeholders": { "title": { "type": "String" } }
+  }
+}

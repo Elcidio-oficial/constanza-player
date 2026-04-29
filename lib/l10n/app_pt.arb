@@ -1,0 +1,334 @@
+{
+  "@@locale": "pt",
+
+  "appName": "Constanza Músicas",
+  "appTagline": "Sua música. Seu silêncio. Seu momento.",
+
+  "navHome": "Início",
+  "navSongs": "Músicas",
+  "navAlbums": "Álbuns",
+  "navArtists": "Artistas",
+  "navPlaylists": "Playlists",
+  "navSearch": "Buscar",
+  "navSettings": "Configurações",
+  "navLibrary": "Biblioteca",
+  "navHistory": "Histórico",
+  "navStatistics": "Estatísticas",
+  "navGenres": "Gêneros",
+  "navComposers": "Compositores",
+
+  "commonOk": "OK",
+  "commonCancel": "Cancelar",
+  "commonSave": "Salvar",
+  "commonDelete": "Apagar",
+  "commonRemove": "Remover",
+  "commonClose": "Fechar",
+  "commonBack": "Voltar",
+  "commonRetry": "Tentar novamente",
+  "commonApply": "Aplicar",
+  "commonShare": "Partilhar",
+  "commonNext": "Próxima",
+  "commonPrevious": "Anterior",
+  "commonPlay": "Tocar",
+  "commonPause": "Pausar",
+  "commonShuffle": "Aleatório",
+  "commonClearAll": "Limpar tudo",
+  "commonSelectAll": "Selecionar tudo",
+  "commonDeselectAll": "Desmarcar tudo",
+  "commonDone": "Concluído",
+  "commonEdit": "Editar",
+  "commonRename": "Renomear",
+  "commonAddToQueue": "Adicionar à fila",
+  "commonAddToPlaylist": "Adicionar à playlist",
+  "commonPlayNext": "Tocar a seguir",
+  "commonGoToAlbum": "Ir para o álbum",
+  "commonGoToArtist": "Ir para o artista",
+  "commonInfo": "Info",
+  "commonImport": "Importar",
+  "commonExport": "Exportar",
+
+  "settingsAppearance": "APARÊNCIA",
+  "settingsThemes": "TEMAS",
+  "settingsInterface": "INTERFACE",
+  "settingsPlayback": "REPRODUÇÃO",
+  "settingsLibrary": "BIBLIOTECA",
+  "settingsAbout": "SOBRE",
+  "settingsAppBackground": "Fundo do App",
+  "settingsBackgroundOff": "Desativado",
+  "settingsBackgroundCustomImage": "Imagem personalizada",
+  "settingsBackgroundGradient": "Gradiente",
+  "settingsThemeApplied": "Tema \"{name}\" aplicado",
+  "@settingsThemeApplied": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "settingsNowPlayingStyle": "Estilo Now Playing",
+  "settingsNowPlayingColor": "Cor do Now Playing",
+  "settingsNavBar": "Barra de navegação",
+  "settingsMiniPlayer": "Mini Player",
+  "settingsProgressBar": "Barra de progresso",
+  "settingsCustomColors": "Cores personalizadas",
+  "settingsCustomColorsActive": "Cores manuais ativas",
+  "settingsCustomColorsExtract": "Extrair da capa do álbum",
+  "settingsEqualizer": "Equalizador",
+  "settingsEqualizerOff": "Desligado",
+  "settingsCrossfade": "Crossfade",
+  "settingsCrossfadeOff": "Desligado",
+  "settingsCrossfadeSeconds": "{seconds} segundos",
+  "@settingsCrossfadeSeconds": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "settingsVolumeNormalization": "Normalização de volume",
+  "settingsVolumeNormalizationDesc": "Nivelar volume entre músicas",
+  "settingsPlaybackSpeed": "Velocidade de reprodução",
+  "settingsSleepTimer": "Sleep Timer",
+  "settingsSleepTimerOff": "Desligado",
+  "settingsSleepTimerDisable": "Desligar timer",
+  "settingsSleepTimerMinutes": "{minutes} minutos",
+  "@settingsSleepTimerMinutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "settingsGapless": "Gapless Playback",
+  "settingsGaplessDesc": "Sem silêncio entre faixas",
+  "settingsBackgroundPlayback": "Reprodução em background",
+  "settingsBackgroundPlaybackDesc": "Isentar de otimização de bateria",
+  "settingsBackgroundExemptionGranted": "Isenção concedida. Reprodução em background mais estável.",
+  "settingsBackgroundExemptionDenied": "Isenção não concedida. Reprodução pode ser interrompida.",
+  "settingsBackgroundExemptionAlready": "App já está isento de otimização de bateria",
+  "settingsMusicFolders": "Pastas de Música",
+  "settingsFoldersNone": "Nenhuma pasta selecionada",
+  "settingsFoldersCount": "{count, plural, =1{1 pasta selecionada} other{{count} pastas selecionadas}}",
+  "@settingsFoldersCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "settingsRescan": "Re-escanear biblioteca",
+  "settingsRescanScanning": "Escaneando...",
+  "settingsRescanCount": "{count} músicas encontradas",
+  "@settingsRescanCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "settingsRescanRunning": "Re-escaneando biblioteca...",
+  "settingsDuplicates": "Músicas duplicadas",
+  "settingsDuplicatesDesc": "Detectar e remover cópias",
+  "settingsBackup": "Backup & Restauração",
+  "settingsBackupDesc": "Exportar/importar playlists, favoritos e ajustes",
+  "settingsDiagnostics": "Diagnóstico",
+  "settingsDiagnosticsDesc": "Ver e enviar logs de erros",
+  "settingsAboutApp": "Sobre o {appName}",
+  "@settingsAboutApp": {
+    "placeholders": { "appName": { "type": "String" } }
+  },
+  "settingsRate": "Avaliar na Play Store",
+  "settingsRateDesc": "Ajude-nos com sua avaliação",
+  "settingsLicenses": "Licenças",
+  "settingsLicensesDesc": "Licenças de código aberto",
+  "settingsLanguage": "Idioma",
+  "settingsLanguageSystem": "Padrão do sistema",
+  "settingsLanguageEnglish": "Inglês",
+  "settingsLanguagePortuguese": "Português",
+  "settingsMadeBy": "Feito com ♡ por {author}",
+  "@settingsMadeBy": {
+    "placeholders": { "author": { "type": "String" } }
+  },
+
+  "permissionTitle": "Acesso à sua música",
+  "permissionDescription": "O Constanza precisa de permissão para encontrar e reproduzir as músicas armazenadas no seu dispositivo.",
+  "permissionFeatureDiscover": "Descobrir músicas no dispositivo",
+  "permissionFeatureColors": "Extrair cores das capas de álbum",
+  "permissionFeaturePlaylists": "Criar playlists e favoritos",
+  "permissionAllow": "Permitir Acesso",
+  "permissionRetry": "Tentar novamente",
+  "permissionPermanentlyDenied": "Permissão necessária",
+  "permissionPermanentlyDeniedDesc": "A permissão foi negada permanentemente. Abra as configurações do app para conceder acesso.",
+  "permissionOpenSettings": "Configurações",
+  "permissionMissing": "Permissão necessária",
+  "permissionMissingDesc": "Permita o acesso aos ficheiros de áudio para ver a sua biblioteca.",
+
+  "libraryEmpty": "Nenhuma música encontrada",
+  "libraryEmptyDesc": "Adicione músicas ao seu dispositivo ou escolha outra pasta.",
+  "libraryNeedsFolderSetup": "Selecione suas pastas",
+  "libraryNeedsFolderSetupDesc": "Escolha as pastas que contêm suas músicas para começar.",
+  "libraryFolderPicker": "Selecionar pastas",
+  "libraryLoading": "A carregar biblioteca...",
+  "librarySongCount": "{count, plural, =1{1 música} other{{count} músicas}}",
+  "@librarySongCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "librarySongsAndDuration": "{count} músicas · {duration}",
+  "@librarySongsAndDuration": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "duration": { "type": "String" }
+    }
+  },
+  "libraryHoursMinutes": "{hours}h {minutes}min",
+  "@libraryHoursMinutes": {
+    "placeholders": {
+      "hours": { "type": "int" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "libraryMinutes": "{minutes} min",
+  "@libraryMinutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "libraryPlayAll": "Tocar tudo",
+  "libraryNoSongs": "Nenhuma música",
+  "libraryFilterShortTracks": "Filtrar músicas curtas",
+  "libraryFilterShortTracksHidden": "Ocultar faixas menores que {seconds}s",
+  "@libraryFilterShortTracksHidden": {
+    "placeholders": { "seconds": { "type": "int" } }
+  },
+  "libraryFilterDisabled": "Desativado",
+  "libraryDensity": "DENSIDADE",
+  "libraryDensityCompact": "Compacto",
+  "libraryDensityNormal": "Normal",
+  "libraryDensityComfortable": "Confortável",
+  "libraryAlbumArt": "Capa do álbum",
+  "libraryAlbumArtDesc": "Mostrar thumbnail nas músicas",
+  "librarySorting": "ORDENAÇÃO",
+  "librarySortTitle": "Título",
+  "librarySortArtist": "Artista",
+  "librarySortAlbum": "Álbum",
+  "librarySortDateAdded": "Data adicionada",
+  "librarySortDuration": "Duração",
+  "librarySelected": "{count, plural, =1{1 selecionada} other{{count} selecionadas}}",
+  "@librarySelected": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "librarySectionMusic": "Músicas",
+  "librarySectionLibrary": "BIBLIOTECA",
+
+  "homeRecentlyPlayed": "Tocadas recentemente",
+  "homeMostPlayed": "Mais tocadas",
+  "homeFavorites": "Favoritas",
+  "homeRecentlyAdded": "Adicionadas recentemente",
+  "homeAlbumsSection": "Álbuns",
+  "homeArtistsSection": "Artistas",
+  "homeSeeAll": "Ver tudo",
+  "homeMoodMorning": "Comece o dia com energia",
+  "homeMoodMidday": "Ritmo para o seu dia",
+  "homeMoodAfternoon": "Som da tarde",
+  "homeMoodEvening": "Relaxe com suas favoritas",
+  "homeMoodNight": "Sons para o fim do dia",
+  "homeMoodLateNight": "Músicas calmas para a madrugada",
+  "homeShuffleAll": "Tocar tudo aleatório",
+
+  "playlistsTitle": "Playlists",
+  "playlistsMyPlaylists": "MINHAS PLAYLISTS",
+  "playlistsNewTitle": "Nova Playlist",
+  "playlistsNamePlaceholder": "Nome da playlist",
+  "playlistsDescriptionPlaceholder": "Descrição (opcional)",
+  "playlistsCreate": "Criar",
+  "playlistsRename": "Renomear playlist",
+  "playlistsDelete": "Apagar playlist",
+  "playlistsDeleteConfirmation": "Apagar \"{name}\"? As músicas não serão removidas da biblioteca.",
+  "@playlistsDeleteConfirmation": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "playlistsEmpty": "Nenhuma playlist ainda",
+  "playlistsEmptyDesc": "Crie uma playlist para organizar suas músicas.",
+  "playlistsEmptyAction": "Criar playlist",
+  "playlistsCount": "{count, plural, =1{1 música} other{{count} músicas}}",
+  "@playlistsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistsAddedToPlaylist": "Adicionado a {name}",
+  "@playlistsAddedToPlaylist": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "playlistsAddedToQueue": "{count, plural, =1{1 música adicionada à fila} other{{count} músicas adicionadas à fila}}",
+  "@playlistsAddedToQueue": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistsAddManyTo": "Adicionar {count} músicas a…",
+  "@playlistsAddManyTo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playlistsNoUserPlaylists": "Sem playlists criadas",
+  "playlistsSmartFavorites": "Favoritas",
+  "playlistsSmartRecent": "Tocadas recentemente",
+  "playlistsSmartMost": "Mais tocadas",
+
+  "songOptionsPlay": "Tocar agora",
+  "songOptionsPlayNext": "Tocar a seguir",
+  "songOptionsAddToQueue": "Adicionar à fila",
+  "songOptionsAddToPlaylist": "Adicionar à playlist",
+  "songOptionsShare": "Partilhar",
+  "songOptionsGoToAlbum": "Ir para o álbum",
+  "songOptionsGoToArtist": "Ir para o artista",
+  "songOptionsEdit": "Editar metadados",
+  "songOptionsToggleFavorite": "Alternar favorito",
+  "songOptionsExclude": "Excluir do scan",
+  "songOptionsDelete": "Apagar arquivo",
+  "songOptionsDeleteConfirm": "Apagar \"{title}\" do dispositivo? Esta ação não pode ser desfeita.",
+  "@songOptionsDeleteConfirm": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+
+  "nowPlayingQueue": "A seguir",
+  "nowPlayingQueueEmpty": "Sem músicas na fila",
+  "nowPlayingLyrics": "Letra",
+  "nowPlayingLyricsEmpty": "Sem letra para esta música",
+  "nowPlayingLyricsAdd": "Adicionar letra",
+  "nowPlayingLyricsFetch": "Buscar online",
+  "nowPlayingLyricsFetchError": "Não foi possível buscar a letra",
+  "nowPlayingLyricsEdit": "Editar letra",
+  "nowPlayingLyricsQuickSync": "Sync rápido",
+  "nowPlayingShare": "Partilhar",
+  "nowPlayingFavorited": "Favoritada",
+  "nowPlayingUnfavorited": "Removida dos favoritos",
+  "nowPlayingSpeed": "Velocidade",
+  "nowPlayingEq": "Equalizador",
+  "nowPlayingTimer": "Timer",
+  "nowPlayingPlayback": "Reprodução",
+
+  "searchTitle": "Buscar",
+  "searchHint": "Buscar músicas, artistas, álbuns...",
+  "searchAllResults": "Tudo",
+  "searchSongs": "Músicas",
+  "searchAlbums": "Álbuns",
+  "searchArtists": "Artistas",
+  "searchPlaylists": "Playlists",
+  "searchEmpty": "Digite algo para buscar",
+  "searchNoResults": "Sem resultados para \"{query}\"",
+  "@searchNoResults": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "searchRecent": "Buscas recentes",
+  "searchClearRecent": "Limpar",
+
+  "diagnosticsTitle": "Diagnóstico",
+  "diagnosticsLoading": "Carregando...",
+  "diagnosticsCount": "{count, plural, =1{1 entrada de log} other{{count} entradas de log}}",
+  "@diagnosticsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "diagnosticsNone": "Nenhum erro registrado",
+  "diagnosticsExplanation": "O app grava localmente erros não-fatais e crashes em release. Compartilhe o arquivo se algo estranho acontecer — ajuda a diagnosticar.",
+  "diagnosticsShare": "Compartilhar logs",
+  "diagnosticsClear": "Limpar logs",
+  "diagnosticsCleared": "Logs limpos",
+
+  "backupTitle": "Backup & Restauração",
+  "backupDescription": "Exporte playlists, favoritos, exclusões e ajustes para um arquivo JSON. Para restaurar, copie o conteúdo do arquivo e use \"Importar\".",
+  "backupExport": "Exportar backup",
+  "backupImport": "Importar (da área de transferência)",
+  "backupNote": "O Android também faz backup automático na conta Google. Esta opção é portátil e independente da conta.",
+  "backupClipboardEmpty": "Área de transferência vazia",
+  "backupInvalidFormat": "Formato de backup inválido",
+  "backupRestored": "{count, plural, =1{1 chave restaurada. Reinicie o app para aplicar.} other{{count} chaves restauradas. Reinicie o app para aplicar.}}",
+  "@backupRestored": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "backupExportFailed": "Falha ao gerar backup",
+
+  "snackbarExitTwice": "Toque duas vezes para sair",
+  "snackbarThemeApplied": "Tema \"{name}\" aplicado",
+  "@snackbarThemeApplied": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "snackbarSongAddedNext": "{title} tocará a seguir",
+  "@snackbarSongAddedNext": {
+    "placeholders": { "title": { "type": "String" } }
+  }
+}
