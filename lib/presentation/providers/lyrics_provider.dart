@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:constanza_player/domain/entities/lyric_line.dart';
 import 'package:constanza_player/services/lyrics_service.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:collection';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:constanza_player/services/artist_image_service.dart';
 
 /// Cache LRU em memória para URLs de fotos de artistas.

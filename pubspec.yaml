@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
 
   # === STATE MANAGEMENT ===
-  flutter_riverpod: ^2.6.1
+  flutter_riverpod: ^3.0.0
 
   # === NAVEGAÇÃO ===
   go_router: ^14.8.1

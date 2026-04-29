@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/domain/entities/album.dart';
 import 'package:constanza_player/domain/entities/artist.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:constanza_player/services/audio_analysis_service.dart';
 import 'package:constanza_player/services/bpm_key_fetch_service.dart';
 import 'package:constanza_player/services/native_audio_analysis_service.dart';
