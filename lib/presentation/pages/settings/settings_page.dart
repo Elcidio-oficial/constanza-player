@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/constants/app_constants.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/theme/app_backgrounds.dart';
@@ -32,13 +33,14 @@ class SettingsPage extends ConsumerWidget {
     final audioState = ref.watch(audioSettingsProvider);
     final libState = ref.watch(libraryProvider);
     final accentColor = ref.watch(artworkPaletteProvider)?.dominant;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: BackgroundHelper.scaffoldColor(colors, themeState),
       appBar: AppBar(
         backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
         title: Text(
-          'Configurações',
+          l10n.navSettings,
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w300,
           ),
@@ -53,13 +55,13 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // APARÊNCIA
           // ========================================
-          _SectionHeader(title: 'APARÊNCIA', theme: theme, colors: colors),
+          _SectionHeader(title: l10n.settingsAppearance, theme: theme, colors: colors),
           _SettingsGroup(
             colors: colors,
             children: [
               _SettingsTile(
                 icon: Icons.wallpaper_outlined,
-                title: 'Fundo do App',
+                title: l10n.settingsAppBackground,
                 subtitle: switch (themeState.backgroundType) {
                   BackgroundType.none => 'Desativado',
                   BackgroundType.gradient =>
@@ -79,7 +81,7 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // TEMAS PRÉ-DEFINIDOS
           // ========================================
-          _SectionHeader(title: 'TEMAS', theme: theme, colors: colors),
+          _SectionHeader(title: l10n.settingsThemes, theme: theme, colors: colors),
           SizedBox(
             height: 120,
             child: ListView.separated(
@@ -156,13 +158,13 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // INTERFACE
           // ========================================
-          _SectionHeader(title: 'INTERFACE', theme: theme, colors: colors),
+          _SectionHeader(title: l10n.settingsInterface, theme: theme, colors: colors),
           _SettingsGroup(
             colors: colors,
             children: [
               _SettingsTile(
                 icon: Icons.play_circle_outline_rounded,
-                title: 'Estilo Now Playing',
+                title: l10n.settingsNowPlayingStyle,
                 subtitle: themeState.nowPlayingStyleLabel,
                 colors: colors,
                 theme: theme,
@@ -171,7 +173,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.gradient_rounded,
-                title: 'Cor do Now Playing',
+                title: l10n.settingsNowPlayingColor,
                 subtitle: themeState.nowPlayingColorStyleLabel,
                 colors: colors,
                 theme: theme,
@@ -180,7 +182,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.dock_rounded,
-                title: 'Barra de Navegação',
+                title: l10n.settingsNavBar,
                 subtitle: themeState.navBarStyleLabel,
                 colors: colors,
                 theme: theme,
@@ -189,7 +191,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.queue_music_rounded,
-                title: 'Mini Player',
+                title: l10n.settingsMiniPlayer,
                 subtitle: themeState.miniPlayerStyleLabel,
                 colors: colors,
                 theme: theme,
@@ -198,7 +200,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.linear_scale_rounded,
-                title: 'Barra de Progresso',
+                title: l10n.settingsProgressBar,
                 subtitle: themeState.mediaBarStyleLabel,
                 colors: colors,
                 theme: theme,
@@ -207,7 +209,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.palette_outlined,
-                title: 'Cores Personalizadas',
+                title: l10n.settingsCustomColors,
                 subtitle: themeState.useCustomNpColors
                     ? 'Cores manuais ativas'
                     : 'Extrair da capa do álbum',
@@ -215,19 +217,33 @@ class SettingsPage extends ConsumerWidget {
                 theme: theme,
                 onTap: () => _showCustomNpColorsSheet(context, ref),
               ),
+              _divider(colors),
+              _SettingsTile(
+                icon: Icons.language_rounded,
+                title: AppLocalizations.of(context).settingsLanguage,
+                subtitle: switch (themeState.languageCode) {
+                  'en' => AppLocalizations.of(context).settingsLanguageEnglish,
+                  'pt' =>
+                    AppLocalizations.of(context).settingsLanguagePortuguese,
+                  _ => AppLocalizations.of(context).settingsLanguageSystem,
+                },
+                colors: colors,
+                theme: theme,
+                onTap: () => _showLanguageDialog(context, ref),
+              ),
             ],
           ),
 
           // ========================================
           // REPRODUÇÃO
           // ========================================
-          _SectionHeader(title: 'REPRODUÇÃO', theme: theme, colors: colors),
+          _SectionHeader(title: l10n.settingsPlayback, theme: theme, colors: colors),
           _SettingsGroup(
             colors: colors,
             children: [
               _SettingsTile(
                 icon: Icons.equalizer_rounded,
-                title: 'Equalizador',
+                title: l10n.settingsEqualizer,
                 subtitle: audioState.eqEnabled
                     ? audioState.currentPreset.name
                     : 'Desligado',
@@ -241,7 +257,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.swap_horiz_rounded,
-                title: 'Crossfade',
+                title: l10n.settingsCrossfade,
                 subtitle: audioState.crossfadeLabel,
                 colors: colors,
                 theme: theme,
@@ -250,7 +266,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.volume_up_outlined,
-                title: 'Normalização de Volume',
+                title: l10n.settingsVolumeNormalization,
                 subtitle: 'Nivelar volume entre músicas',
                 colors: colors,
                 theme: theme,
@@ -269,7 +285,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.speed_rounded,
-                title: 'Velocidade de Reprodução',
+                title: l10n.settingsPlaybackSpeed,
                 subtitle: audioState.speedLabel,
                 colors: colors,
                 theme: theme,
@@ -278,7 +294,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.timer_outlined,
-                title: 'Sleep Timer',
+                title: l10n.settingsSleepTimer,
                 subtitle: audioState.sleepTimerLabel,
                 colors: colors,
                 theme: theme,
@@ -287,7 +303,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.graphic_eq_rounded,
-                title: 'Gapless Playback',
+                title: l10n.settingsGapless,
                 subtitle: 'Sem silêncio entre faixas',
                 colors: colors,
                 theme: theme,
@@ -305,7 +321,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.battery_charging_full_rounded,
-                title: 'Reprodução em background',
+                title: l10n.settingsBackgroundPlayback,
                 subtitle: 'Isentar de otimização de bateria',
                 colors: colors,
                 theme: theme,
@@ -317,13 +333,13 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // BIBLIOTECA
           // ========================================
-          _SectionHeader(title: 'BIBLIOTECA', theme: theme, colors: colors),
+          _SectionHeader(title: l10n.settingsLibrary, theme: theme, colors: colors),
           _SettingsGroup(
             colors: colors,
             children: [
               _SettingsTile(
                 icon: Icons.folder_outlined,
-                title: 'Pastas de Música',
+                title: l10n.settingsMusicFolders,
                 subtitle: libState.foldersLabel,
                 colors: colors,
                 theme: theme,
@@ -332,7 +348,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.refresh_rounded,
-                title: 'Re-escanear Biblioteca',
+                title: l10n.settingsRescan,
                 subtitle: libState.isLoading
                     ? 'Escaneando...'
                     : '${libState.songs.length} músicas encontradas',
@@ -353,7 +369,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.copy_all_rounded,
-                title: 'Músicas Duplicadas',
+                title: l10n.settingsDuplicates,
                 subtitle: 'Detectar e remover cópias da biblioteca',
                 colors: colors,
                 theme: theme,
@@ -368,7 +384,7 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // SOBRE
           // ========================================
-          _SectionHeader(title: 'SOBRE', theme: theme, colors: colors),
+          _SectionHeader(title: l10n.settingsAbout, theme: theme, colors: colors),
           _SettingsGroup(
             colors: colors,
             children: [
@@ -383,7 +399,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.star_outline_rounded,
-                title: 'Avaliar na Play Store',
+                title: l10n.settingsRate,
                 subtitle: 'Ajude-nos com sua avaliação',
                 colors: colors,
                 theme: theme,
@@ -392,7 +408,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.cloud_sync_outlined,
-                title: 'Backup & Restauração',
+                title: l10n.settingsBackup,
                 subtitle: 'Exportar/importar playlists, favoritos e ajustes',
                 colors: colors,
                 theme: theme,
@@ -401,7 +417,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.bug_report_outlined,
-                title: 'Diagnóstico',
+                title: l10n.settingsDiagnostics,
                 subtitle: 'Ver e enviar logs de erros',
                 colors: colors,
                 theme: theme,
@@ -410,7 +426,7 @@ class SettingsPage extends ConsumerWidget {
               _divider(colors),
               _SettingsTile(
                 icon: Icons.description_outlined,
-                title: 'Licenças',
+                title: l10n.settingsLicenses,
                 subtitle: 'Licenças de código aberto',
                 colors: colors,
                 theme: theme,
@@ -472,6 +488,92 @@ class SettingsPage extends ConsumerWidget {
         ),
       ),
       builder: (_) => const _DiagnosticsSheet(),
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
+    final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final current = ref.read(themeProvider).languageCode;
+    final notifier = ref.read(themeProvider.notifier);
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        backgroundColor: colors.surfaceContainer,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        ),
+        title: Text(l10n.settingsLanguage),
+        children: [
+          _langOption(
+            ctx,
+            l10n.settingsLanguageSystem,
+            Icons.smartphone_rounded,
+            current == null,
+            () {
+              notifier.setLanguage(null);
+              ctx.pop();
+            },
+          ),
+          _langOption(
+            ctx,
+            l10n.settingsLanguagePortuguese,
+            Icons.translate_rounded,
+            current == 'pt',
+            () {
+              notifier.setLanguage('pt');
+              ctx.pop();
+            },
+          ),
+          _langOption(
+            ctx,
+            l10n.settingsLanguageEnglish,
+            Icons.translate_rounded,
+            current == 'en',
+            () {
+              notifier.setLanguage('en');
+              ctx.pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _langOption(
+    BuildContext ctx,
+    String label,
+    IconData icon,
+    bool selected,
+    VoidCallback onTap,
+  ) {
+    final colors = Theme.of(ctx).colorScheme;
+    return SimpleDialogOption(
+      onPressed: onTap,
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 22,
+            color: selected
+                ? colors.onSurface
+                : colors.onSurface.withValues(alpha: 0.4),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: colors.onSurface,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ),
+          if (selected)
+            Icon(Icons.check_rounded, color: colors.onSurface, size: 20),
+        ],
+      ),
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/services/permission_service.dart';
 import 'package:go_router/go_router.dart';
 
@@ -139,22 +140,20 @@ class _PermissionPageState extends State<PermissionPage>
   }
 
   void _showSettingsDialog() {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Permissão necessária'),
-        content: const Text(
-          'A permissão foi negada permanentemente. '
-          'Abra as configurações do app para conceder acesso.',
-        ),
+        title: Text(l10n.permissionPermanentlyDenied),
+        content: Text(l10n.permissionPermanentlyDeniedDesc),
         actions: [
-          TextButton(onPressed: () => ctx.pop(), child: const Text('Cancelar')),
+          TextButton(onPressed: () => ctx.pop(), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               ctx.pop();
               PermissionService.openSettings();
             },
-            child: const Text('Configurações'),
+            child: Text(l10n.permissionOpenSettings),
           ),
         ],
       ),
@@ -165,6 +164,7 @@ class _PermissionPageState extends State<PermissionPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -211,7 +211,7 @@ class _PermissionPageState extends State<PermissionPage>
                   child: Opacity(
                     opacity: _titleOpacity.value,
                     child: Text(
-                      'Acesso à sua música',
+                      l10n.permissionTitle,
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: colors.onSurface,
@@ -230,7 +230,7 @@ class _PermissionPageState extends State<PermissionPage>
                   child: Opacity(
                     opacity: _descOpacity.value,
                     child: Text(
-                      'O Constanza precisa de permissão para encontrar e reproduzir as músicas armazenadas no seu dispositivo.',
+                      l10n.permissionDescription,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.55),
                         height: 1.5,
@@ -249,21 +249,21 @@ class _PermissionPageState extends State<PermissionPage>
                     children: [
                       _FeatureRow(
                         icon: Icons.music_note_rounded,
-                        text: 'Descubrir músicas no dispositivo',
+                        text: l10n.permissionFeatureDiscover,
                         colors: colors,
                         theme: theme,
                       ),
                       const SizedBox(height: 16),
                       _FeatureRow(
                         icon: Icons.palette_rounded,
-                        text: 'Extrair cores das capas de álbum',
+                        text: l10n.permissionFeatureColors,
                         colors: colors,
                         theme: theme,
                       ),
                       const SizedBox(height: 16),
                       _FeatureRow(
                         icon: Icons.queue_music_rounded,
-                        text: 'Criar playlists e favoritos',
+                        text: l10n.permissionFeaturePlaylists,
                         colors: colors,
                         theme: theme,
                       ),
@@ -302,7 +302,7 @@ class _PermissionPageState extends State<PermissionPage>
                                   color: colors.onPrimary,
                                 ),
                               )
-                            : const Text('Permitir Acesso'),
+                            : Text(l10n.permissionAllow),
                       ),
                     ),
                   ),
@@ -313,7 +313,7 @@ class _PermissionPageState extends State<PermissionPage>
                   TextButton(
                     onPressed: _requestPermission,
                     child: Text(
-                      'Tentar novamente',
+                      l10n.permissionRetry,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colors.primary,
                       ),

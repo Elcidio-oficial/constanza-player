@@ -49,6 +49,7 @@ class ThemeState {
     this.npCustomColor3,
 
     this.autoCarMode = false,
+    this.languageCode,
   });
 
   final ThemeMode themeMode;
@@ -72,6 +73,11 @@ class ThemeState {
   final Color? npCustomColor3;
 
   final bool autoCarMode;
+
+  /// Idioma escolhido pelo usuário ('en', 'pt') ou null para seguir o sistema.
+  final String? languageCode;
+
+  Locale? get locale => languageCode == null ? null : Locale(languageCode!);
 
   bool get hasBackground => backgroundType != BackgroundType.none;
 
@@ -159,6 +165,7 @@ class ThemeState {
     'npCustomColor2': SettingsStorageService.colorToInt(npCustomColor2),
     'npCustomColor3': SettingsStorageService.colorToInt(npCustomColor3),
     'autoCarMode': autoCarMode,
+    if (languageCode != null) 'languageCode': languageCode,
   };
 
   /// Deserializa de JSON map.
@@ -214,6 +221,7 @@ class ThemeState {
         json['npCustomColor3'] as int?,
       ),
       autoCarMode: json['autoCarMode'] as bool? ?? false,
+      languageCode: json['languageCode'] as String?,
     );
   }
 
@@ -244,6 +252,8 @@ class ThemeState {
     Color? npCustomColor3,
     bool clearNpColor3 = false,
     bool? autoCarMode,
+    String? languageCode,
+    bool clearLanguageCode = false,
   }) {
     return ThemeState(
       themeMode: themeMode ?? this.themeMode,
@@ -276,6 +286,9 @@ class ThemeState {
           ? null
           : (npCustomColor3 ?? this.npCustomColor3),
       autoCarMode: autoCarMode ?? this.autoCarMode,
+      languageCode: clearLanguageCode
+          ? null
+          : (languageCode ?? this.languageCode),
     );
   }
 }
@@ -296,6 +309,16 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
 
   void setThemeMode(ThemeMode mode) {
     state = state.copyWith(themeMode: mode);
+    _save();
+  }
+
+  /// Define o idioma. `code` deve ser 'en' ou 'pt'; `null` segue o sistema.
+  void setLanguage(String? code) {
+    if (code == null) {
+      state = state.copyWith(clearLanguageCode: true);
+    } else {
+      state = state.copyWith(languageCode: code);
+    }
     _save();
   }
 

@@ -4,6 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/services/widget_service.dart';
 import 'package:constanza_player/core/theme/app_theme.dart';
@@ -155,6 +156,9 @@ class _ConstanzaAppState extends ConsumerState<ConstanzaApp> {
       theme: AppTheme.light(accentColor: accent),
       darkTheme: AppTheme.dark(accentColor: accent),
       themeMode: themeState.themeMode,
+      locale: themeState.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
     );
   }

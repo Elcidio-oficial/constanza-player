@@ -16,6 +16,7 @@ import 'package:constanza_player/presentation/widgets/profile_header.dart';
 import 'package:constanza_player/presentation/widgets/artist_image.dart';
 import 'package:constanza_player/services/audio_analysis_service.dart';
 import 'package:constanza_player/presentation/pages/now_playing/now_playing_page.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 // ── Part files ──
@@ -28,20 +29,21 @@ part 'parts/minor_widgets.dart';
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
-  String get _moodSuggestion {
+  String _moodSuggestion(AppLocalizations l10n) {
     final h = DateTime.now().hour;
-    if (h < 6) return 'Músicas calmas para a madrugada';
-    if (h < 10) return 'Comece o dia com energia';
-    if (h < 14) return 'Ritmo para o seu dia';
-    if (h < 18) return 'Som da tarde';
-    if (h < 22) return 'Relaxe com suas favoritas';
-    return 'Sons para o fim do dia';
+    if (h < 6) return l10n.homeMoodLateNight;
+    if (h < 10) return l10n.homeMoodMorning;
+    if (h < 14) return l10n.homeMoodMidday;
+    if (h < 18) return l10n.homeMoodAfternoon;
+    if (h < 22) return l10n.homeMoodEvening;
+    return l10n.homeMoodNight;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
     final themeState = ref.watch(themeProvider);
     final libraryState = ref.watch(libraryProvider);
     final songs = libraryState.sortedSongs;
@@ -85,6 +87,7 @@ class HomePage extends ConsumerWidget {
         recentSongs,
         mostSongs,
         currentSongId,
+        l10n,
       ),
     );
   }
@@ -103,6 +106,7 @@ class HomePage extends ConsumerWidget {
     List<Song> recentSongs,
     List<Song> mostSongs,
     String? currentSongId,
+    AppLocalizations l10n,
   ) {
     if (libraryState.isLoading) {
       return Center(
@@ -115,7 +119,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'A carregar biblioteca...',
+              l10n.libraryLoading,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.4),
               ),
@@ -138,7 +142,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Permissão necessária',
+              l10n.permissionMissing,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w400,
@@ -146,7 +150,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Permita o acesso aos ficheiros de áudio para ver a sua biblioteca.',
+              l10n.permissionMissingDesc,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.35),
               ),
@@ -156,7 +160,7 @@ class HomePage extends ConsumerWidget {
             FilledButton.tonal(
               onPressed: () =>
                   ref.read(libraryProvider.notifier).retryPermission(),
-              child: const Text('Permitir Acesso'),
+              child: Text(l10n.permissionAllow),
             ),
           ],
         ),
@@ -176,7 +180,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Selecione suas pastas',
+              l10n.libraryNeedsFolderSetup,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w400,
@@ -184,7 +188,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Escolha as pastas que contêm suas músicas para começar.',
+              l10n.libraryNeedsFolderSetupDesc,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.35),
               ),
@@ -193,7 +197,7 @@ class HomePage extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             FilledButton.tonal(
               onPressed: () => context.push('/folders'),
-              child: const Text('Selecionar Pastas'),
+              child: Text(l10n.libraryFolderPicker),
             ),
           ],
         ),
@@ -214,7 +218,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Nenhuma música encontrada',
+              l10n.libraryEmpty,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w400,
@@ -222,7 +226,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Adicione ficheiros de áudio ao dispositivo e tente novamente.',
+              l10n.libraryEmptyDesc,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.35),
               ),
@@ -499,7 +503,7 @@ class HomePage extends ConsumerWidget {
         if (moodPicks.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _SectionHeader(
-              title: _moodSuggestion,
+              title: _moodSuggestion(l10n),
               colors: colors,
               theme: theme,
               sectionIndex: sectionIdx++,
