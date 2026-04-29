@@ -61,7 +61,8 @@
       "Bash(git commit -m ' *)",
       "Bash(sed -i 's/activeColor: accentColor ?? colors\\\\.onSurface,/activeThumbColor: accentColor ?? colors.onSurface,/g' lib/presentation/pages/settings/equalizer_page.dart)",
       "Bash(sed -i 's/activeColor: accentColor ?? colors\\\\.primary,/activeThumbColor: accentColor ?? colors.primary,/g' lib/presentation/pages/settings/settings_page.dart)",
-      "Bash(sed -i 's/color != null && color!\\\\.value == c\\\\.value/color != null \\\\&\\\\& color!.toARGB32\\(\\) == c.toARGB32\\(\\)/' lib/presentation/pages/settings/settings_page.dart)"
+      "Bash(sed -i 's/color != null && color!\\\\.value == c\\\\.value/color != null \\\\&\\\\& color!.toARGB32\\(\\) == c.toARGB32\\(\\)/' lib/presentation/pages/settings/settings_page.dart)",
+      "Bash(git push *)"
     ]
   }
 }
