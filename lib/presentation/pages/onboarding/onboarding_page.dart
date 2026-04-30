@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/services/permission_service.dart';
 import 'package:go_router/go_router.dart';
 
@@ -77,22 +78,23 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   void _showSettingsDialog() {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Permissão necessária'),
-        content: const Text(
-          'A permissão foi negada permanentemente. '
-          'Abra as configurações do app para conceder acesso.',
-        ),
+        title: Text(l10n.permissionPermanentlyDenied),
+        content: Text(l10n.permissionPermanentlyDeniedDesc),
         actions: [
-          TextButton(onPressed: () => ctx.pop(), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => ctx.pop(),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               ctx.pop();
               PermissionService.openSettings();
             },
-            child: const Text('Configurações'),
+            child: Text(l10n.permissionOpenSettings),
           ),
         ],
       ),
@@ -103,6 +105,7 @@ class _OnboardingPageState extends State<OnboardingPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -139,14 +142,15 @@ class _OnboardingPageState extends State<OnboardingPage>
                     onPageChanged: (i) => setState(() => _currentPage = i),
                     physics: const ClampingScrollPhysics(),
                     children: [
-                      _WelcomePage(theme: theme, colors: colors),
-                      _FeaturesPage(theme: theme, colors: colors),
+                      _WelcomePage(theme: theme, colors: colors, l10n: l10n),
+                      _FeaturesPage(theme: theme, colors: colors, l10n: l10n),
                       _PermissionRequestPage(
                         theme: theme,
                         colors: colors,
                         requesting: _requesting,
                         denied: _denied,
                         onRequest: _requestPermission,
+                        l10n: l10n,
                       ),
                     ],
                   ),
@@ -197,7 +201,9 @@ class _OnboardingPageState extends State<OnboardingPage>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                _currentPage == 0 ? 'Começar' : 'Próximo',
+                                _currentPage == 0
+                                    ? l10n.onboardingStart
+                                    : l10n.onboardingNext,
                                 style: theme.textTheme.titleSmall?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: colors.onPrimary,
@@ -239,7 +245,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      'Permitir Acesso',
+                                      l10n.permissionAllow,
                                       style: theme.textTheme.titleSmall
                                           ?.copyWith(
                                             fontWeight: FontWeight.w600,
@@ -286,9 +292,14 @@ class _OnboardingPageState extends State<OnboardingPage>
 // ============================================================
 
 class _WelcomePage extends StatelessWidget {
-  const _WelcomePage({required this.theme, required this.colors});
+  const _WelcomePage({
+    required this.theme,
+    required this.colors,
+    required this.l10n,
+  });
   final ThemeData theme;
   final ColorScheme colors;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -325,7 +336,7 @@ class _WelcomePage extends StatelessWidget {
           const SizedBox(height: 40),
 
           Text(
-            'CONSTANZA',
+            l10n.onboardingBrandName,
             style: theme.textTheme.headlineSmall?.copyWith(
               letterSpacing: 6,
               fontWeight: FontWeight.w300,
@@ -336,7 +347,7 @@ class _WelcomePage extends StatelessWidget {
           const SizedBox(height: 8),
 
           Text(
-            'Músicas',
+            l10n.onboardingBrandSub,
             style: theme.textTheme.titleMedium?.copyWith(
               letterSpacing: 3,
               color: colors.onSurface.withValues(alpha: 0.4),
@@ -347,7 +358,7 @@ class _WelcomePage extends StatelessWidget {
           const SizedBox(height: 48),
 
           Text(
-            'A experiência musical premium\nque as suas músicas merecem.',
+            l10n.onboardingTagline,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: colors.onSurface.withValues(alpha: 0.55),
               height: 1.6,
@@ -367,9 +378,14 @@ class _WelcomePage extends StatelessWidget {
 // ============================================================
 
 class _FeaturesPage extends StatelessWidget {
-  const _FeaturesPage({required this.theme, required this.colors});
+  const _FeaturesPage({
+    required this.theme,
+    required this.colors,
+    required this.l10n,
+  });
   final ThemeData theme;
   final ColorScheme colors;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -381,7 +397,7 @@ class _FeaturesPage extends StatelessWidget {
           const SizedBox(height: 16),
 
           Text(
-            'Tudo o que precisa',
+            l10n.onboardingFeaturesTitle,
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w600,
               color: colors.onSurface,
@@ -393,7 +409,7 @@ class _FeaturesPage extends StatelessWidget {
           const SizedBox(height: 8),
 
           Text(
-            'Um player completo e elegante',
+            l10n.onboardingFeaturesSubtitle,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: colors.onSurface.withValues(alpha: 0.5),
             ),
@@ -404,32 +420,32 @@ class _FeaturesPage extends StatelessWidget {
 
           _FeatureCard(
             icon: Icons.palette_rounded,
-            title: 'Cores Dinâmicas',
-            subtitle: 'A interface adapta-se à capa de cada álbum',
+            title: l10n.onboardingFeatureColorsTitle,
+            subtitle: l10n.onboardingFeatureColorsDesc,
             colors: colors,
             theme: theme,
           ),
           const SizedBox(height: 16),
           _FeatureCard(
             icon: Icons.equalizer_rounded,
-            title: 'Equalizador Nativo',
-            subtitle: 'EQ de 5 bandas com bass boost e virtualizer',
+            title: l10n.onboardingFeatureEqTitle,
+            subtitle: l10n.onboardingFeatureEqDesc,
             colors: colors,
             theme: theme,
           ),
           const SizedBox(height: 16),
           _FeatureCard(
             icon: Icons.auto_awesome_rounded,
-            title: '10 Estilos de Player',
-            subtitle: 'Classic, Vinyl, Aurora, Elegant e mais',
+            title: l10n.onboardingFeatureStylesTitle,
+            subtitle: l10n.onboardingFeatureStylesDesc,
             colors: colors,
             theme: theme,
           ),
           const SizedBox(height: 16),
           _FeatureCard(
             icon: Icons.search_rounded,
-            title: 'Pesquisa Inteligente',
-            subtitle: 'Encontre por título, artista ou álbum',
+            title: l10n.onboardingFeatureSearchTitle,
+            subtitle: l10n.onboardingFeatureSearchDesc,
             colors: colors,
             theme: theme,
           ),
@@ -515,8 +531,10 @@ class _PermissionRequestPage extends StatelessWidget {
     required this.requesting,
     required this.denied,
     required this.onRequest,
+    required this.l10n,
   });
 
+  final AppLocalizations l10n;
   final ThemeData theme;
   final ColorScheme colors;
   final bool requesting;
@@ -554,7 +572,7 @@ class _PermissionRequestPage extends StatelessWidget {
           const SizedBox(height: 32),
 
           Text(
-            'Acesso à sua música',
+            l10n.permissionTitle,
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w600,
               color: colors.onSurface,
@@ -566,8 +584,7 @@ class _PermissionRequestPage extends StatelessWidget {
           const SizedBox(height: 12),
 
           Text(
-            'O Constanza precisa de permissão para encontrar e '
-            'reproduzir as músicas armazenadas no seu dispositivo.',
+            l10n.permissionDescription,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: colors.onSurface.withValues(alpha: 0.55),
               height: 1.5,
@@ -594,8 +611,7 @@ class _PermissionRequestPage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Os seus ficheiros nunca saem do dispositivo. '
-                    'Sem cloud, sem rastreamento.',
+                    l10n.onboardingPrivacy,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.55),
                       height: 1.4,

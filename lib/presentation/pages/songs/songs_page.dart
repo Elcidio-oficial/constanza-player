@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
 import 'package:constanza_player/domain/entities/song.dart';
@@ -73,6 +74,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
     final libraryState = ref.watch(libraryProvider);
     final songs = libraryState.sortedSongs;
     final accentColor = ref.watch(artworkPaletteProvider)?.dominant;
+    final l10n = AppLocalizations.of(context);
 
     final totalDur = songs.fold<Duration>(
       Duration.zero,
@@ -80,7 +82,9 @@ class _SongsPageState extends ConsumerState<SongsPage> {
     );
     final hours = totalDur.inHours;
     final mins = totalDur.inMinutes.remainder(60);
-    final durationLabel = hours > 0 ? '${hours}h ${mins}min' : '$mins min';
+    final durationLabel = hours > 0
+        ? l10n.libraryHoursMinutes(hours, mins)
+        : l10n.libraryMinutes(mins);
 
     final allSelected = _selectedIds.length == songs.length && songs.isNotEmpty;
 
@@ -107,7 +111,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                   : null,
               title: _selectMode
                   ? Text(
-                      '${_selectedIds.length} selecionada${_selectedIds.length != 1 ? 's' : ''}',
+                      l10n.librarySelected(_selectedIds.length),
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: colors.onSurface,
                         fontWeight: FontWeight.w600,
@@ -121,7 +125,9 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                             ? _deselectAll
                             : () => _selectAll(songs),
                         child: Text(
-                          allSelected ? 'Desmarcar tudo' : 'Selecionar tudo',
+                          allSelected
+                              ? l10n.commonDeselectAll
+                              : l10n.commonSelectAll,
                           style: TextStyle(
                             color: accentColor ?? colors.primary,
                             fontSize: 13,
@@ -169,7 +175,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'BIBLIOTECA',
+                            l10n.librarySectionLibrary,
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: colors.onSurface.withValues(alpha: 0.35),
                               letterSpacing: 1.2,
@@ -178,7 +184,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Músicas',
+                            l10n.librarySectionMusic,
                             style: theme.textTheme.titleLarge?.copyWith(
                               color: colors.onSurface,
                               fontWeight: FontWeight.w200,
@@ -195,7 +201,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                 hasScrollBody: false,
                 child: Center(
                   child: Text(
-                    'Nenhuma música',
+                    l10n.libraryNoSongs,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.35),
                     ),
@@ -215,7 +221,10 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${songs.length} músicas · $durationLabel',
+                        l10n.librarySongsAndDuration(
+                          songs.length,
+                          durationLabel,
+                        ),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colors.onSurface.withValues(alpha: 0.4),
                         ),
@@ -235,7 +244,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'Tocar tudo',
+                                l10n.libraryPlayAll,
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: colors.primary.withValues(alpha: 0.7),
                                   fontWeight: FontWeight.w500,
@@ -444,6 +453,7 @@ class _SelectionActionBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -482,7 +492,7 @@ class _SelectionActionBar extends ConsumerWidget {
             children: [
               _ActionBtn(
                 icon: Icons.play_arrow_rounded,
-                label: 'Tocar',
+                label: l10n.songsActionPlay,
                 color: accentColor,
                 onTap: () {
                   HapticFeedback.lightImpact();
@@ -494,7 +504,7 @@ class _SelectionActionBar extends ConsumerWidget {
               ),
               _ActionBtn(
                 icon: Icons.playlist_add_rounded,
-                label: 'Playlist',
+                label: l10n.navPlaylists,
                 color: accentColor,
                 onTap: () {
                   HapticFeedback.lightImpact();
@@ -503,7 +513,7 @@ class _SelectionActionBar extends ConsumerWidget {
               ),
               _ActionBtn(
                 icon: Icons.share_outlined,
-                label: 'Partilhar',
+                label: l10n.songsActionShare,
                 color: accentColor,
                 onTap: () {
                   HapticFeedback.lightImpact();
@@ -512,7 +522,7 @@ class _SelectionActionBar extends ConsumerWidget {
               ),
               _ActionBtn(
                 icon: Icons.playlist_play_rounded,
-                label: 'Próxima',
+                label: l10n.songsActionPlayNext,
                 color: accentColor,
                 onTap: () {
                   HapticFeedback.lightImpact();

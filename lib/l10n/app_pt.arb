@@ -330,5 +330,60 @@
   "snackbarSongAddedNext": "{title} tocará a seguir",
   "@snackbarSongAddedNext": {
     "placeholders": { "title": { "type": "String" } }
-  }
+  },
+
+  "onboardingBrandName": "CONSTANZA",
+  "onboardingBrandSub": "Músicas",
+  "onboardingTagline": "A experiência musical premium\nque as suas músicas merecem.",
+  "onboardingFeaturesTitle": "Tudo o que precisa",
+  "onboardingFeaturesSubtitle": "Um player completo e elegante",
+  "onboardingFeatureColorsTitle": "Cores dinâmicas",
+  "onboardingFeatureColorsDesc": "A interface adapta-se à capa de cada álbum",
+  "onboardingFeatureEqTitle": "Equalizador nativo",
+  "onboardingFeatureEqDesc": "EQ de 5 bandas com bass boost e virtualizer",
+  "onboardingFeatureStylesTitle": "10 estilos de player",
+  "onboardingFeatureStylesDesc": "Classic, Vinyl, Aurora, Elegant e mais",
+  "onboardingFeatureSearchTitle": "Busca inteligente",
+  "onboardingFeatureSearchDesc": "Encontre por título, artista ou álbum",
+  "onboardingPrivacy": "Os seus ficheiros nunca saem do dispositivo. Sem cloud, sem rastreamento.",
+  "onboardingStart": "Começar",
+  "onboardingNext": "Próximo",
+
+  "songsViewOptions": "Opções de exibição",
+  "songsAppBar": "Músicas",
+  "songsTotalDuration": "{count, plural, =1{1 música} other{{count} músicas}} · {duration}",
+  "@songsTotalDuration": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "duration": { "type": "String" }
+    }
+  },
+  "songsActionShare": "Partilhar",
+  "songsActionAddToQueue": "Adicionar à fila",
+  "songsActionAddToPlaylist": "Adicionar à playlist",
+  "songsActionPlay": "Tocar",
+  "songsActionPlayNext": "Tocar a seguir",
+  "songsAddedToQueueOk": "{count} música(s) adicionada(s) à fila",
+  "@songsAddedToQueueOk": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "songsAddManyTo": "Adicionar {count} músicas a…",
+  "@songsAddManyTo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "songsAddedToOk": "{count} músicas adicionadas a {name}",
+  "@songsAddedToOk": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "name": { "type": "String" }
+    }
+  },
+
+  "searchHintShort": "Digite algo",
+  "searchAll": "Tudo",
+  "searchSection": "Buscar",
+
+  "playlistsCreateAction": "Criar",
+  "playlistsCreateNamePlaceholder": "Nome da playlist",
+  "playlistsCreateDescPlaceholder": "Descrição (opcional)"
 }
