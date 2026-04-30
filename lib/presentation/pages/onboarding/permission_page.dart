@@ -147,7 +147,10 @@ class _PermissionPageState extends State<PermissionPage>
         title: Text(l10n.permissionPermanentlyDenied),
         content: Text(l10n.permissionPermanentlyDeniedDesc),
         actions: [
-          TextButton(onPressed: () => ctx.pop(), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => ctx.pop(),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               ctx.pop();

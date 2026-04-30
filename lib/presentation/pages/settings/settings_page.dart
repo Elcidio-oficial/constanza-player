@@ -55,7 +55,11 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // APARÊNCIA
           // ========================================
-          _SectionHeader(title: l10n.settingsAppearance, theme: theme, colors: colors),
+          _SectionHeader(
+            title: l10n.settingsAppearance,
+            theme: theme,
+            colors: colors,
+          ),
           _SettingsGroup(
             colors: colors,
             children: [
@@ -81,7 +85,11 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // TEMAS PRÉ-DEFINIDOS
           // ========================================
-          _SectionHeader(title: l10n.settingsThemes, theme: theme, colors: colors),
+          _SectionHeader(
+            title: l10n.settingsThemes,
+            theme: theme,
+            colors: colors,
+          ),
           SizedBox(
             height: 120,
             child: ListView.separated(
@@ -158,7 +166,11 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // INTERFACE
           // ========================================
-          _SectionHeader(title: l10n.settingsInterface, theme: theme, colors: colors),
+          _SectionHeader(
+            title: l10n.settingsInterface,
+            theme: theme,
+            colors: colors,
+          ),
           _SettingsGroup(
             colors: colors,
             children: [
@@ -223,8 +235,9 @@ class SettingsPage extends ConsumerWidget {
                 title: AppLocalizations.of(context).settingsLanguage,
                 subtitle: switch (themeState.languageCode) {
                   'en' => AppLocalizations.of(context).settingsLanguageEnglish,
-                  'pt' =>
-                    AppLocalizations.of(context).settingsLanguagePortuguese,
+                  'pt' => AppLocalizations.of(
+                    context,
+                  ).settingsLanguagePortuguese,
                   _ => AppLocalizations.of(context).settingsLanguageSystem,
                 },
                 colors: colors,
@@ -237,7 +250,11 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // REPRODUÇÃO
           // ========================================
-          _SectionHeader(title: l10n.settingsPlayback, theme: theme, colors: colors),
+          _SectionHeader(
+            title: l10n.settingsPlayback,
+            theme: theme,
+            colors: colors,
+          ),
           _SettingsGroup(
             colors: colors,
             children: [
@@ -333,7 +350,11 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // BIBLIOTECA
           // ========================================
-          _SectionHeader(title: l10n.settingsLibrary, theme: theme, colors: colors),
+          _SectionHeader(
+            title: l10n.settingsLibrary,
+            theme: theme,
+            colors: colors,
+          ),
           _SettingsGroup(
             colors: colors,
             children: [
@@ -384,7 +405,11 @@ class SettingsPage extends ConsumerWidget {
           // ========================================
           // SOBRE
           // ========================================
-          _SectionHeader(title: l10n.settingsAbout, theme: theme, colors: colors),
+          _SectionHeader(
+            title: l10n.settingsAbout,
+            theme: theme,
+            colors: colors,
+          ),
           _SettingsGroup(
             colors: colors,
             children: [

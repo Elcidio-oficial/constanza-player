@@ -330,5 +330,60 @@
   "snackbarSongAddedNext": "{title} will play next",
   "@snackbarSongAddedNext": {
     "placeholders": { "title": { "type": "String" } }
-  }
+  },
+
+  "onboardingBrandName": "CONSTANZA",
+  "onboardingBrandSub": "Music",
+  "onboardingTagline": "The premium music experience\nyour songs deserve.",
+  "onboardingFeaturesTitle": "Everything you need",
+  "onboardingFeaturesSubtitle": "A complete and elegant player",
+  "onboardingFeatureColorsTitle": "Dynamic colors",
+  "onboardingFeatureColorsDesc": "The interface adapts to each album cover",
+  "onboardingFeatureEqTitle": "Native equalizer",
+  "onboardingFeatureEqDesc": "5-band EQ with bass boost and virtualizer",
+  "onboardingFeatureStylesTitle": "10 player styles",
+  "onboardingFeatureStylesDesc": "Classic, Vinyl, Aurora, Elegant and more",
+  "onboardingFeatureSearchTitle": "Smart search",
+  "onboardingFeatureSearchDesc": "Find by title, artist or album",
+  "onboardingPrivacy": "Your files never leave the device. No cloud, no tracking.",
+  "onboardingStart": "Start",
+  "onboardingNext": "Next",
+
+  "songsViewOptions": "View options",
+  "songsAppBar": "Songs",
+  "songsTotalDuration": "{count, plural, =1{1 song} other{{count} songs}} · {duration}",
+  "@songsTotalDuration": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "duration": { "type": "String" }
+    }
+  },
+  "songsActionShare": "Share",
+  "songsActionAddToQueue": "Add to queue",
+  "songsActionAddToPlaylist": "Add to playlist",
+  "songsActionPlay": "Play",
+  "songsActionPlayNext": "Play next",
+  "songsAddedToQueueOk": "{count} song(s) added to queue",
+  "@songsAddedToQueueOk": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "songsAddManyTo": "Add {count} songs to…",
+  "@songsAddManyTo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "songsAddedToOk": "{count} songs added to {name}",
+  "@songsAddedToOk": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "name": { "type": "String" }
+    }
+  },
+
+  "searchHintShort": "Type something",
+  "searchAll": "All",
+  "searchSection": "Search",
+
+  "playlistsCreateAction": "Create",
+  "playlistsCreateNamePlaceholder": "Playlist name",
+  "playlistsCreateDescPlaceholder": "Description (optional)"
 }

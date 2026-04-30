@@ -15,6 +15,7 @@ import 'package:constanza_player/presentation/widgets/song_tile/song_tile.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 // ── Part files ──
@@ -34,13 +35,14 @@ class PlaylistsPage extends ConsumerWidget {
     final themeState = ref.watch(themeProvider);
     final smartPlaylists = ref.watch(smartPlaylistsProvider);
     final userPlaylists = ref.watch(userPlaylistsProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: BackgroundHelper.scaffoldColor(colors, themeState),
       appBar: AppBar(
         backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
         title: Text(
-          'Playlists',
+          l10n.playlistsTitle,
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w300,
           ),
@@ -71,7 +73,7 @@ class PlaylistsPage extends ConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    'MINHAS PLAYLISTS',
+                    l10n.playlistsMyPlaylists,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.35),
                       letterSpacing: 1.5,
@@ -129,6 +131,7 @@ class PlaylistsPage extends ConsumerWidget {
     final nameController = TextEditingController();
     final descController = TextEditingController();
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     showDialog(
       context: context,
@@ -138,7 +141,7 @@ class PlaylistsPage extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
         title: Text(
-          'Nova Playlist',
+          l10n.playlistsNewTitle,
           style: Theme.of(context).textTheme.titleMedium,
         ),
         content: Column(
@@ -148,7 +151,7 @@ class PlaylistsPage extends ConsumerWidget {
               controller: nameController,
               autofocus: true,
               decoration: InputDecoration(
-                hintText: 'Nome da playlist',
+                hintText: l10n.playlistsNamePlaceholder,
                 hintStyle: TextStyle(
                   color: colors.onSurface.withValues(alpha: 0.3),
                 ),
@@ -167,7 +170,7 @@ class PlaylistsPage extends ConsumerWidget {
               controller: descController,
               maxLines: 2,
               decoration: InputDecoration(
-                hintText: 'Descrição (opcional)',
+                hintText: l10n.playlistsDescriptionPlaceholder,
                 hintStyle: TextStyle(
                   color: colors.onSurface.withValues(alpha: 0.25),
                 ),
@@ -189,7 +192,7 @@ class PlaylistsPage extends ConsumerWidget {
           TextButton(
             onPressed: () => ctx.pop(),
             child: Text(
-              'Cancelar',
+              l10n.commonCancel,
               style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
             ),
           ),
@@ -207,7 +210,10 @@ class PlaylistsPage extends ConsumerWidget {
                 ctx.pop();
               }
             },
-            child: Text('Criar', style: TextStyle(color: colors.onSurface)),
+            child: Text(
+              l10n.playlistsCreate,
+              style: TextStyle(color: colors.onSurface),
+            ),
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
@@ -113,13 +114,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final themeState = ref.watch(themeProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: BackgroundHelper.scaffoldColor(colors, themeState),
       appBar: AppBar(
         backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
         title: Text(
-          'Busca',
+          l10n.searchTitle,
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w300,
           ),
@@ -144,7 +146,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 color: colors.onSurface,
               ),
               decoration: InputDecoration(
-                hintText: 'Buscar músicas, artistas, álbuns...',
+                hintText: l10n.searchHint,
                 hintStyle: TextStyle(
                   color: colors.onSurface.withValues(alpha: 0.3),
                 ),
@@ -178,7 +180,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ),
           ),
           // === Filter chips + contagem ===
-          if (_query.isNotEmpty) _buildFilterChips(theme, colors),
+          if (_query.isNotEmpty) _buildFilterChips(theme, colors, l10n),
           Expanded(
             child: _query.isEmpty
                 ? _buildEmptyState(theme, colors)
@@ -202,7 +204,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     _cachedArtistResults = _rankArtists(libState.artists);
   }
 
-  Widget _buildFilterChips(ThemeData theme, ColorScheme colors) {
+  Widget _buildFilterChips(
+    ThemeData theme,
+    ColorScheme colors,
+    AppLocalizations l10n,
+  ) {
     final libState = ref.watch(libraryProvider);
     _ensureRankedResults(libState);
 
@@ -224,7 +230,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ),
             children: [
               _FilterChip(
-                label: 'Todos',
+                label: l10n.searchAllResults,
                 count: totalCount,
                 active: _filter == _SearchFilter.all,
                 onTap: () => setState(() => _filter = _SearchFilter.all),
@@ -233,7 +239,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               ),
               const SizedBox(width: AppSpacing.xs),
               _FilterChip(
-                label: 'Músicas',
+                label: l10n.searchSongs,
                 count: songCount,
                 active: _filter == _SearchFilter.songs,
                 onTap: () => setState(() => _filter = _SearchFilter.songs),
@@ -242,7 +248,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               ),
               const SizedBox(width: AppSpacing.xs),
               _FilterChip(
-                label: 'Álbuns',
+                label: l10n.searchAlbums,
                 count: albumCount,
                 active: _filter == _SearchFilter.albums,
                 onTap: () => setState(() => _filter = _SearchFilter.albums),
@@ -251,7 +257,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               ),
               const SizedBox(width: AppSpacing.xs),
               _FilterChip(
-                label: 'Artistas',
+                label: l10n.searchArtists,
                 count: artistCount,
                 active: _filter == _SearchFilter.artists,
                 onTap: () => setState(() => _filter = _SearchFilter.artists),
