@@ -645,6 +645,7 @@ class SettingsPage extends ConsumerWidget {
 
   void _showCrossfadeDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final current = ref.read(audioSettingsProvider).crossfadeDuration;
     final options = [0, 2, 3, 5, 7, 10, 12];
     showDialog(
@@ -654,9 +655,11 @@ class SettingsPage extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
-        title: const Text('Crossfade'),
+        title: Text(l10n.settingsCrossfadeTitle),
         children: options.map((sec) {
-          final label = sec == 0 ? 'Desligado' : '$sec segundos';
+          final label = sec == 0
+              ? l10n.settingsCrossfadeOff
+              : l10n.settingsCrossfadeSeconds(sec);
           return _dialogOption(
             ctx,
             label,
@@ -674,6 +677,7 @@ class SettingsPage extends ConsumerWidget {
 
   void _showSpeedDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final current = ref.read(audioSettingsProvider).playbackSpeed;
     final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
     showDialog(
@@ -683,7 +687,7 @@ class SettingsPage extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
-        title: const Text('Velocidade'),
+        title: Text(l10n.settingsSpeedTitle),
         children: speeds.map((speed) {
           return _dialogOption(
             ctx,
@@ -704,6 +708,7 @@ class SettingsPage extends ConsumerWidget {
   void _showSleepTimerDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final audioState = ref.read(audioSettingsProvider);
     final notifier = ref.read(audioSettingsProvider.notifier);
     final options = [0, 5, 10, 15, 30, 45, 60, 90, 120];
@@ -735,7 +740,10 @@ class SettingsPage extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Text('Sleep Timer', style: theme.textTheme.titleMedium),
+                Text(
+                  l10n.settingsSleepTitle,
+                  style: theme.textTheme.titleMedium,
+                ),
                 if (audioState.hasSleepTimer) ...[
                   const SizedBox(height: AppSpacing.xs),
                   Text(
@@ -749,9 +757,9 @@ class SettingsPage extends ConsumerWidget {
                 Divider(color: colors.outline.withValues(alpha: 0.15)),
                 ...options.map((min) {
                   final label = min == 0
-                      ? 'Desligar timer'
+                      ? l10n.settingsSleepTimerDisable
                       : min < 60
-                      ? '$min minutos'
+                      ? l10n.settingsSleepTimerMinutes(min)
                       : '${min ~/ 60}h${min % 60 > 0 ? ' ${min % 60}min' : ''}';
                   final isSelected = audioState.sleepTimerMinutes == min;
                   return ListTile(
@@ -794,6 +802,7 @@ class SettingsPage extends ConsumerWidget {
   void _showAboutDialog(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -839,7 +848,7 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              '"${AppConstants.appTagline}"',
+              '"${l10n.aboutDialogTagline}"',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.5),
                 fontStyle: FontStyle.italic,
@@ -848,7 +857,7 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Desenvolvido com ♡ por',
+              l10n.aboutDialogMadeBy,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.3),
               ),
@@ -867,7 +876,10 @@ class SettingsPage extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => ctx.pop(),
-            child: Text('Fechar', style: TextStyle(color: colors.onSurface)),
+            child: Text(
+              l10n.aboutDialogClose,
+              style: TextStyle(color: colors.onSurface),
+            ),
           ),
         ],
       ),

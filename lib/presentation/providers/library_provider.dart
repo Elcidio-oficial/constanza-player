@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/domain/entities/album.dart';
@@ -136,12 +137,12 @@ class LibraryState {
     return result;
   }
 
-  String get sortOrderLabel => switch (sortOrder) {
-    SortOrder.title => 'Título',
-    SortOrder.artist => 'Artista',
-    SortOrder.album => 'Álbum',
-    SortOrder.dateAdded => 'Data adicionada',
-    SortOrder.duration => 'Duração',
+  String sortOrderLabel(AppLocalizations l10n) => switch (sortOrder) {
+    SortOrder.title => l10n.librarySortTitle,
+    SortOrder.artist => l10n.librarySortArtist,
+    SortOrder.album => l10n.librarySortAlbum,
+    SortOrder.dateAdded => l10n.librarySortDateAdded,
+    SortOrder.duration => l10n.librarySortDuration,
   };
 
   LibraryState copyWith({

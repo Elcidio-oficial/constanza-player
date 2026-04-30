@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
 /// Página de saída de áudio.
 ///
@@ -80,7 +81,7 @@ class _AudioOutputPageState extends State<AudioOutputPage> {
     return Scaffold(
       backgroundColor: colors.surface,
       appBar: AppBar(
-        title: const Text('Saída de Áudio'),
+        title: Text(AppLocalizations.of(context).audioOutputTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
