@@ -439,5 +439,26 @@
   "historyTitle": "History",
   "statisticsTitle": "Statistics",
   "genresTitle": "Genres",
-  "composersTitle": "Composers"
+  "composersTitle": "Composers",
+
+  "eqTitle": "Equalizer",
+  "eqPresets": "PRESETS",
+  "eqEffects": "EFFECTS",
+  "eqCustom": "Custom",
+  "eqBassBoost": "Bass Boost",
+  "eqVirtualizer": "Virtualizer",
+  "eqOff": "Off",
+
+  "audioOutputTitle": "Audio output",
+  "audioOutputPhone": "Phone",
+  "audioOutputBluetooth": "Bluetooth",
+  "audioOutputWired": "Wired",
+  "audioOutputSpeaker": "Speaker",
+
+  "settingsCrossfadeTitle": "Crossfade",
+  "settingsSpeedTitle": "Playback speed",
+  "settingsSleepTitle": "Sleep timer",
+  "aboutDialogClose": "Close",
+  "aboutDialogTagline": "Your music. Your silence. Your moment.",
+  "aboutDialogMadeBy": "Developed with ♡ by"
 }

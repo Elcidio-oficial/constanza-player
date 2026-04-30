@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/presentation/providers/audio_settings_provider.dart';
 import 'package:constanza_player/presentation/providers/artwork_provider.dart';
@@ -20,6 +21,7 @@ class EqualizerPage extends ConsumerWidget {
     final notifier = ref.read(audioSettingsProvider.notifier);
     final palette = ref.watch(artworkPaletteProvider);
     final accentColor = palette?.vibrant ?? palette?.dominant;
+    final l10n = AppLocalizations.of(context);
 
     final themeState = ref.watch(themeProvider);
 
@@ -29,7 +31,7 @@ class EqualizerPage extends ConsumerWidget {
         appBar: AppBar(
           backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
           title: Text(
-            'Equalizador',
+            l10n.eqTitle,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w300,
             ),
@@ -60,7 +62,7 @@ class EqualizerPage extends ConsumerWidget {
               children: [
                 // === PRESETS ===
                 Text(
-                  'PRESETS',
+                  l10n.eqPresets,
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.35),
                     letterSpacing: 1.5,
@@ -185,7 +187,7 @@ class EqualizerPage extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: AppSpacing.xs),
                     child: Text(
-                      'Custom',
+                      l10n.eqCustom,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.3),
                         fontStyle: FontStyle.italic,
@@ -198,7 +200,7 @@ class EqualizerPage extends ConsumerWidget {
 
                 // === EFEITOS ===
                 Text(
-                  'EFEITOS',
+                  l10n.eqEffects,
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.35),
                     letterSpacing: 1.5,
@@ -208,11 +210,11 @@ class EqualizerPage extends ConsumerWidget {
 
                 // Bass Boost
                 _EffectSlider(
-                  label: 'Bass Boost',
+                  label: l10n.eqBassBoost,
                   value: audioState.bassBoost,
                   max: 10,
                   displayValue: audioState.bassBoost == 0
-                      ? 'Off'
+                      ? l10n.eqOff
                       : audioState.bassBoost.round().toString(),
                   onChanged: notifier.setBassBoost,
                   colors: colors,
@@ -224,11 +226,11 @@ class EqualizerPage extends ConsumerWidget {
 
                 // Virtualizer
                 _EffectSlider(
-                  label: 'Virtualizer',
+                  label: l10n.eqVirtualizer,
                   value: audioState.virtualizer,
                   max: 10,
                   displayValue: audioState.virtualizer == 0
-                      ? 'Off'
+                      ? l10n.eqOff
                       : audioState.virtualizer.round().toString(),
                   onChanged: notifier.setVirtualizer,
                   colors: colors,

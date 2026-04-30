@@ -439,5 +439,26 @@
   "historyTitle": "Histórico",
   "statisticsTitle": "Estatísticas",
   "genresTitle": "Gêneros",
-  "composersTitle": "Compositores"
+  "composersTitle": "Compositores",
+
+  "eqTitle": "Equalizador",
+  "eqPresets": "PRESETS",
+  "eqEffects": "EFEITOS",
+  "eqCustom": "Custom",
+  "eqBassBoost": "Bass Boost",
+  "eqVirtualizer": "Virtualizer",
+  "eqOff": "Off",
+
+  "audioOutputTitle": "Saída de áudio",
+  "audioOutputPhone": "Telefone",
+  "audioOutputBluetooth": "Bluetooth",
+  "audioOutputWired": "Cabo",
+  "audioOutputSpeaker": "Alto-falante",
+
+  "settingsCrossfadeTitle": "Crossfade",
+  "settingsSpeedTitle": "Velocidade de reprodução",
+  "settingsSleepTitle": "Sleep Timer",
+  "aboutDialogClose": "Fechar",
+  "aboutDialogTagline": "Sua música. Seu silêncio. Seu momento.",
+  "aboutDialogMadeBy": "Desenvolvido com ♡ por"
 }
