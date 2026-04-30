@@ -67,10 +67,11 @@ class SettingsPage extends ConsumerWidget {
                 icon: Icons.wallpaper_outlined,
                 title: l10n.settingsAppBackground,
                 subtitle: switch (themeState.backgroundType) {
-                  BackgroundType.none => 'Desativado',
+                  BackgroundType.none => l10n.settingsBackgroundOff,
                   BackgroundType.gradient =>
-                    themeState.currentGradient?.name ?? 'Gradiente',
-                  BackgroundType.image => 'Imagem personalizada',
+                    themeState.currentGradient?.name ??
+                        l10n.settingsBackgroundGradient,
+                  BackgroundType.image => l10n.settingsBackgroundCustomImage,
                 },
                 colors: colors,
                 theme: theme,
@@ -104,7 +105,7 @@ class SettingsPage extends ConsumerWidget {
                     ref.read(themeProvider.notifier).applyThemePreset(preset);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Tema "${preset.name}" aplicado'),
+                        content: Text(l10n.snackbarThemeApplied(preset.name)),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -177,7 +178,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.play_circle_outline_rounded,
                 title: l10n.settingsNowPlayingStyle,
-                subtitle: themeState.nowPlayingStyleLabel,
+                subtitle: themeState.nowPlayingStyleLabel(l10n),
                 colors: colors,
                 theme: theme,
                 onTap: () => _showNowPlayingStyleDialog(context, ref),
@@ -186,7 +187,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.gradient_rounded,
                 title: l10n.settingsNowPlayingColor,
-                subtitle: themeState.nowPlayingColorStyleLabel,
+                subtitle: themeState.nowPlayingColorStyleLabel(l10n),
                 colors: colors,
                 theme: theme,
                 onTap: () => _showNowPlayingColorStyleDialog(context, ref),
@@ -195,7 +196,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.dock_rounded,
                 title: l10n.settingsNavBar,
-                subtitle: themeState.navBarStyleLabel,
+                subtitle: themeState.navBarStyleLabel(l10n),
                 colors: colors,
                 theme: theme,
                 onTap: () => _showNavBarStyleDialog(context, ref),
@@ -204,7 +205,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.queue_music_rounded,
                 title: l10n.settingsMiniPlayer,
-                subtitle: themeState.miniPlayerStyleLabel,
+                subtitle: themeState.miniPlayerStyleLabel(l10n),
                 colors: colors,
                 theme: theme,
                 onTap: () => _showMiniPlayerStyleDialog(context, ref),
@@ -213,7 +214,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.linear_scale_rounded,
                 title: l10n.settingsProgressBar,
-                subtitle: themeState.mediaBarStyleLabel,
+                subtitle: themeState.mediaBarStyleLabel(l10n),
                 colors: colors,
                 theme: theme,
                 onTap: () => _showMediaBarStyleDialog(context, ref),
@@ -877,18 +878,27 @@ class SettingsPage extends ConsumerWidget {
 
   void _showNowPlayingStyleDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final current = ref.read(themeProvider).nowPlayingStyle;
     final options = [
-      (NowPlayingStyle.classic, 'Clássico', Icons.crop_square_rounded),
-      (NowPlayingStyle.circular, 'Circular', Icons.circle_outlined),
-      (NowPlayingStyle.large, 'Cinema', Icons.crop_landscape_rounded),
-      (NowPlayingStyle.fullBlur, 'Imersivo', Icons.blur_circular_rounded),
-      (NowPlayingStyle.vinyl, 'Vinil', Icons.album_rounded),
-      (NowPlayingStyle.minimalist, 'Minimalista', Icons.space_bar_rounded),
-      (NowPlayingStyle.aurora, 'Aurora', Icons.auto_awesome_rounded),
-      (NowPlayingStyle.elegant, 'Elegante', Icons.diamond_outlined),
-      (NowPlayingStyle.wave, 'Ondas', Icons.waves_rounded),
-      (NowPlayingStyle.mosaic, 'Mosaico', Icons.grid_view_rounded),
+      (NowPlayingStyle.classic, l10n.npStyleClassic, Icons.crop_square_rounded),
+      (NowPlayingStyle.circular, l10n.npStyleCircular, Icons.circle_outlined),
+      (NowPlayingStyle.large, l10n.npStyleLarge, Icons.crop_landscape_rounded),
+      (
+        NowPlayingStyle.fullBlur,
+        l10n.npStyleFullBlur,
+        Icons.blur_circular_rounded,
+      ),
+      (NowPlayingStyle.vinyl, l10n.npStyleVinyl, Icons.album_rounded),
+      (
+        NowPlayingStyle.minimalist,
+        l10n.npStyleMinimalist,
+        Icons.space_bar_rounded,
+      ),
+      (NowPlayingStyle.aurora, l10n.npStyleAurora, Icons.auto_awesome_rounded),
+      (NowPlayingStyle.elegant, l10n.npStyleElegant, Icons.diamond_outlined),
+      (NowPlayingStyle.wave, l10n.npStyleWave, Icons.waves_rounded),
+      (NowPlayingStyle.mosaic, l10n.npStyleMosaic, Icons.grid_view_rounded),
     ];
     showDialog(
       context: context,
@@ -897,7 +907,7 @@ class SettingsPage extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
-        title: const Text('Estilo Now Playing'),
+        title: Text(l10n.settingsNowPlayingStyle),
         children: options.map((o) {
           return _dialogOption(ctx, o.$2, o.$3, current == o.$1, () {
             ref.read(themeProvider.notifier).setNowPlayingStyle(o.$1);
@@ -1004,12 +1014,13 @@ class SettingsPage extends ConsumerWidget {
 
   void _showNavBarStyleDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final current = ref.read(themeProvider).navBarStyle;
     final options = [
-      (NavBarStyle.glass, 'Vidro', Icons.blur_on_rounded),
-      (NavBarStyle.artwork, 'Capa', Icons.image_rounded),
-      (NavBarStyle.solid, 'Sólido', Icons.square_rounded),
-      (NavBarStyle.minimal, 'Minimal', Icons.minimize_rounded),
+      (NavBarStyle.glass, l10n.navBarGlass, Icons.blur_on_rounded),
+      (NavBarStyle.artwork, l10n.navBarArtwork, Icons.image_rounded),
+      (NavBarStyle.solid, l10n.navBarSolid, Icons.square_rounded),
+      (NavBarStyle.minimal, l10n.navBarMinimal, Icons.minimize_rounded),
     ];
     showDialog(
       context: context,
@@ -1018,7 +1029,7 @@ class SettingsPage extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
-        title: const Text('Barra de Navegação'),
+        title: Text(l10n.settingsNavBar),
         children: options.map((o) {
           return _dialogOption(ctx, o.$2, o.$3, current == o.$1, () {
             ref.read(themeProvider.notifier).setNavBarStyle(o.$1);
@@ -1031,13 +1042,18 @@ class SettingsPage extends ConsumerWidget {
 
   void _showMiniPlayerStyleDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final current = ref.read(themeProvider).miniPlayerStyle;
     final options = [
-      (MiniPlayerStyle.glass, 'Vidro', Icons.blur_on_rounded),
-      (MiniPlayerStyle.artwork, 'Capa', Icons.image_rounded),
-      (MiniPlayerStyle.minimal, 'Minimal', Icons.minimize_rounded),
-      (MiniPlayerStyle.card, 'Card', Icons.credit_card_rounded),
-      (MiniPlayerStyle.dynamic, 'Dinâmico', Icons.auto_awesome_rounded),
+      (MiniPlayerStyle.glass, l10n.miniPlayerGlass, Icons.blur_on_rounded),
+      (MiniPlayerStyle.artwork, l10n.miniPlayerArtwork, Icons.image_rounded),
+      (MiniPlayerStyle.minimal, l10n.miniPlayerMinimal, Icons.minimize_rounded),
+      (MiniPlayerStyle.card, l10n.miniPlayerCard, Icons.credit_card_rounded),
+      (
+        MiniPlayerStyle.dynamic,
+        l10n.miniPlayerDynamic,
+        Icons.auto_awesome_rounded,
+      ),
     ];
     showDialog(
       context: context,
@@ -1046,7 +1062,7 @@ class SettingsPage extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
-        title: const Text('Estilo Mini Player'),
+        title: Text(l10n.settingsMiniPlayer),
         children: options.map((o) {
           return _dialogOption(ctx, o.$2, o.$3, current == o.$1, () {
             ref.read(themeProvider.notifier).setMiniPlayerStyle(o.$1);
@@ -1059,13 +1075,14 @@ class SettingsPage extends ConsumerWidget {
 
   void _showMediaBarStyleDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final current = ref.read(themeProvider).mediaBarStyle;
     final options = [
-      (MediaBarStyle.minimal, 'Minimal', Icons.remove_rounded),
-      (MediaBarStyle.glow, 'Brilho', Icons.flare_rounded),
-      (MediaBarStyle.gradient, 'Gradiente', Icons.gradient_rounded),
-      (MediaBarStyle.thick, 'Espessa', Icons.linear_scale_rounded),
-      (MediaBarStyle.classic, 'Clássico', Icons.tune_rounded),
+      (MediaBarStyle.minimal, l10n.mediaBarMinimal, Icons.remove_rounded),
+      (MediaBarStyle.glow, l10n.mediaBarGlow, Icons.flare_rounded),
+      (MediaBarStyle.gradient, l10n.mediaBarGradient, Icons.gradient_rounded),
+      (MediaBarStyle.thick, l10n.mediaBarThick, Icons.linear_scale_rounded),
+      (MediaBarStyle.classic, l10n.mediaBarClassic, Icons.tune_rounded),
     ];
     showDialog(
       context: context,
@@ -1074,7 +1091,7 @@ class SettingsPage extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
-        title: const Text('Barra de Progresso'),
+        title: Text(l10n.settingsProgressBar),
         children: options.map((o) {
           return _dialogOption(ctx, o.$2, o.$3, current == o.$1, () {
             ref.read(themeProvider.notifier).setMediaBarStyle(o.$1);

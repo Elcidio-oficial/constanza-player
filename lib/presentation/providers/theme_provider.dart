@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:constanza_player/core/theme/app_backgrounds.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/services/settings_storage_service.dart';
 
 enum ListDensity { compact, normal, comfortable }
@@ -90,58 +91,61 @@ class ThemeState {
       ? AppBackgrounds.findById(gradientPresetId!)
       : null;
 
-  String get themeModeLabel => switch (themeMode) {
-    ThemeMode.system => 'Sistema',
-    ThemeMode.light => 'Claro',
-    ThemeMode.dark => 'Escuro',
+  String themeModeLabel(AppLocalizations l10n) => switch (themeMode) {
+    ThemeMode.system => l10n.themeModeSystem,
+    ThemeMode.light => l10n.themeModeLight,
+    ThemeMode.dark => l10n.themeModeDark,
   };
 
-  String get listDensityLabel => switch (listDensity) {
-    ListDensity.compact => 'Compacto',
-    ListDensity.normal => 'Normal',
-    ListDensity.comfortable => 'Confortável',
+  String listDensityLabel(AppLocalizations l10n) => switch (listDensity) {
+    ListDensity.compact => l10n.libraryDensityCompact,
+    ListDensity.normal => l10n.libraryDensityNormal,
+    ListDensity.comfortable => l10n.libraryDensityComfortable,
   };
 
-  String get nowPlayingStyleLabel => switch (nowPlayingStyle) {
-    NowPlayingStyle.classic => 'Clássico',
-    NowPlayingStyle.circular => 'Circular',
-    NowPlayingStyle.large => 'Cinema',
-    NowPlayingStyle.fullBlur => 'Imersivo',
-    NowPlayingStyle.vinyl => 'Vinil',
-    NowPlayingStyle.minimalist => 'Minimalista',
-    NowPlayingStyle.aurora => 'Aurora',
-    NowPlayingStyle.elegant => 'Elegante',
-    NowPlayingStyle.wave => 'Ondas',
-    NowPlayingStyle.mosaic => 'Mosaico',
+  String nowPlayingStyleLabel(AppLocalizations l10n) =>
+      switch (nowPlayingStyle) {
+        NowPlayingStyle.classic => l10n.npStyleClassic,
+        NowPlayingStyle.circular => l10n.npStyleCircular,
+        NowPlayingStyle.large => l10n.npStyleLarge,
+        NowPlayingStyle.fullBlur => l10n.npStyleFullBlur,
+        NowPlayingStyle.vinyl => l10n.npStyleVinyl,
+        NowPlayingStyle.minimalist => l10n.npStyleMinimalist,
+        NowPlayingStyle.aurora => l10n.npStyleAurora,
+        NowPlayingStyle.elegant => l10n.npStyleElegant,
+        NowPlayingStyle.wave => l10n.npStyleWave,
+        NowPlayingStyle.mosaic => l10n.npStyleMosaic,
+      };
+
+  String navBarStyleLabel(AppLocalizations l10n) => switch (navBarStyle) {
+    NavBarStyle.glass => l10n.navBarGlass,
+    NavBarStyle.artwork => l10n.navBarArtwork,
+    NavBarStyle.solid => l10n.navBarSolid,
+    NavBarStyle.minimal => l10n.navBarMinimal,
   };
 
-  String get navBarStyleLabel => switch (navBarStyle) {
-    NavBarStyle.glass => 'Vidro',
-    NavBarStyle.artwork => 'Capa',
-    NavBarStyle.solid => 'Sólido',
-    NavBarStyle.minimal => 'Minimal',
+  String miniPlayerStyleLabel(AppLocalizations l10n) =>
+      switch (miniPlayerStyle) {
+        MiniPlayerStyle.glass => l10n.miniPlayerGlass,
+        MiniPlayerStyle.artwork => l10n.miniPlayerArtwork,
+        MiniPlayerStyle.minimal => l10n.miniPlayerMinimal,
+        MiniPlayerStyle.card => l10n.miniPlayerCard,
+        MiniPlayerStyle.dynamic => l10n.miniPlayerDynamic,
+      };
+
+  String mediaBarStyleLabel(AppLocalizations l10n) => switch (mediaBarStyle) {
+    MediaBarStyle.minimal => l10n.mediaBarMinimal,
+    MediaBarStyle.glow => l10n.mediaBarGlow,
+    MediaBarStyle.gradient => l10n.mediaBarGradient,
+    MediaBarStyle.thick => l10n.mediaBarThick,
+    MediaBarStyle.classic => l10n.mediaBarClassic,
   };
 
-  String get miniPlayerStyleLabel => switch (miniPlayerStyle) {
-    MiniPlayerStyle.glass => 'Vidro',
-    MiniPlayerStyle.artwork => 'Capa',
-    MiniPlayerStyle.minimal => 'Minimal',
-    MiniPlayerStyle.card => 'Card',
-    MiniPlayerStyle.dynamic => 'Dinâmico',
-  };
-
-  String get mediaBarStyleLabel => switch (mediaBarStyle) {
-    MediaBarStyle.minimal => 'Minimal',
-    MediaBarStyle.glow => 'Brilho',
-    MediaBarStyle.gradient => 'Gradiente',
-    MediaBarStyle.thick => 'Espessa',
-    MediaBarStyle.classic => 'Clássico',
-  };
-
-  String get nowPlayingColorStyleLabel => switch (nowPlayingColorStyle) {
-    NowPlayingColorStyle.degrade => 'Degradê',
-    NowPlayingColorStyle.gradient => 'Gradiente',
-  };
+  String nowPlayingColorStyleLabel(AppLocalizations l10n) =>
+      switch (nowPlayingColorStyle) {
+        NowPlayingColorStyle.degrade => l10n.npColorStyleDegrade,
+        NowPlayingColorStyle.gradient => l10n.npColorStyleGradient,
+      };
 
   /// Serializa para JSON-safe map.
   Map<String, dynamic> toJson() => {
