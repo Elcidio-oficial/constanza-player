@@ -385,5 +385,59 @@
 
   "playlistsCreateAction": "Criar",
   "playlistsCreateNamePlaceholder": "Nome da playlist",
-  "playlistsCreateDescPlaceholder": "Descrição (opcional)"
+  "playlistsCreateDescPlaceholder": "Descrição (opcional)",
+
+  "themeModeSystem": "Sistema",
+  "themeModeLight": "Claro",
+  "themeModeDark": "Escuro",
+
+  "npStyleClassic": "Clássico",
+  "npStyleCircular": "Circular",
+  "npStyleLarge": "Cinema",
+  "npStyleFullBlur": "Imersivo",
+  "npStyleVinyl": "Vinil",
+  "npStyleMinimalist": "Minimalista",
+  "npStyleAurora": "Aurora",
+  "npStyleElegant": "Elegante",
+  "npStyleWave": "Ondas",
+  "npStyleMosaic": "Mosaico",
+
+  "navBarGlass": "Vidro",
+  "navBarArtwork": "Capa",
+  "navBarSolid": "Sólido",
+  "navBarMinimal": "Minimal",
+
+  "miniPlayerGlass": "Vidro",
+  "miniPlayerArtwork": "Capa",
+  "miniPlayerMinimal": "Minimal",
+  "miniPlayerCard": "Card",
+  "miniPlayerDynamic": "Dinâmico",
+
+  "mediaBarMinimal": "Minimal",
+  "mediaBarGlow": "Brilho",
+  "mediaBarGradient": "Gradiente",
+  "mediaBarThick": "Espessa",
+  "mediaBarClassic": "Clássico",
+
+  "npColorStyleDegrade": "Degradê",
+  "npColorStyleGradient": "Gradiente",
+
+  "albumsTitle": "Álbuns",
+  "albumsCount": "{count, plural, =1{1 álbum} other{{count} álbuns}}",
+  "@albumsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "artistsTitle": "Artistas",
+  "artistsCount": "{count, plural, =1{1 artista} other{{count} artistas}}",
+  "@artistsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "foldersTitle": "Pastas de Música",
+  "foldersApply": "Aplicar",
+  "foldersDisabled": "Pasta desativada",
+  "duplicatesTitle": "Duplicadas",
+  "historyTitle": "Histórico",
+  "statisticsTitle": "Estatísticas",
+  "genresTitle": "Gêneros",
+  "composersTitle": "Compositores"
 }

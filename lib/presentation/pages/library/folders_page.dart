@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
 import 'package:constanza_player/domain/entities/song.dart';
@@ -171,7 +172,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                   TextButton(
                     onPressed: _applyChanges,
                     child: Text(
-                      'Aplicar',
+                      AppLocalizations.of(context).foldersApply,
                       style: TextStyle(
                         color: colors.primary,
                         fontWeight: FontWeight.w700,
@@ -192,7 +193,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'BIBLIOTECA',
+                      AppLocalizations.of(context).librarySectionLibrary,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.35),
                         letterSpacing: 1.2,
@@ -201,7 +202,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Pastas de Músicas',
+                      AppLocalizations.of(context).foldersTitle,
                       style: theme.textTheme.titleLarge?.copyWith(
                         color: colors.onSurface,
                         fontWeight: FontWeight.w200,
