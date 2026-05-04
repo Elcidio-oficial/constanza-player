@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_backgrounds.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
@@ -21,6 +22,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
     final themeState = ref.watch(themeProvider);
     final notifier = ref.read(themeProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
     final availableGradients = isDark
         ? AppBackgrounds.darkGradients
@@ -32,7 +34,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
         appBar: AppBar(
           backgroundColor: BackgroundHelper.appBarColor(colors, themeState),
           title: Text(
-            'Fundo do App',
+            l10n.bgSettingsTitle,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w300,
             ),
@@ -47,8 +49,8 @@ class BackgroundSettingsPage extends ConsumerWidget {
           children: [
             // Sem fundo
             _OptionTile(
-              title: 'Sem fundo',
-              subtitle: 'Cor sólida padrão',
+              title: l10n.bgSettingsNoneTitle,
+              subtitle: l10n.bgSettingsNoneSubtitle,
               icon: Icons.format_color_reset_rounded,
               isSelected: themeState.backgroundType == BackgroundType.none,
               onTap: () => notifier.setBackgroundNone(),
@@ -60,7 +62,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
 
             // Gradientes
             Text(
-              'GRADIENTES',
+              l10n.bgSettingsGradientsHeader,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.35),
                 letterSpacing: 1.5,
@@ -140,7 +142,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
 
             // Imagem personalizada
             Text(
-              'IMAGEM PERSONALIZADA',
+              l10n.bgSettingsCustomImageHeader,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.35),
                 letterSpacing: 1.5,
@@ -194,9 +196,12 @@ class BackgroundSettingsPage extends ConsumerWidget {
                             AppSpacing.radiusSm,
                           ),
                         ),
-                        child: const Text(
-                          'Atual',
-                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        child: Text(
+                          l10n.bgSettingsCurrent,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
                         ),
                       ),
                     ),
@@ -230,8 +235,8 @@ class BackgroundSettingsPage extends ConsumerWidget {
                       const SizedBox(width: AppSpacing.xs),
                       Text(
                         themeState.hasImageBackground
-                            ? 'Trocar imagem'
-                            : 'Escolher da galeria',
+                            ? l10n.bgSettingsChangeImage
+                            : l10n.bgSettingsPickFromGallery,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: colors.onSurface.withValues(alpha: 0.5),
                         ),
@@ -246,7 +251,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
             if (themeState.hasBackground) ...[
               const SizedBox(height: AppSpacing.xl),
               Text(
-                'AJUSTES',
+                l10n.bgSettingsAdjustments,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: colors.onSurface.withValues(alpha: 0.35),
                   letterSpacing: 1.5,
@@ -254,7 +259,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               _SliderSetting(
-                label: 'Intensidade',
+                label: l10n.bgSettingsIntensity,
                 value: themeState.backgroundOpacity,
                 min: 0.05,
                 max: 0.5,
@@ -266,12 +271,12 @@ class BackgroundSettingsPage extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               _SliderSetting(
-                label: 'Desfoque',
+                label: l10n.bgSettingsBlur,
                 value: themeState.backgroundBlur,
                 min: 0,
                 max: 25,
                 displayValue: themeState.backgroundBlur == 0
-                    ? 'Desligado'
+                    ? l10n.bgSettingsBlurOff
                     : '${themeState.backgroundBlur.round()}',
                 onChanged: notifier.setBackgroundBlur,
                 colors: colors,
@@ -330,7 +335,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Fundo atualizado com sucesso'),
+            content: Text(AppLocalizations.of(context).bgSettingsImageUpdated),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -339,7 +344,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Erro ao selecionar imagem'),
+            content: Text(AppLocalizations.of(context).bgSettingsImageError),
             backgroundColor: colors.error,
             duration: const Duration(seconds: 2),
           ),

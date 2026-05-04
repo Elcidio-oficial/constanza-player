@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
@@ -141,7 +142,7 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
       backgroundColor: colors.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Músicas Duplicadas'),
+        title: Text(AppLocalizations.of(context).settingsDuplicates),
         actions: [
           if (!_isScanning && _groups.isNotEmpty)
             IconButton(

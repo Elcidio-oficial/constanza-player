@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
@@ -24,7 +25,7 @@ class ComposersPage extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: Text(
-            'Compositores',
+            AppLocalizations.of(context).composersTitle,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w600,
             ),

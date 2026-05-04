@@ -933,6 +933,7 @@ class SettingsPage extends ConsumerWidget {
   void _showNowPlayingColorStyleDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final current = ref.read(themeProvider).nowPlayingColorStyle;
 
     showModalBottomSheet(
@@ -964,10 +965,13 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              Text('Cor do Now Playing', style: theme.textTheme.titleMedium),
+              Text(
+                l10n.settingsNowPlayingColor,
+                style: theme.textTheme.titleMedium,
+              ),
               const SizedBox(height: AppSpacing.xxs),
               Text(
-                'Escolha o estilo de cor de fundo',
+                l10n.npColorSheetSubtitle,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colors.onSurface.withValues(alpha: 0.4),
                 ),
@@ -975,8 +979,8 @@ class SettingsPage extends ConsumerWidget {
               const SizedBox(height: AppSpacing.lg),
               // Degradê option
               _ColorStyleOption(
-                title: 'Degradê',
-                description: 'Transição suave de uma cor dominante para preto',
+                title: l10n.npColorStyleDegrade,
+                description: l10n.npColorOptionDegradeDesc,
                 icon: Icons.gradient_rounded,
                 isSelected: current == NowPlayingColorStyle.degrade,
                 colors: colors,
@@ -997,9 +1001,8 @@ class SettingsPage extends ConsumerWidget {
               const SizedBox(height: AppSpacing.sm),
               // Gradient option
               _ColorStyleOption(
-                title: 'Gradiente',
-                description:
-                    'Múltiplas cores da capa em gradiente radial fluido',
+                title: l10n.npColorStyleGradient,
+                description: l10n.npColorOptionGradientDesc,
                 icon: Icons.blur_on_rounded,
                 isSelected: current == NowPlayingColorStyle.gradient,
                 colors: colors,
@@ -1524,6 +1527,7 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
     final colors = widget.colors;
     final theme = widget.theme;
     final accentColor = ref.watch(artworkPaletteProvider)?.dominant;
+    final l10n = AppLocalizations.of(context);
 
     return SafeArea(
       child: Padding(
@@ -1546,10 +1550,10 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            Text('Cores do Now Playing', style: theme.textTheme.titleMedium),
+            Text(l10n.customNpTitle, style: theme.textTheme.titleMedium),
             const SizedBox(height: AppSpacing.xxs),
             Text(
-              'Personalize as cores de fundo do player',
+              l10n.customNpSubtitle,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.4),
               ),
@@ -1559,13 +1563,13 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
             // Toggle
             SwitchListTile.adaptive(
               title: Text(
-                'Usar cores personalizadas',
+                l10n.customNpToggle,
                 style: theme.textTheme.bodyMedium,
               ),
               subtitle: Text(
                 themeState.useCustomNpColors
-                    ? 'Cores manuais ativas'
-                    : 'Cores extraídas da capa',
+                    ? l10n.customNpToggleOnDesc
+                    : l10n.customNpToggleOffDesc,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colors.onSurface.withValues(alpha: 0.4),
                 ),
@@ -1602,7 +1606,7 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
 
               // Color 1
               _NpColorRow(
-                label: 'Cor Dominante',
+                label: l10n.customNpDominant,
                 color: themeState.npCustomColor1,
                 presetColors: _presetColors,
                 colors: colors,
@@ -1613,7 +1617,7 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
 
               // Color 2
               _NpColorRow(
-                label: 'Cor Secundária',
+                label: l10n.customNpSecondary,
                 color: themeState.npCustomColor2,
                 presetColors: _presetColors,
                 colors: colors,
@@ -1624,7 +1628,7 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
 
               // Color 3
               _NpColorRow(
-                label: 'Cor de Fundo',
+                label: l10n.customNpBackground,
                 color: themeState.npCustomColor3,
                 presetColors: _presetColors,
                 colors: colors,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
@@ -58,7 +59,7 @@ class StatisticsPage extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: Text(
-            'Estatisticas',
+            AppLocalizations.of(context).statisticsTitle,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w600,
             ),
