@@ -460,5 +460,40 @@
   "settingsSleepTitle": "Sleep timer",
   "aboutDialogClose": "Close",
   "aboutDialogTagline": "Your music. Your silence. Your moment.",
-  "aboutDialogMadeBy": "Developed with ♡ by"
+  "aboutDialogMadeBy": "Developed with ♡ by",
+
+  "npColorSheetSubtitle": "Pick a background color style",
+  "npColorOptionDegradeDesc": "Smooth fade from a dominant color to black",
+  "npColorOptionGradientDesc": "Multiple cover colors in a fluid radial gradient",
+
+  "customNpTitle": "Now Playing colors",
+  "customNpSubtitle": "Customize player background colors",
+  "customNpToggle": "Use custom colors",
+  "customNpToggleOnDesc": "Custom colors active",
+  "customNpToggleOffDesc": "Colors extracted from cover",
+  "customNpDominant": "Dominant color",
+  "customNpSecondary": "Secondary color",
+  "customNpBackground": "Background color",
+
+  "bgSettingsTitle": "App background",
+  "bgSettingsNoneTitle": "No background",
+  "bgSettingsNoneSubtitle": "Default solid color",
+  "bgSettingsGradientsHeader": "GRADIENTS",
+  "bgSettingsCustomImageHeader": "CUSTOM IMAGE",
+  "bgSettingsCurrent": "Current",
+  "bgSettingsChangeImage": "Change image",
+  "bgSettingsPickFromGallery": "Pick from gallery",
+  "bgSettingsAdjustments": "ADJUSTMENTS",
+  "bgSettingsIntensity": "Intensity",
+  "bgSettingsBlur": "Blur",
+  "bgSettingsBlurOff": "Off",
+  "bgSettingsImageUpdated": "Background updated",
+  "bgSettingsImageError": "Could not pick image",
+
+  "duplicatesNoDuplicates": "No duplicates",
+  "duplicatesScanning": "Scanning…",
+  "historyEmpty": "No playback history yet",
+  "statisticsEmpty": "Not enough data yet",
+  "genresEmpty": "No genre tags found",
+  "composersEmpty": "No composer tags found"
 }

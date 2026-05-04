@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
@@ -26,7 +27,7 @@ class HistoryPage extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: Text(
-            'Historico',
+            AppLocalizations.of(context).historyTitle,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w600,
             ),

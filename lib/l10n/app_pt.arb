@@ -460,5 +460,40 @@
   "settingsSleepTitle": "Sleep Timer",
   "aboutDialogClose": "Fechar",
   "aboutDialogTagline": "Sua música. Seu silêncio. Seu momento.",
-  "aboutDialogMadeBy": "Desenvolvido com ♡ por"
+  "aboutDialogMadeBy": "Desenvolvido com ♡ por",
+
+  "npColorSheetSubtitle": "Escolha o estilo de cor de fundo",
+  "npColorOptionDegradeDesc": "Transição suave de uma cor dominante para preto",
+  "npColorOptionGradientDesc": "Múltiplas cores da capa em gradiente radial fluido",
+
+  "customNpTitle": "Cores do Now Playing",
+  "customNpSubtitle": "Personalize as cores de fundo do player",
+  "customNpToggle": "Usar cores personalizadas",
+  "customNpToggleOnDesc": "Cores manuais ativas",
+  "customNpToggleOffDesc": "Cores extraídas da capa",
+  "customNpDominant": "Cor Dominante",
+  "customNpSecondary": "Cor Secundária",
+  "customNpBackground": "Cor de Fundo",
+
+  "bgSettingsTitle": "Fundo do App",
+  "bgSettingsNoneTitle": "Sem fundo",
+  "bgSettingsNoneSubtitle": "Cor sólida padrão",
+  "bgSettingsGradientsHeader": "GRADIENTES",
+  "bgSettingsCustomImageHeader": "IMAGEM PERSONALIZADA",
+  "bgSettingsCurrent": "Atual",
+  "bgSettingsChangeImage": "Trocar imagem",
+  "bgSettingsPickFromGallery": "Escolher da galeria",
+  "bgSettingsAdjustments": "AJUSTES",
+  "bgSettingsIntensity": "Intensidade",
+  "bgSettingsBlur": "Desfoque",
+  "bgSettingsBlurOff": "Desligado",
+  "bgSettingsImageUpdated": "Fundo atualizado com sucesso",
+  "bgSettingsImageError": "Erro ao selecionar imagem",
+
+  "duplicatesNoDuplicates": "Sem duplicatas",
+  "duplicatesScanning": "Procurando…",
+  "historyEmpty": "Sem histórico de reprodução",
+  "statisticsEmpty": "Dados insuficientes",
+  "genresEmpty": "Nenhuma tag de gênero",
+  "composersEmpty": "Nenhuma tag de compositor"
 }
