@@ -89,6 +89,7 @@ class _UserPlaylistTile extends ConsumerWidget {
   void _showOptions(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -137,7 +138,7 @@ class _UserPlaylistTile extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              '${playlist.songCount} música${playlist.songCount != 1 ? 's' : ''}',
+                              l10n.playlistsCount(playlist.songCount),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: colors.onSurface.withValues(alpha: 0.5),
                               ),
@@ -152,7 +153,7 @@ class _UserPlaylistTile extends ConsumerWidget {
                 Divider(color: colors.outline.withValues(alpha: 0.15)),
                 ListTile(
                   leading: const Icon(Icons.edit_outlined),
-                  title: const Text('Editar Playlist'),
+                  title: Text(l10n.playlistsEditPlaylist),
                   onTap: () {
                     ctx.pop();
                     _showEditDialog(context, ref);
@@ -160,7 +161,7 @@ class _UserPlaylistTile extends ConsumerWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.image_outlined),
-                  title: const Text('Alterar Imagem'),
+                  title: Text(l10n.playlistsChangeImage),
                   onTap: () {
                     ctx.pop();
                     _pickImage(context, ref);
@@ -172,18 +173,18 @@ class _UserPlaylistTile extends ConsumerWidget {
                       Icons.hide_image_outlined,
                       color: colors.onSurface.withValues(alpha: 0.7),
                     ),
-                    title: const Text('Remover Imagem'),
+                    title: Text(l10n.playlistsRemoveImage),
                     onTap: () {
                       ctx.pop();
                       ref
                           .read(playlistProvider.notifier)
                           .removePlaylistImage(playlist.id);
-                      _showSnack(context, 'Imagem removida');
+                      _showSnack(context, l10n.playlistsImageRemoved);
                     },
                   ),
                 ListTile(
                   leading: Icon(Icons.delete_outline, color: colors.error),
-                  title: Text('Excluir', style: TextStyle(color: colors.error)),
+                  title: Text(l10n.playlistsExclude, style: TextStyle(color: colors.error)),
                   onTap: () {
                     ctx.pop();
                     _showDeleteConfirmation(context, ref);
@@ -199,6 +200,7 @@ class _UserPlaylistTile extends ConsumerWidget {
   }
 
   Future<void> _pickImage(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
     try {
       final picker = ImagePicker();
       final picked = await picker.pickImage(
@@ -211,17 +213,18 @@ class _UserPlaylistTile extends ConsumerWidget {
           .read(playlistProvider.notifier)
           .setPlaylistImage(playlist.id, picked.path);
       if (context.mounted) {
-        _showSnack(context, 'Imagem atualizada');
+        _showSnack(context, l10n.playlistsImageUpdated);
       }
     } catch (_) {
       if (context.mounted) {
-        _showSnack(context, 'Erro ao selecionar imagem');
+        _showSnack(context, l10n.playlistsImageError);
       }
     }
   }
 
   void _showDeleteConfirmation(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -229,15 +232,13 @@ class _UserPlaylistTile extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
-        title: const Text('Excluir Playlist'),
-        content: Text(
-          'Deseja excluir "${playlist.name}"? Essa ação não pode ser desfeita.',
-        ),
+        title: Text(l10n.playlistsExcludeTitle),
+        content: Text(l10n.playlistsExcludeBody(playlist.name)),
         actions: [
           TextButton(
             onPressed: () => ctx.pop(),
             child: Text(
-              'Cancelar',
+              l10n.commonCancel,
               style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
             ),
           ),
@@ -246,7 +247,7 @@ class _UserPlaylistTile extends ConsumerWidget {
               ctx.pop();
               ref.read(playlistProvider.notifier).deletePlaylist(playlist.id);
             },
-            child: Text('Excluir', style: TextStyle(color: colors.error)),
+            child: Text(l10n.playlistsExclude, style: TextStyle(color: colors.error)),
           ),
         ],
       ),
@@ -259,6 +260,7 @@ class _UserPlaylistTile extends ConsumerWidget {
       text: playlist.description ?? '',
     );
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -266,7 +268,7 @@ class _UserPlaylistTile extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
-        title: const Text('Editar Playlist'),
+        title: Text(l10n.playlistsEditPlaylist),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -274,7 +276,7 @@ class _UserPlaylistTile extends ConsumerWidget {
               controller: nameController,
               autofocus: true,
               decoration: InputDecoration(
-                labelText: 'Nome',
+                labelText: l10n.playlistsNameField,
                 labelStyle: TextStyle(
                   color: colors.onSurface.withValues(alpha: 0.5),
                 ),
@@ -292,7 +294,7 @@ class _UserPlaylistTile extends ConsumerWidget {
               controller: descController,
               maxLines: 2,
               decoration: InputDecoration(
-                labelText: 'Descrição',
+                labelText: l10n.playlistsDescriptionField,
                 labelStyle: TextStyle(
                   color: colors.onSurface.withValues(alpha: 0.4),
                 ),
@@ -314,7 +316,7 @@ class _UserPlaylistTile extends ConsumerWidget {
           TextButton(
             onPressed: () => ctx.pop(),
             child: Text(
-              'Cancelar',
+              l10n.commonCancel,
               style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
             ),
           ),
@@ -331,7 +333,7 @@ class _UserPlaylistTile extends ConsumerWidget {
                 ctx.pop();
               }
             },
-            child: Text('Salvar', style: TextStyle(color: colors.onSurface)),
+            child: Text(l10n.commonSave, style: TextStyle(color: colors.onSurface)),
           ),
         ],
       ),
@@ -344,18 +346,7 @@ class _UserPlaylistTile extends ConsumerWidget {
     );
   }
 
-  String _formatTimeAgo(DateTime? date) {
-    if (date == null) return '';
-    final diff = DateTime.now().difference(date);
-    if (diff.inDays == 0) return 'hoje';
-    if (diff.inDays == 1) return 'ontem';
-    if (diff.inDays < 7) return 'há ${diff.inDays} dias';
-    if (diff.inDays < 30) {
-      final weeks = (diff.inDays / 7).floor();
-      return 'há $weeks semana${weeks > 1 ? 's' : ''}';
-    }
-    return 'há ${(diff.inDays / 30).floor()} mês(es)';
-  }
+  String _formatTimeAgo(DateTime? date) => '';
 }
 
 // ============================================================

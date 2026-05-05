@@ -24,6 +24,7 @@ class _SmartPlaylistTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final accent = _accentColor(colors);
+    final l10n = AppLocalizations.of(context);
 
     // Para 'fav' puxar dados reais da library
     final songs = playlist.id == 'fav'
@@ -73,8 +74,8 @@ class _SmartPlaylistTile extends ConsumerWidget {
       ),
       subtitle: Text(
         songs.isEmpty
-            ? 'Nenhuma música'
-            : '${songs.length} música${songs.length != 1 ? 's' : ''} · $durationStr',
+            ? l10n.playlistsEmptyNoSongs
+            : '${l10n.playlistsCount(songs.length)} · $durationStr',
         style: theme.textTheme.bodySmall?.copyWith(
           color: colors.onSurface.withValues(alpha: 0.35),
         ),

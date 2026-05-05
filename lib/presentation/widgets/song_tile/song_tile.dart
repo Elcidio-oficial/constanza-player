@@ -7,6 +7,7 @@ import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/presentation/widgets/artist_links_text.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
 import 'song_options_bottom_sheet.dart';
 
@@ -123,7 +124,7 @@ class _SongTileState extends ConsumerState<SongTile> {
                       child: Center(
                         child: isPlaying && playingState
                             ? Semantics(
-                                label: 'Tocando agora',
+                                label: AppLocalizations.of(context).homeListeningNow,
                                 child: Icon(
                                   Icons.equalizer_rounded,
                                   color: colors.tertiary,

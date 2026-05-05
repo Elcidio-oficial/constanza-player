@@ -9,6 +9,7 @@ class _EmptyPlaylists extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.xl,
@@ -23,14 +24,14 @@ class _EmptyPlaylists extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Nenhuma playlist criada',
+            l10n.playlistsEmptyCreated,
             style: theme.textTheme.titleSmall?.copyWith(
               color: colors.onSurface.withValues(alpha: 0.4),
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Crie sua primeira playlist',
+            l10n.playlistsEmptyCreateFirst,
             style: theme.textTheme.bodySmall?.copyWith(
               color: colors.onSurface.withValues(alpha: 0.25),
             ),
@@ -50,7 +51,7 @@ class _EmptyPlaylists extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
               ),
               child: Text(
-                '+ Nova Playlist',
+                l10n.playlistsEmptyNewAction,
                 style: theme.textTheme.labelLarge?.copyWith(
                   color: colors.onSurface.withValues(alpha: 0.6),
                 ),

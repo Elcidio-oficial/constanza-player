@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 class PlaylistSelectorBottomSheet extends ConsumerWidget {
@@ -14,12 +15,13 @@ class PlaylistSelectorBottomSheet extends ConsumerWidget {
   static void show(BuildContext context, WidgetRef ref, Song song) {
     HapticFeedback.selectionClick();
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final playlists = ref.read(userPlaylistsProvider);
 
     if (playlists.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Crie uma playlist primeiro'),
+          content: Text(l10n.songOptionsCreatePlaylistFirst),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -43,6 +45,7 @@ class PlaylistSelectorBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final playlists = ref.watch(userPlaylistsProvider);
 
     return ConstrainedBox(
@@ -67,7 +70,7 @@ class PlaylistSelectorBottomSheet extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 child: Text(
-                  'Adicionar a Playlist',
+                  l10n.npAddToPlaylist,
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.7),
                   ),
@@ -95,7 +98,7 @@ class PlaylistSelectorBottomSheet extends ConsumerWidget {
                   ),
                   title: Text(p.name, style: theme.textTheme.titleSmall),
                   subtitle: Text(
-                    '${p.songCount} música${p.songCount != 1 ? 's' : ''}',
+                    l10n.playlistsCount(p.songCount),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.4),
                     ),
@@ -108,7 +111,7 @@ class PlaylistSelectorBottomSheet extends ConsumerWidget {
                         .addSongToPlaylist(p.id, song);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Adicionado a "${p.name}"'),
+                        content: Text(l10n.songOptionsAddedTo(p.name)),
                         duration: const Duration(seconds: 2),
                       ),
                     );

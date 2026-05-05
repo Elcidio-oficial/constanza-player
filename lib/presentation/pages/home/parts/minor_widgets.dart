@@ -111,7 +111,7 @@ class _SectionHeader extends StatelessWidget {
                 GestureDetector(
                   onTap: onSeeAll,
                   child: Text(
-                    'Ver tudo',
+                    AppLocalizations.of(context).homeSeeAllAction,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: colors.primary.withValues(alpha: 0.7),
                       fontWeight: FontWeight.w500,

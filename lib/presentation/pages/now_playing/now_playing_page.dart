@@ -27,6 +27,7 @@ import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:constanza_player/services/lyrics_fetch_service.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 // ── Album-art styles (part files) ──
