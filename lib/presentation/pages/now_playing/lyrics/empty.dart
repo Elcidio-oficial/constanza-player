@@ -21,6 +21,7 @@ class _EmptyLyrics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final isTight = constraints.maxHeight < 420;
@@ -39,7 +40,7 @@ class _EmptyLyrics extends StatelessWidget {
             ),
             SizedBox(height: isTight ? AppSpacing.sm : AppSpacing.md),
             Text(
-              'Sem letras',
+              l10n.lyricsEmpty,
               style: theme.textTheme.titleLarge?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.3),
                 fontWeight: FontWeight.w700,
@@ -47,7 +48,7 @@ class _EmptyLyrics extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Busque online, importe LRC\nou adicione manualmente',
+              l10n.lyricsEmptySubtitle,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.18),
               ),
@@ -66,13 +67,13 @@ class _EmptyLyrics extends StatelessWidget {
                       ),
                     )
                   : const Icon(Icons.travel_explore_rounded, size: 18),
-              label: Text(isSearching ? 'Buscando...' : 'Buscar online'),
+              label: Text(isSearching ? l10n.lyricsSearching : l10n.lyricsSearchOnline),
             ),
             const SizedBox(height: AppSpacing.sm),
             OutlinedButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text('Adicionar manualmente'),
+              label: Text(l10n.lyricsAddManually),
             ),
             const SizedBox(height: AppSpacing.xs),
             Row(
@@ -86,7 +87,7 @@ class _EmptyLyrics extends StatelessWidget {
                     color: colors.onSurface.withValues(alpha: 0.35),
                   ),
                   label: Text(
-                    'LRC',
+                    l10n.lyricsLrc,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.35),
                     ),
@@ -101,7 +102,7 @@ class _EmptyLyrics extends StatelessWidget {
                     color: colors.onSurface.withValues(alpha: 0.35),
                   ),
                   label: Text(
-                    'Colar texto',
+                    l10n.lyricsPaste,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.35),
                     ),

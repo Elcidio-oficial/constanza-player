@@ -7,6 +7,7 @@ import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/presentation/pages/library/artist_detail_page.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
 import 'package:constanza_player/presentation/widgets/artist_links_text.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 class ArtistSelectorBottomSheet extends StatelessWidget {
@@ -67,7 +68,7 @@ class ArtistSelectorBottomSheet extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Escolher Artista',
+            AppLocalizations.of(context).songOptionsChooseArtist,
             style: theme.textTheme.titleSmall?.copyWith(
               color: colors.onSurface.withValues(alpha: 0.7),
             ),

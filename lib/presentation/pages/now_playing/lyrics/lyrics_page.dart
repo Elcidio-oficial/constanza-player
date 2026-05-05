@@ -22,8 +22,15 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
   /// Tamanho da fonte (3 níveis)
   double _baseFontSize = 22.0;
   static const _fontSizes = [18.0, 22.0, 28.0];
-  static const _fontLabels = ['Pequena', 'Média', 'Grande'];
   int _fontIdx = 1;
+
+  String _fontLabel(AppLocalizations l10n, int idx) {
+    switch (idx) {
+      case 0: return l10n.lyricsFontSmall;
+      case 2: return l10n.lyricsFontLarge;
+      default: return l10n.lyricsFontMedium;
+    }
+  }
 
   GlobalKey _keyFor(int idx) => _lineKeys.putIfAbsent(idx, () => GlobalKey());
 
@@ -91,10 +98,11 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
       _baseFontSize = _fontSizes[_fontIdx];
       _lastScrolledIndex = -1;
     });
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Tamanho: ${_fontLabels[_fontIdx]}'),
+        content: Text(l10n.lyricsFontSizeApplied(_fontLabel(l10n, _fontIdx))),
         duration: const Duration(milliseconds: 800),
       ),
     );
@@ -107,11 +115,12 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
   }
 
   void _copyLyrics(ColorScheme c) {
+    final l10n = AppLocalizations.of(context);
     final text = ref.read(lyricsProvider).lines.map((l) => l.text).join('\n');
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Letras copiadas!'),
+        content: Text(l10n.lyricsCopied),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -158,18 +167,20 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           await notifier.importPlainText(plainText);
         }
         if (mounted) {
+          final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${lines.length} linhas encontradas!'),
+              content: Text(l10n.lyricsLinesFound(lines.length)),
               duration: const Duration(seconds: 2),
             ),
           );
         }
       } else {
         if (mounted) {
+          final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Nenhuma letra encontrada online'),
+              content: Text(l10n.lyricsNoneOnline),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -177,9 +188,10 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro na busca: $e'),
+            content: Text(l10n.lyricsSearchError(e.toString())),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -345,12 +357,13 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
   }
 
   List<Widget> _buildActions(LyricsState lyrics, ColorScheme colors) {
+    final l10n = AppLocalizations.of(context);
     if (lyrics.isEditing) {
       return [
         if (lyrics.lines.any((l) => !l.isSynced))
           IconButton(
             icon: Icon(Icons.timer_rounded, size: 20, color: colors.primary),
-            tooltip: 'Sync rápido',
+            tooltip: l10n.lyricsQuickSyncShort,
             onPressed: () {
               ref.read(lyricsProvider.notifier).save();
               Navigator.of(
@@ -365,7 +378,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           ),
         TextButton(
           onPressed: () => ref.read(lyricsProvider.notifier).save(),
-          child: Text('Salvar', style: TextStyle(color: colors.primary)),
+          child: Text(l10n.commonSave, style: TextStyle(color: colors.primary)),
         ),
       ];
     }
@@ -394,7 +407,9 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           top: Radius.circular(AppSpacing.radiusXl),
         ),
       ),
-      builder: (ctx) => SafeArea(
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx);
+        return SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -410,9 +425,9 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             const SizedBox(height: AppSpacing.md),
             ListTile(
               leading: const Icon(Icons.travel_explore_rounded),
-              title: const Text('Buscar online'),
+              title: Text(l10n.lyricsSearchOnline),
               subtitle: Text(
-                'Substituir pelas letras da internet',
+                l10n.lyricsSearchOnlineDescription,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colors.onSurface.withValues(alpha: 0.4),
                 ),
@@ -424,7 +439,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             ),
             ListTile(
               leading: const Icon(Icons.copy_rounded),
-              title: const Text('Copiar letras'),
+              title: Text(l10n.lyricsCopy),
               onTap: () {
                 ctx.pop();
                 _copyLyrics(colors);
@@ -432,7 +447,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             ),
             ListTile(
               leading: const Icon(Icons.edit_rounded),
-              title: const Text('Editar letras'),
+              title: Text(l10n.lyricsEdit),
               onTap: () {
                 ctx.pop();
                 ref.read(lyricsProvider.notifier).toggleEdit();
@@ -441,9 +456,9 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             if (lyrics.lines.any((l) => !l.isSynced))
               ListTile(
                 leading: Icon(Icons.timer_rounded, color: colors.primary),
-                title: const Text('Sync rápido'),
+                title: Text(l10n.lyricsQuickSyncShort),
                 subtitle: Text(
-                  'Sincronize linha por linha em tempo real',
+                  l10n.lyricsQuickSyncDescription,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.4),
                   ),
@@ -458,7 +473,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
               ),
             ListTile(
               leading: const Icon(Icons.download_rounded),
-              title: const Text('Importar LRC'),
+              title: Text(l10n.lyricsImportLrc),
               onTap: () {
                 ctx.pop();
                 _showImportDialog(context);
@@ -466,7 +481,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             ),
             ListTile(
               leading: const Icon(Icons.text_snippet_outlined),
-              title: const Text('Colar texto simples'),
+              title: Text(l10n.lyricsPastePlain),
               onTap: () {
                 ctx.pop();
                 _showPasteTextDialog(context);
@@ -474,7 +489,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             ),
             ListTile(
               leading: const Icon(Icons.share_outlined),
-              title: const Text('Exportar LRC'),
+              title: Text(l10n.lyricsExportLrc),
               onTap: () {
                 ctx.pop();
                 _exportLrc(context);
@@ -483,7 +498,8 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             const SizedBox(height: AppSpacing.md),
           ],
         ),
-      ),
+        );
+      },
     );
   }
 
@@ -492,12 +508,13 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
   void _showAddLineDialog(BuildContext context) {
     final position = ref.read(playerProvider).position;
     final controller = TextEditingController();
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) {
         final c = Theme.of(ctx).colorScheme;
         return AlertDialog(
-          title: const Text('Nova linha'),
+          title: Text(l10n.lyricsNewLine),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -523,9 +540,9 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
               TextField(
                 controller: controller,
                 autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Letra...',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: l10n.lyricsTextHint,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 2,
                 textCapitalization: TextCapitalization.sentences,
@@ -535,7 +552,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           actions: [
             TextButton(
               onPressed: () => ctx.pop(),
-              child: const Text('Cancelar'),
+              child: Text(l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () {
@@ -549,7 +566,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
                 }
                 ctx.pop();
               },
-              child: const Text('Adicionar'),
+              child: Text(l10n.lyricsAdd),
             ),
           ],
         );
@@ -559,15 +576,16 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
 
   void _showImportDialog(BuildContext context) {
     final controller = TextEditingController();
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Importar LRC'),
+        title: Text(l10n.lyricsImportLrc),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Cole texto LRC com timestamps [mm:ss.xx]',
+              l10n.lyricsImportHint,
               style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                 color: Theme.of(
                   ctx,
@@ -588,7 +606,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => ctx.pop(), child: const Text('Cancelar')),
+          TextButton(onPressed: () => ctx.pop(), child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () {
               final text = controller.text.trim();
@@ -596,7 +614,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
                 ref.read(lyricsProvider.notifier).importLrc(text);
               ctx.pop();
             },
-            child: const Text('Importar'),
+            child: Text(l10n.commonImport),
           ),
         ],
       ),
@@ -605,17 +623,18 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
 
   void _showPasteTextDialog(BuildContext context) {
     final controller = TextEditingController();
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) {
         final dc = Theme.of(ctx).colorScheme;
         return AlertDialog(
-          title: const Text('Colar letras'),
+          title: Text(l10n.lyricsPasteTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Cole as letras — cada linha vira uma entrada. Sincronize depois com Sync Rápido.',
+                l10n.lyricsPasteHint,
                 style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                   color: dc.onSurface.withValues(alpha: 0.4),
                 ),
@@ -636,7 +655,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           actions: [
             TextButton(
               onPressed: () => ctx.pop(),
-              child: const Text('Cancelar'),
+              child: Text(l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () {
@@ -654,7 +673,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
                 }
                 ctx.pop();
               },
-              child: const Text('Adicionar'),
+              child: Text(l10n.lyricsAdd),
             ),
           ],
         );
@@ -664,12 +683,13 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
 
   void _exportLrc(BuildContext context) {
     final lrc = ref.read(lyricsProvider.notifier).exportLrc();
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) {
         final c = Theme.of(ctx).colorScheme;
         return AlertDialog(
-          title: const Text('Exportar LRC'),
+          title: Text(l10n.lyricsExportLrc),
           content: Container(
             constraints: const BoxConstraints(maxHeight: 300),
             child: SingleChildScrollView(
@@ -682,7 +702,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           actions: [
             TextButton(
               onPressed: () => ctx.pop(),
-              child: Text('Fechar', style: TextStyle(color: c.onSurface)),
+              child: Text(l10n.commonClose, style: TextStyle(color: c.onSurface)),
             ),
             FilledButton(
               onPressed: () {
@@ -690,12 +710,12 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
                 ctx.pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('LRC copiado!'),
+                    content: Text(l10n.lyricsLrcCopied),
                     duration: const Duration(seconds: 2),
                   ),
                 );
               },
-              child: const Text('Copiar'),
+              child: Text(l10n.lyricsCopy2),
             ),
           ],
         );
@@ -704,26 +724,25 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
   }
 
   void _confirmDelete(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) {
         final c = Theme.of(ctx).colorScheme;
         return AlertDialog(
-          title: const Text('Apagar letras'),
-          content: const Text(
-            'Todas as letras serão apagadas permanentemente.',
-          ),
+          title: Text(l10n.lyricsDeleteTitle),
+          content: Text(l10n.lyricsDeleteBody),
           actions: [
             TextButton(
               onPressed: () => ctx.pop(),
-              child: const Text('Cancelar'),
+              child: Text(l10n.commonCancel),
             ),
             TextButton(
               onPressed: () {
                 ref.read(lyricsProvider.notifier).deleteAll();
                 ctx.pop();
               },
-              child: Text('Apagar', style: TextStyle(color: c.error)),
+              child: Text(l10n.lyricsDelete, style: TextStyle(color: c.error)),
             ),
           ],
         );

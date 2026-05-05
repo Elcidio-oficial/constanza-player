@@ -18,6 +18,7 @@ import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:constanza_player/presentation/pages/library/album_detail_page.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
 import 'package:go_router/go_router.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
 /// Verifica se [songArtist] inclui [artistName] como um dos artistas.
 /// Suporta qualquer número de artistas com separadores variados.
@@ -55,6 +56,7 @@ class ArtistDetailPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final themeState = ref.watch(themeProvider);
+    final l10n = AppLocalizations.of(context);
     final libState = ref.watch(libraryProvider);
     final artistSongs = libState.sortedSongs
         .where((s) => _artistMatches(s.artist, artist.name))
@@ -171,8 +173,8 @@ class ArtistDetailPage extends ConsumerWidget {
                   children: [
                     // Stats
                     Text(
-                      '${artistSongs.length} música${artistSongs.length != 1 ? 's' : ''}'
-                      ' · ${artistAlbums.length} álbun${artistAlbums.length != 1 ? 's' : ''}'
+                      '${l10n.librarySongCount(artistSongs.length)}'
+                      ' · ${l10n.albumsCount(artistAlbums.length)}'
                       ' · $durationLabel'
                       '${favCount > 0 ? ' · $favCount ♥' : ''}',
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -186,7 +188,7 @@ class ArtistDetailPage extends ConsumerWidget {
                         Expanded(
                           child: _PremiumActionButton(
                             icon: Icons.play_arrow_rounded,
-                            label: 'Reproduzir',
+                            label: l10n.albumDetailPlay,
                             filled: true,
                             colors: colors,
                             theme: theme,
@@ -206,7 +208,7 @@ class ArtistDetailPage extends ConsumerWidget {
                         Expanded(
                           child: _PremiumActionButton(
                             icon: Icons.shuffle_rounded,
-                            label: 'Aleatório',
+                            label: l10n.albumDetailShuffle,
                             filled: false,
                             colors: colors,
                             theme: theme,
@@ -244,7 +246,7 @@ class ArtistDetailPage extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Mais Tocadas',
+                        l10n.artistDetailMostPlayed,
                         style: theme.textTheme.titleSmall?.copyWith(
                           color: colors.onSurface.withValues(alpha: 0.5),
                           fontWeight: FontWeight.w400,
@@ -299,7 +301,7 @@ class ArtistDetailPage extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Álbuns',
+                        l10n.artistDetailAlbums,
                         style: theme.textTheme.titleSmall?.copyWith(
                           color: colors.onSurface.withValues(alpha: 0.5),
                           fontWeight: FontWeight.w400,
@@ -375,7 +377,7 @@ class ArtistDetailPage extends ConsumerWidget {
                               Text(
                                 [
                                   if (alb.year != null) '${alb.year}',
-                                  '${alb.songCount} faixa${alb.songCount != 1 ? 's' : ''}',
+                                  l10n.librarySongCount(alb.songCount),
                                 ].join(' · '),
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: colors.onSurface.withValues(
@@ -409,7 +411,7 @@ class ArtistDetailPage extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Músicas',
+                      l10n.artistDetailSongs,
                       style: theme.textTheme.titleSmall?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.5),
                         fontWeight: FontWeight.w400,
@@ -462,6 +464,7 @@ class ArtistDetailPage extends ConsumerWidget {
   ) {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     showModalBottomSheet(
       context: context,
@@ -528,7 +531,7 @@ class ArtistDetailPage extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              '${artistSongs.length} música${artistSongs.length != 1 ? 's' : ''}',
+                              l10n.librarySongCount(artistSongs.length),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: colors.onSurface.withValues(alpha: 0.5),
                               ),
@@ -543,7 +546,7 @@ class ArtistDetailPage extends ConsumerWidget {
                 Divider(color: colors.outline.withValues(alpha: 0.15)),
                 ListTile(
                   leading: const Icon(Icons.playlist_play_rounded),
-                  title: const Text('Reproduzir em seguida'),
+                  title: Text(l10n.commonPlayNext),
                   onTap: () {
                     ctx.pop();
                     final player = ref.read(playerProvider.notifier);
@@ -552,7 +555,7 @@ class ArtistDetailPage extends ConsumerWidget {
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('Adicionado à fila'),
+                        content: Text(l10n.npAddedToQueue),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -560,7 +563,7 @@ class ArtistDetailPage extends ConsumerWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.queue_music_rounded),
-                  title: const Text('Adicionar à fila'),
+                  title: Text(l10n.commonAddToQueue),
                   onTap: () {
                     ctx.pop();
                     final player = ref.read(playerProvider.notifier);
@@ -569,7 +572,7 @@ class ArtistDetailPage extends ConsumerWidget {
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('Adicionado à fila'),
+                        content: Text(l10n.npAddedToQueue),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -577,7 +580,7 @@ class ArtistDetailPage extends ConsumerWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.playlist_add_rounded),
-                  title: const Text('Adicionar a Playlist'),
+                  title: Text(l10n.npAddToPlaylist),
                   onTap: () {
                     ctx.pop();
                     _showAddToPlaylistDialog(context, ref, artistSongs);
@@ -585,17 +588,17 @@ class ArtistDetailPage extends ConsumerWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.share_outlined),
-                  title: const Text('Partilhar'),
+                  title: Text(l10n.commonShare),
                   onTap: () {
                     ctx.pop();
                     final buf = StringBuffer()
                       ..writeln(artist.name)
                       ..writeln(
-                        '${artistSongs.length} música${artistSongs.length != 1 ? 's' : ''}'
-                        ' · ${artistAlbums.length} álbun${artistAlbums.length != 1 ? 's' : ''}',
+                        '${l10n.librarySongCount(artistSongs.length)}'
+                        ' · ${l10n.albumsCount(artistAlbums.length)}',
                       )
                       ..writeln()
-                      ..writeln('Músicas:');
+                      ..writeln('${l10n.artistDetailSongs}:');
                     for (var i = 0; i < artistSongs.length; i++) {
                       buf.writeln('${i + 1}. ${artistSongs[i].title}');
                     }
@@ -604,7 +607,7 @@ class ArtistDetailPage extends ConsumerWidget {
                     );
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('Info do artista copiada!'),
+                        content: Text(l10n.artistDetailInfoCopied),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -626,12 +629,13 @@ class ArtistDetailPage extends ConsumerWidget {
   ) {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final playlists = ref.read(userPlaylistsProvider);
 
     if (playlists.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Crie uma playlist primeiro'),
+          content: Text(l10n.songOptionsCreatePlaylistFirst),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -667,7 +671,7 @@ class ArtistDetailPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Adicionar a Playlist',
+                  l10n.npAddToPlaylist,
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.7),
                   ),
@@ -692,7 +696,7 @@ class ArtistDetailPage extends ConsumerWidget {
                     ),
                     title: Text(p.name, style: theme.textTheme.titleSmall),
                     subtitle: Text(
-                      '${p.songCount} música${p.songCount != 1 ? 's' : ''}',
+                      l10n.librarySongCount(p.songCount),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.4),
                       ),
@@ -707,7 +711,7 @@ class ArtistDetailPage extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            '${songs.length} música${songs.length != 1 ? 's' : ''} adicionada${songs.length != 1 ? 's' : ''} a "${p.name}"',
+                            l10n.albumDetailAddedToOk(songs.length, p.name),
                           ),
                           duration: const Duration(seconds: 2),
                         ),

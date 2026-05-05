@@ -320,10 +320,10 @@ class HomePage extends ConsumerWidget {
                   if (favSongs.isNotEmpty) ...[
                     _QuickChip(
                       icon: Icons.favorite_rounded,
-                      label: 'Favoritas',
+                      label: l10n.homeQuickFavorites,
                       onTap: () => context.push(
                         '/song-list',
-                        extra: {'title': 'Favoritas', 'songs': favSongs},
+                        extra: {'title': l10n.homeQuickFavorites, 'songs': favSongs},
                       ),
                       colors: colors,
                       theme: theme,
@@ -333,11 +333,11 @@ class HomePage extends ConsumerWidget {
                   if (recentSongs.isNotEmpty) ...[
                     _QuickChip(
                       icon: Icons.history_rounded,
-                      label: 'Recentes',
+                      label: l10n.homeQuickRecent,
                       onTap: () => context.push(
                         '/song-list',
                         extra: {
-                          'title': 'Tocadas Recentemente',
+                          'title': l10n.homeRecentlyPlayedTitle,
                           'songs': recentSongs,
                         },
                       ),
@@ -349,10 +349,10 @@ class HomePage extends ConsumerWidget {
                   if (mostSongs.isNotEmpty) ...[
                     _QuickChip(
                       icon: Icons.trending_up_rounded,
-                      label: 'Mais Tocadas',
+                      label: l10n.homeQuickMostPlayed,
                       onTap: () => context.push(
                         '/song-list',
-                        extra: {'title': 'Mais Tocadas', 'songs': mostSongs},
+                        extra: {'title': l10n.homeQuickMostPlayed, 'songs': mostSongs},
                       ),
                       colors: colors,
                       theme: theme,
@@ -361,7 +361,7 @@ class HomePage extends ConsumerWidget {
                   ],
                   _QuickChip(
                     icon: Icons.category_rounded,
-                    label: 'Gêneros',
+                    label: l10n.homeQuickGenres,
                     onTap: () => context.push('/genres'),
                     colors: colors,
                     theme: theme,
@@ -369,7 +369,7 @@ class HomePage extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.xs),
                   _QuickChip(
                     icon: Icons.edit_note_rounded,
-                    label: 'Compositores',
+                    label: l10n.homeQuickComposers,
                     onTap: () => context.push('/composers'),
                     colors: colors,
                     theme: theme,
@@ -377,7 +377,7 @@ class HomePage extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.xs),
                   _QuickChip(
                     icon: Icons.bar_chart_rounded,
-                    label: 'Estatísticas',
+                    label: l10n.homeQuickStatistics,
                     onTap: () => context.push('/statistics'),
                     colors: colors,
                     theme: theme,
@@ -385,7 +385,7 @@ class HomePage extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.xs),
                   _QuickChip(
                     icon: Icons.history_rounded,
-                    label: 'Histórico',
+                    label: l10n.homeQuickHistory,
                     onTap: () => context.push('/history'),
                     colors: colors,
                     theme: theme,
@@ -544,14 +544,14 @@ class HomePage extends ConsumerWidget {
         if (favSongs.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _SectionHeader(
-              title: 'Favoritas',
+              title: l10n.homeQuickFavorites,
               colors: colors,
               theme: theme,
               sectionIndex: sectionIdx++,
               icon: Icons.favorite_rounded,
               onSeeAll: () => context.push(
                 '/song-list',
-                extra: {'title': 'Favoritas', 'songs': favSongs},
+                extra: {'title': l10n.homeQuickFavorites, 'songs': favSongs},
               ),
             ),
           ),
@@ -589,14 +589,14 @@ class HomePage extends ConsumerWidget {
         if (recentSongs.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _SectionHeader(
-              title: 'Tocadas Recentemente',
+              title: l10n.homeRecentlyPlayedTitle,
               colors: colors,
               theme: theme,
               sectionIndex: sectionIdx++,
               icon: Icons.history_rounded,
               onSeeAll: () => context.push(
                 '/song-list',
-                extra: {'title': 'Tocadas Recentemente', 'songs': recentSongs},
+                extra: {'title': l10n.homeRecentlyPlayedTitle, 'songs': recentSongs},
               ),
             ),
           ),
@@ -632,14 +632,14 @@ class HomePage extends ConsumerWidget {
         if (mostSongs.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _SectionHeader(
-              title: 'Mais Tocadas',
+              title: l10n.homeQuickMostPlayed,
               colors: colors,
               theme: theme,
               sectionIndex: sectionIdx++,
               icon: Icons.trending_up_rounded,
               onSeeAll: () => context.push(
                 '/song-list',
-                extra: {'title': 'Mais Tocadas', 'songs': mostSongs},
+                extra: {'title': l10n.homeQuickMostPlayed, 'songs': mostSongs},
               ),
             ),
           ),
@@ -675,7 +675,7 @@ class HomePage extends ConsumerWidget {
         if (recentlyAdded.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _SectionHeader(
-              title: 'Adicionadas Recentemente',
+              title: l10n.homeRecentlyAddedTitle,
               colors: colors,
               theme: theme,
               sectionIndex: sectionIdx++,
@@ -683,7 +683,7 @@ class HomePage extends ConsumerWidget {
               onSeeAll: () => context.push(
                 '/song-list',
                 extra: {
-                  'title': 'Adicionadas Recentemente',
+                  'title': l10n.homeRecentlyAddedTitle,
                   'songs': recentlyAdded,
                 },
               ),
@@ -721,7 +721,7 @@ class HomePage extends ConsumerWidget {
         if (albums.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _SectionHeader(
-              title: 'Álbuns',
+              title: l10n.homeAlbumsSection,
               colors: colors,
               theme: theme,
               sectionIndex: sectionIdx++,
@@ -802,7 +802,7 @@ class HomePage extends ConsumerWidget {
         if (artists.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: _SectionHeader(
-              title: 'Artistas',
+              title: l10n.homeArtistsSection,
               colors: colors,
               theme: theme,
               sectionIndex: sectionIdx++,

@@ -11,6 +11,7 @@ import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/services/media_tag_service.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
 import 'playlist_selector_bottom_sheet.dart';
 import 'artist_selector_bottom_sheet.dart';
@@ -47,6 +48,7 @@ class SongOptionsBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -104,7 +106,7 @@ class SongOptionsBottomSheet extends ConsumerWidget {
               Divider(color: colors.outline.withValues(alpha: 0.15)),
               ListTile(
                 leading: const Icon(Icons.play_arrow_rounded),
-                title: const Text('Reproduzir'),
+                title: Text(l10n.songOptionsPlayNow),
                 onTap: () {
                   HapticFeedback.lightImpact();
                   context.pop();
@@ -113,14 +115,14 @@ class SongOptionsBottomSheet extends ConsumerWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.playlist_play_rounded),
-                title: const Text('Tocar em seguida'),
+                title: Text(l10n.songOptionsPlayNext),
                 onTap: () {
                   HapticFeedback.lightImpact();
                   context.pop();
                   ref.read(playerProvider.notifier).addNextInQueue(song);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Adicionado à fila'),
+                      content: Text(l10n.songOptionsAddedToQueue),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -146,8 +148,8 @@ class SongOptionsBottomSheet extends ConsumerWidget {
                     ),
                     title: Text(
                       isFav
-                          ? 'Remover dos Favoritos'
-                          : 'Adicionar aos Favoritos',
+                          ? l10n.npRemoveFavorite
+                          : l10n.npAddFavorite,
                     ),
                     onTap: () {
                       HapticFeedback.mediumImpact();
@@ -177,7 +179,7 @@ class SongOptionsBottomSheet extends ConsumerWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.playlist_add_rounded),
-                title: const Text('Adicionar a Playlist'),
+                title: Text(l10n.npAddToPlaylist),
                 onTap: () {
                   HapticFeedback.lightImpact();
                   context.pop();
@@ -186,7 +188,7 @@ class SongOptionsBottomSheet extends ConsumerWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.person_outline_rounded),
-                title: const Text('Ir para Artista'),
+                title: Text(l10n.npGoToArtist),
                 onTap: () {
                   HapticFeedback.lightImpact();
                   context.pop();
@@ -195,7 +197,7 @@ class SongOptionsBottomSheet extends ConsumerWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.album_rounded),
-                title: const Text('Ir para Álbum'),
+                title: Text(l10n.npGoToAlbum),
                 onTap: () {
                   HapticFeedback.lightImpact();
                   context.pop();
@@ -204,16 +206,16 @@ class SongOptionsBottomSheet extends ConsumerWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.share_outlined),
-                title: const Text('Partilhar'),
+                title: Text(l10n.npShare),
                 onTap: () {
                   HapticFeedback.lightImpact();
                   context.pop();
                   final text =
-                      '${song.title} - ${song.artist}\nÁlbum: ${song.album}';
+                      '${song.title} - ${song.artist}\n${l10n.songEditAlbumField}: ${song.album}';
                   Clipboard.setData(ClipboardData(text: text));
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Info da música copiada!'),
+                      content: Text(l10n.songOptionsInfoCopied),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -221,7 +223,7 @@ class SongOptionsBottomSheet extends ConsumerWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.edit_rounded),
-                title: const Text('Editar / Detalhes'),
+                title: Text(l10n.songOptionsEditDetails),
                 onTap: () {
                   HapticFeedback.lightImpact();
                   context.pop();
@@ -238,7 +240,7 @@ class SongOptionsBottomSheet extends ConsumerWidget {
                     color: colors.error,
                   ),
                   title: Text(
-                    'Excluir do dispositivo',
+                    l10n.songOptionsDeleteFromDevice,
                     style: TextStyle(color: colors.error),
                   ),
                   onTap: () => _deleteSong(context, ref),
@@ -264,24 +266,23 @@ class SongOptionsBottomSheet extends ConsumerWidget {
   }
 
   Future<void> _deleteSong(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
     HapticFeedback.heavyImpact();
     context.pop();
     final confirm = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Excluir música'),
-        content: Text(
-          'Deseja excluir "${song.title}" do dispositivo?\n\nEssa ação não pode ser desfeita.',
-        ),
+        title: Text(l10n.songOptionsDeleteSongTitle),
+        content: Text(l10n.songOptionsDeleteSongBody(song.title)),
         actions: [
           TextButton(
             onPressed: () => c.pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => c.pop(true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Excluir'),
+            child: Text(l10n.songOptionsDeleteAction),
           ),
         ],
       ),
@@ -296,8 +297,8 @@ class SongOptionsBottomSheet extends ConsumerWidget {
     if (deleted && context.mounted) {
       ref.read(libraryProvider.notifier).removeSong(song.id);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Música excluída'),
+        SnackBar(
+          content: Text(l10n.songOptionsDeleted),
           backgroundColor: Colors.red,
         ),
       );

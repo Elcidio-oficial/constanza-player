@@ -495,5 +495,249 @@
   "historyEmpty": "Sem histórico de reprodução",
   "statisticsEmpty": "Dados insuficientes",
   "genresEmpty": "Nenhuma tag de gênero",
-  "composersEmpty": "Nenhuma tag de compositor"
+  "composersEmpty": "Nenhuma tag de compositor",
+
+  "npNoSong": "Nenhuma música selecionada",
+  "npHeaderPlaying": "TOCANDO AGORA",
+  "npRemoveFavorite": "Remover dos Favoritos",
+  "npAddFavorite": "Adicionar aos Favoritos",
+  "npPlayNext": "Tocar a seguir",
+  "npAddToQueue": "Adicionar à fila",
+  "npAddedToQueue": "Adicionado à fila",
+  "npAddToPlaylist": "Adicionar a Playlist",
+  "npNoPlaylistsCreated": "Nenhuma playlist criada",
+  "npGoToArtist": "Ir para o artista",
+  "npChooseArtist": "Escolher artista",
+  "npGoToAlbum": "Ir para o álbum",
+  "npShare": "Partilhar",
+  "npSongInfoCopied": "Info da música copiada!",
+  "npEditDetails": "Editar / Detalhes",
+  "npAddedToPlaylistShort": "Adicionado a \"{name}\"",
+  "@npAddedToPlaylistShort": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "npActionQueue": "Fila",
+  "npActionLyrics": "Letras",
+  "npActionEq": "EQ",
+  "npActionSpeed": "Veloc.",
+  "npEqualizer": "Equalizador",
+  "npEqBass": "Bass",
+  "npEqVirtual": "Virtual",
+  "npEqOff": "Off",
+  "npSpeedTitle": "Velocidade de reprodução",
+  "npUpNext": "A SEGUIR",
+  "npAnalyzeRetry": "Toque para reanalisar",
+  "npScaleMajor": "Maior",
+  "npScaleMinor": "Menor",
+  "npEnergyRelaxing": "Relaxante",
+  "npEnergyModerate": "Moderado",
+  "npEnergyEnergetic": "Energético",
+  "npEnergyIntense": "Intenso",
+  "npQueueTitle": "Fila  ({count})",
+  "@npQueueTitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "npQueueClear": "Limpar fila",
+  "npQueueEmpty": "Fila vazia",
+  "npQueueClearTitle": "Limpar fila",
+  "npQueueClearBody": "Remover todas as músicas exceto a atual?",
+  "npQueueClearAction": "Limpar",
+
+  "lyricsEmpty": "Sem letras",
+  "lyricsEmptySubtitle": "Busque online, importe LRC\nou adicione manualmente",
+  "lyricsSearchOnline": "Buscar online",
+  "lyricsSearching": "Buscando...",
+  "lyricsAddManually": "Adicionar manualmente",
+  "lyricsLrc": "LRC",
+  "lyricsPaste": "Colar texto",
+  "lyricsQuickSyncTitle": "Sync Rápido",
+  "lyricsQuickSyncProgress": "Toque no momento certo · {current}/{total}",
+  "@lyricsQuickSyncProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "lyricsQuickSyncDone": "Concluir",
+  "lyricsQuickSyncCompleted": "Sincronização concluída!",
+  "lyricsQuickSyncTapHint": "Toque em qualquer lugar para sincronizar a próxima linha",
+  "lyricsFontSmall": "Pequena",
+  "lyricsFontMedium": "Média",
+  "lyricsFontLarge": "Grande",
+  "lyricsFontSizeApplied": "Tamanho: {size}",
+  "@lyricsFontSizeApplied": {
+    "placeholders": { "size": { "type": "String" } }
+  },
+  "lyricsCopied": "Letras copiadas!",
+  "lyricsLrcCopied": "LRC copiado!",
+  "lyricsLinesFound": "{count} linhas encontradas!",
+  "@lyricsLinesFound": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "lyricsNoneOnline": "Nenhuma letra encontrada online",
+  "lyricsSearchError": "Erro na busca: {error}",
+  "@lyricsSearchError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "lyricsQuickSyncShort": "Sync rápido",
+  "lyricsQuickSyncDescription": "Sincronize linha por linha em tempo real",
+  "lyricsSearchOnlineDescription": "Substituir pelas letras da internet",
+  "lyricsCopy": "Copiar letras",
+  "lyricsEdit": "Editar letras",
+  "lyricsImportLrc": "Importar LRC",
+  "lyricsPastePlain": "Colar texto simples",
+  "lyricsExportLrc": "Exportar LRC",
+  "lyricsNewLine": "Nova linha",
+  "lyricsTextHint": "Letra...",
+  "lyricsAdd": "Adicionar",
+  "lyricsImportHint": "Cole texto LRC com timestamps [mm:ss.xx]",
+  "lyricsPasteTitle": "Colar letras",
+  "lyricsPasteHint": "Cole as letras — cada linha vira uma entrada. Sincronize depois com Sync Rápido.",
+  "lyricsDeleteTitle": "Apagar letras",
+  "lyricsDeleteBody": "Todas as letras serão apagadas permanentemente.",
+  "lyricsDelete": "Apagar",
+  "lyricsCopy2": "Copiar",
+  "lyricsEditEmptyHint": "Toque + para adicionar a primeira linha",
+  "lyricsEditTip": "Toque no timestamp para sincronizar · Segure para limpar",
+
+  "songOptionsPlayNow": "Reproduzir",
+  "songOptionsAddedToQueue": "Adicionado à fila",
+  "songOptionsDeleteFromDevice": "Excluir do dispositivo",
+  "songOptionsDeleteSongTitle": "Excluir música",
+  "songOptionsDeleteSongBody": "Deseja excluir \"{title}\" do dispositivo?\n\nEssa ação não pode ser desfeita.",
+  "@songOptionsDeleteSongBody": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "songOptionsDeleteAction": "Excluir",
+  "songOptionsDeleted": "Música excluída",
+  "songOptionsEditDetails": "Editar / Detalhes",
+  "songOptionsInfoCopied": "Info da música copiada!",
+  "songOptionsChooseArtist": "Escolher Artista",
+  "songOptionsCreatePlaylistFirst": "Crie uma playlist primeiro",
+  "songOptionsAddedTo": "Adicionado a \"{name}\"",
+  "@songOptionsAddedTo": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "albumDetailListening": "Ouvindo agora",
+  "albumDetailPlay": "Reproduzir",
+  "albumDetailShuffle": "Aleatório",
+  "albumDetailNoSongs": "Nenhuma música encontrada",
+  "albumDetailInfoCopied": "Info do álbum copiada!",
+  "albumDetailAddedToOk": "{count} música(s) adicionada(s) a \"{name}\"",
+  "@albumDetailAddedToOk": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "name": { "type": "String" }
+    }
+  },
+  "artistDetailMostPlayed": "Mais Tocadas",
+  "artistDetailAlbums": "Álbuns",
+  "artistDetailSongs": "Músicas",
+  "artistDetailInfoCopied": "Info do artista copiada!",
+
+  "songEditTitle": "Editar Música",
+  "songEditSaving": "Salvando...",
+  "songEditTitleField": "Título",
+  "songEditArtistField": "Artista",
+  "songEditAlbumField": "Álbum",
+  "songEditGenreField": "Gênero",
+  "songEditComposerField": "Compositor",
+  "songEditTrackField": "Faixa",
+  "songEditFileInfo": "Informações do Arquivo",
+  "songEditDuration": "Duração",
+  "songEditFormat": "Formato",
+  "songEditPath": "Caminho",
+  "songEditAdded": "Adicionado",
+  "songEditDeleteFromDevice": "Excluir música do dispositivo",
+  "songEditDeleteTitle": "Excluir música",
+  "songEditDeleteBody": "Deseja excluir \"{title}\" do dispositivo?\n\nEssa ação não pode ser desfeita.",
+  "@songEditDeleteBody": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "songEditDeleteAction": "Excluir",
+  "songEditDeleted": "Música excluída do dispositivo",
+  "songEditDeleteFailed": "Não foi possível excluir a música",
+  "songEditMetadataWritten": "Metadados gravados no arquivo",
+  "songEditPartialSave": "Salvo no app — arquivo físico não pôde ser modificado",
+  "songEditTitleRequired": "Digite o título da música para buscar",
+  "songEditNoInternet": "Sem conexão à internet",
+  "songEditSearch": "Buscar na Internet",
+  "songEditSearching": "Buscando...",
+  "songEditSearchAgain": "Buscar novamente",
+  "songEditTryAgain": "Tentar novamente",
+  "songEditSearchingApi": "Pesquisando em MusicBrainz e iTunes...",
+  "songEditResultsFound": "{count} resultado(s) encontrado(s)",
+  "@songEditResultsFound": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "songEditNoResults": "Nenhum resultado encontrado",
+  "songEditNoResultsHint": "Tente editar o título ou artista e buscar novamente",
+  "songEditMetadataApplied": "Metadados aplicados com sucesso",
+  "songEditTapToApply": "{sources} — toque para aplicar",
+  "@songEditTapToApply": {
+    "placeholders": { "sources": { "type": "String" } }
+  },
+  "songEditApply": "Aplicar",
+
+  "songListNoSongs": "Nenhuma música",
+  "songListPlayAll": "Tocar tudo",
+
+  "homeListeningNow": "Tocando agora",
+  "homePaused": "Pausado",
+  "homeStatsSongs": "Músicas",
+  "homeStatsAlbums": "Álbuns",
+  "homeStatsArtists": "Artistas",
+  "homeStatsDuration": "Duração",
+  "homeShuffleAllTitle": "Reproduzir Tudo",
+  "homeShuffleAllSubtitle": "{count} músicas · {duration} · modo aleatório",
+  "@homeShuffleAllSubtitle": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "duration": { "type": "String" }
+    }
+  },
+  "homeQuickFavorites": "Favoritas",
+  "homeQuickRecent": "Recentes",
+  "homeQuickMostPlayed": "Mais Tocadas",
+  "homeQuickGenres": "Gêneros",
+  "homeQuickComposers": "Compositores",
+  "homeQuickStatistics": "Estatísticas",
+  "homeQuickHistory": "Histórico",
+  "homeRecentlyPlayedTitle": "Tocadas Recentemente",
+  "homeRecentlyAddedTitle": "Adicionadas Recentemente",
+
+  "playlistsEditPlaylist": "Editar Playlist",
+  "playlistsChangeImage": "Alterar Imagem",
+  "playlistsRemoveImage": "Remover Imagem",
+  "playlistsExclude": "Excluir",
+  "playlistsImageRemoved": "Imagem removida",
+  "playlistsImageUpdated": "Imagem atualizada",
+  "playlistsImageError": "Erro ao selecionar imagem",
+  "playlistsExcludeTitle": "Excluir Playlist",
+  "playlistsExcludeBody": "Deseja excluir \"{name}\"? Essa ação não pode ser desfeita.",
+  "@playlistsExcludeBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "playlistsNameField": "Nome",
+  "playlistsDescriptionField": "Descrição",
+  "playlistsTimeToday": "hoje",
+  "playlistsTimeYesterday": "ontem",
+  "playlistsTimeDaysAgo": "há {days} dias",
+  "@playlistsTimeDaysAgo": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "playlistsTimeWeeksAgo": "{weeks, plural, =1{há 1 semana} other{há {weeks} semanas}}",
+  "@playlistsTimeWeeksAgo": {
+    "placeholders": { "weeks": { "type": "int" } }
+  },
+  "playlistsTimeMonthsAgo": "há {months} mês(es)",
+  "@playlistsTimeMonthsAgo": {
+    "placeholders": { "months": { "type": "int" } }
+  },
+  "playlistsEmptyNoSongs": "Nenhuma música",
+  "playlistsEmptyCreated": "Nenhuma playlist criada",
+  "playlistsEmptyCreateFirst": "Crie sua primeira playlist",
+  "playlistsEmptyNewAction": "+ Nova Playlist",
+  "homeSeeAllAction": "Ver tudo"
 }

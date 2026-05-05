@@ -40,11 +40,12 @@ class _QuickSyncPageState extends ConsumerState<_QuickSyncPage> {
   }
 
   void _finish() {
+    final l10n = AppLocalizations.of(context);
     ref.read(lyricsProvider.notifier).save();
     context.pop();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Sincronização concluída!'),
+        content: Text(l10n.lyricsQuickSyncCompleted),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -66,6 +67,7 @@ class _QuickSyncPageState extends ConsumerState<_QuickSyncPage> {
     final theme = baseTheme.copyWith(colorScheme: colors);
     final lyrics = ref.watch(lyricsProvider);
     final lineCount = lyrics.lines.length;
+    final l10n = AppLocalizations.of(context);
 
     return Theme(
       data: theme,
@@ -84,14 +86,14 @@ class _QuickSyncPageState extends ConsumerState<_QuickSyncPage> {
             title: Column(
               children: [
                 Text(
-                  'Sync Rápido',
+                  l10n.lyricsQuickSyncTitle,
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: colors.primary,
                   ),
                 ),
                 Text(
-                  'Toque no momento certo · $_syncIdx/$lineCount',
+                  l10n.lyricsQuickSyncProgress(_syncIdx, lineCount),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: colors.primary.withValues(alpha: 0.5),
                   ),
@@ -102,7 +104,7 @@ class _QuickSyncPageState extends ConsumerState<_QuickSyncPage> {
               TextButton(
                 onPressed: _finish,
                 child: Text(
-                  'Concluir',
+                  l10n.lyricsQuickSyncDone,
                   style: TextStyle(color: colors.primary),
                 ),
               ),
@@ -205,7 +207,7 @@ class _QuickSyncPageState extends ConsumerState<_QuickSyncPage> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Toque em qualquer lugar para sincronizar a próxima linha',
+                    l10n.lyricsQuickSyncTapHint,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.25),
                     ),

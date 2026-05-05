@@ -495,5 +495,249 @@
   "historyEmpty": "No playback history yet",
   "statisticsEmpty": "Not enough data yet",
   "genresEmpty": "No genre tags found",
-  "composersEmpty": "No composer tags found"
+  "composersEmpty": "No composer tags found",
+
+  "npNoSong": "No song selected",
+  "npHeaderPlaying": "NOW PLAYING",
+  "npRemoveFavorite": "Remove from Favorites",
+  "npAddFavorite": "Add to Favorites",
+  "npPlayNext": "Play next",
+  "npAddToQueue": "Add to queue",
+  "npAddedToQueue": "Added to queue",
+  "npAddToPlaylist": "Add to playlist",
+  "npNoPlaylistsCreated": "No playlists created",
+  "npGoToArtist": "Go to artist",
+  "npChooseArtist": "Choose artist",
+  "npGoToAlbum": "Go to album",
+  "npShare": "Share",
+  "npSongInfoCopied": "Song info copied!",
+  "npEditDetails": "Edit / Details",
+  "npAddedToPlaylistShort": "Added to \"{name}\"",
+  "@npAddedToPlaylistShort": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "npActionQueue": "Queue",
+  "npActionLyrics": "Lyrics",
+  "npActionEq": "EQ",
+  "npActionSpeed": "Speed",
+  "npEqualizer": "Equalizer",
+  "npEqBass": "Bass",
+  "npEqVirtual": "Virtual",
+  "npEqOff": "Off",
+  "npSpeedTitle": "Playback speed",
+  "npUpNext": "UP NEXT",
+  "npAnalyzeRetry": "Tap to re-analyze",
+  "npScaleMajor": "Major",
+  "npScaleMinor": "Minor",
+  "npEnergyRelaxing": "Relaxing",
+  "npEnergyModerate": "Moderate",
+  "npEnergyEnergetic": "Energetic",
+  "npEnergyIntense": "Intense",
+  "npQueueTitle": "Queue  ({count})",
+  "@npQueueTitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "npQueueClear": "Clear queue",
+  "npQueueEmpty": "Queue is empty",
+  "npQueueClearTitle": "Clear queue",
+  "npQueueClearBody": "Remove all songs except the current one?",
+  "npQueueClearAction": "Clear",
+
+  "lyricsEmpty": "No lyrics",
+  "lyricsEmptySubtitle": "Search online, import LRC\nor add manually",
+  "lyricsSearchOnline": "Search online",
+  "lyricsSearching": "Searching...",
+  "lyricsAddManually": "Add manually",
+  "lyricsLrc": "LRC",
+  "lyricsPaste": "Paste text",
+  "lyricsQuickSyncTitle": "Quick Sync",
+  "lyricsQuickSyncProgress": "Tap on the right moment · {current}/{total}",
+  "@lyricsQuickSyncProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "lyricsQuickSyncDone": "Done",
+  "lyricsQuickSyncCompleted": "Sync completed!",
+  "lyricsQuickSyncTapHint": "Tap anywhere to sync the next line",
+  "lyricsFontSmall": "Small",
+  "lyricsFontMedium": "Medium",
+  "lyricsFontLarge": "Large",
+  "lyricsFontSizeApplied": "Size: {size}",
+  "@lyricsFontSizeApplied": {
+    "placeholders": { "size": { "type": "String" } }
+  },
+  "lyricsCopied": "Lyrics copied!",
+  "lyricsLrcCopied": "LRC copied!",
+  "lyricsLinesFound": "{count} lines found!",
+  "@lyricsLinesFound": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "lyricsNoneOnline": "No lyrics found online",
+  "lyricsSearchError": "Search error: {error}",
+  "@lyricsSearchError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "lyricsQuickSyncShort": "Quick sync",
+  "lyricsQuickSyncDescription": "Sync line by line in real time",
+  "lyricsSearchOnlineDescription": "Replace with online lyrics",
+  "lyricsCopy": "Copy lyrics",
+  "lyricsEdit": "Edit lyrics",
+  "lyricsImportLrc": "Import LRC",
+  "lyricsPastePlain": "Paste plain text",
+  "lyricsExportLrc": "Export LRC",
+  "lyricsNewLine": "New line",
+  "lyricsTextHint": "Lyric...",
+  "lyricsAdd": "Add",
+  "lyricsImportHint": "Paste LRC text with timestamps [mm:ss.xx]",
+  "lyricsPasteTitle": "Paste lyrics",
+  "lyricsPasteHint": "Paste lyrics — each line becomes an entry. Sync them later with Quick Sync.",
+  "lyricsDeleteTitle": "Delete lyrics",
+  "lyricsDeleteBody": "All lyrics will be permanently deleted.",
+  "lyricsDelete": "Delete",
+  "lyricsCopy2": "Copy",
+  "lyricsEditEmptyHint": "Tap + to add the first line",
+  "lyricsEditTip": "Tap timestamp to sync · Long press to clear",
+
+  "songOptionsPlayNow": "Play",
+  "songOptionsAddedToQueue": "Added to queue",
+  "songOptionsDeleteFromDevice": "Delete from device",
+  "songOptionsDeleteSongTitle": "Delete song",
+  "songOptionsDeleteSongBody": "Delete \"{title}\" from device?\n\nThis action cannot be undone.",
+  "@songOptionsDeleteSongBody": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "songOptionsDeleteAction": "Delete",
+  "songOptionsDeleted": "Song deleted",
+  "songOptionsEditDetails": "Edit / Details",
+  "songOptionsInfoCopied": "Song info copied!",
+  "songOptionsChooseArtist": "Choose artist",
+  "songOptionsCreatePlaylistFirst": "Create a playlist first",
+  "songOptionsAddedTo": "Added to \"{name}\"",
+  "@songOptionsAddedTo": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "albumDetailListening": "Listening now",
+  "albumDetailPlay": "Play",
+  "albumDetailShuffle": "Shuffle",
+  "albumDetailNoSongs": "No songs found",
+  "albumDetailInfoCopied": "Album info copied!",
+  "albumDetailAddedToOk": "{count} song(s) added to \"{name}\"",
+  "@albumDetailAddedToOk": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "name": { "type": "String" }
+    }
+  },
+  "artistDetailMostPlayed": "Most played",
+  "artistDetailAlbums": "Albums",
+  "artistDetailSongs": "Songs",
+  "artistDetailInfoCopied": "Artist info copied!",
+
+  "songEditTitle": "Edit song",
+  "songEditSaving": "Saving...",
+  "songEditTitleField": "Title",
+  "songEditArtistField": "Artist",
+  "songEditAlbumField": "Album",
+  "songEditGenreField": "Genre",
+  "songEditComposerField": "Composer",
+  "songEditTrackField": "Track",
+  "songEditFileInfo": "File info",
+  "songEditDuration": "Duration",
+  "songEditFormat": "Format",
+  "songEditPath": "Path",
+  "songEditAdded": "Added",
+  "songEditDeleteFromDevice": "Delete song from device",
+  "songEditDeleteTitle": "Delete song",
+  "songEditDeleteBody": "Delete \"{title}\" from device?\n\nThis action cannot be undone.",
+  "@songEditDeleteBody": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "songEditDeleteAction": "Delete",
+  "songEditDeleted": "Song deleted from device",
+  "songEditDeleteFailed": "Could not delete the song",
+  "songEditMetadataWritten": "Metadata written to file",
+  "songEditPartialSave": "Saved in app — physical file could not be modified",
+  "songEditTitleRequired": "Type the song title to search",
+  "songEditNoInternet": "No internet connection",
+  "songEditSearch": "Search the Internet",
+  "songEditSearching": "Searching...",
+  "songEditSearchAgain": "Search again",
+  "songEditTryAgain": "Try again",
+  "songEditSearchingApi": "Searching MusicBrainz and iTunes...",
+  "songEditResultsFound": "{count} result(s) found",
+  "@songEditResultsFound": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "songEditNoResults": "No results found",
+  "songEditNoResultsHint": "Try editing title or artist and search again",
+  "songEditMetadataApplied": "Metadata applied successfully",
+  "songEditTapToApply": "{sources} — tap to apply",
+  "@songEditTapToApply": {
+    "placeholders": { "sources": { "type": "String" } }
+  },
+  "songEditApply": "Apply",
+
+  "songListNoSongs": "No songs",
+  "songListPlayAll": "Play all",
+
+  "homeListeningNow": "Now playing",
+  "homePaused": "Paused",
+  "homeStatsSongs": "Songs",
+  "homeStatsAlbums": "Albums",
+  "homeStatsArtists": "Artists",
+  "homeStatsDuration": "Duration",
+  "homeShuffleAllTitle": "Play All",
+  "homeShuffleAllSubtitle": "{count} songs · {duration} · shuffle mode",
+  "@homeShuffleAllSubtitle": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "duration": { "type": "String" }
+    }
+  },
+  "homeQuickFavorites": "Favorites",
+  "homeQuickRecent": "Recent",
+  "homeQuickMostPlayed": "Most played",
+  "homeQuickGenres": "Genres",
+  "homeQuickComposers": "Composers",
+  "homeQuickStatistics": "Statistics",
+  "homeQuickHistory": "History",
+  "homeRecentlyPlayedTitle": "Recently Played",
+  "homeRecentlyAddedTitle": "Recently Added",
+
+  "playlistsEditPlaylist": "Edit Playlist",
+  "playlistsChangeImage": "Change Image",
+  "playlistsRemoveImage": "Remove Image",
+  "playlistsExclude": "Delete",
+  "playlistsImageRemoved": "Image removed",
+  "playlistsImageUpdated": "Image updated",
+  "playlistsImageError": "Could not pick image",
+  "playlistsExcludeTitle": "Delete Playlist",
+  "playlistsExcludeBody": "Delete \"{name}\"? This action cannot be undone.",
+  "@playlistsExcludeBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "playlistsNameField": "Name",
+  "playlistsDescriptionField": "Description",
+  "playlistsTimeToday": "today",
+  "playlistsTimeYesterday": "yesterday",
+  "playlistsTimeDaysAgo": "{days} days ago",
+  "@playlistsTimeDaysAgo": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "playlistsTimeWeeksAgo": "{weeks, plural, =1{1 week ago} other{{weeks} weeks ago}}",
+  "@playlistsTimeWeeksAgo": {
+    "placeholders": { "weeks": { "type": "int" } }
+  },
+  "playlistsTimeMonthsAgo": "{months} month(s) ago",
+  "@playlistsTimeMonthsAgo": {
+    "placeholders": { "months": { "type": "int" } }
+  },
+  "playlistsEmptyNoSongs": "No songs",
+  "playlistsEmptyCreated": "No playlists created",
+  "playlistsEmptyCreateFirst": "Create your first playlist",
+  "playlistsEmptyNewAction": "+ New Playlist",
+  "homeSeeAllAction": "See all"
 }

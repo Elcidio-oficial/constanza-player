@@ -7,6 +7,7 @@ import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/widgets/song_tile/song_tile.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
 /// Página reutilizável para exibir uma lista de músicas.
 /// Usada como destino de "Ver tudo" nas seções da Home.
@@ -21,6 +22,7 @@ class SongListPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final themeState = ref.watch(themeProvider);
+    final l10n = AppLocalizations.of(context);
 
     return BackgroundWrapper(
       child: Scaffold(
@@ -53,7 +55,7 @@ class SongListPage extends ConsumerWidget {
         body: songs.isEmpty
             ? Center(
                 child: Text(
-                  'Nenhuma música',
+                  l10n.songListNoSongs,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.35),
                   ),
@@ -73,7 +75,7 @@ class SongListPage extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '${songs.length} música${songs.length == 1 ? '' : 's'}',
+                          l10n.librarySongCount(songs.length),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colors.onSurface.withValues(alpha: 0.35),
                           ),
@@ -92,7 +94,7 @@ class SongListPage extends ConsumerWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'Tocar tudo',
+                                l10n.songListPlayAll,
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: colors.primary.withValues(alpha: 0.7),
                                   fontWeight: FontWeight.w500,

@@ -12,6 +12,7 @@ import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/services/media_tag_service.dart';
 import 'package:constanza_player/services/metadata_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
 enum _SearchState { idle, searching, found, notFound, error, applied }
 
@@ -67,7 +68,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
     if (title.isEmpty) {
       setState(() {
         _searchState = _SearchState.error;
-        _errorMessage = 'Digite o título da música para buscar';
+        _errorMessage = AppLocalizations.of(context).songEditTitleRequired;
       });
       return;
     }
@@ -92,7 +93,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
       if (!mounted) return;
       setState(() {
         _searchState = _SearchState.error;
-        _errorMessage = 'Sem conexão à internet';
+        _errorMessage = AppLocalizations.of(context).songEditNoInternet;
       });
     }
   }
@@ -179,13 +180,12 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
     if (!mounted) return;
     setState(() => _isSaving = false);
 
+    final l10n = AppLocalizations.of(context);
     if (widget.song.filePath.isNotEmpty && !tagWritten) {
       // Estado in-app salvo mas arquivo físico não foi modificado
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            'Salvo no app — arquivo físico não pôde ser modificado',
-          ),
+          content: Text(l10n.songEditPartialSave),
           backgroundColor: Colors.orange.shade700,
           duration: const Duration(seconds: 3),
         ),
@@ -193,7 +193,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Metadados gravados no arquivo'),
+          content: Text(l10n.songEditMetadataWritten),
           backgroundColor: Theme.of(context).colorScheme.primary,
           duration: const Duration(seconds: 2),
         ),
@@ -203,22 +203,21 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
   }
 
   Future<void> _deleteSong() async {
+    final l10n = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Excluir música'),
-        content: Text(
-          'Deseja excluir "${widget.song.title}" do dispositivo?\n\nEssa ação não pode ser desfeita.',
-        ),
+        title: Text(l10n.songEditDeleteTitle),
+        content: Text(l10n.songEditDeleteBody(widget.song.title)),
         actions: [
           TextButton(
             onPressed: () => ctx.pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => ctx.pop(true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Excluir'),
+            child: Text(l10n.songEditDeleteAction),
           ),
         ],
       ),
@@ -235,7 +234,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
       ref.read(libraryProvider.notifier).removeSong(widget.song.id);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Música excluída do dispositivo'),
+          content: Text(l10n.songEditDeleted),
           backgroundColor: Colors.red,
         ),
       );
@@ -243,7 +242,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Não foi possível excluir a música'),
+          content: Text(l10n.songEditDeleteFailed),
           backgroundColor: Colors.orange,
         ),
       );
@@ -254,12 +253,13 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: colors.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Editar Música'),
+        title: Text(l10n.songEditTitle),
         actions: [
           if (_hasChanges)
             FilledButton.icon(
@@ -274,7 +274,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
                       ),
                     )
                   : const Icon(Icons.check_rounded, size: 18),
-              label: Text(_isSaving ? 'Salvando...' : 'Salvar'),
+              label: Text(_isSaving ? l10n.songEditSaving : l10n.commonSave),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -345,12 +345,12 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
                     )
                   : const Icon(Icons.travel_explore_rounded, size: 18),
               label: Text(switch (_searchState) {
-                _SearchState.idle => 'Buscar na Internet',
-                _SearchState.searching => 'Buscando...',
-                _SearchState.found => 'Buscar novamente',
-                _SearchState.notFound => 'Tentar novamente',
-                _SearchState.error => 'Tentar novamente',
-                _SearchState.applied => 'Buscar novamente',
+                _SearchState.idle => l10n.songEditSearch,
+                _SearchState.searching => l10n.songEditSearching,
+                _SearchState.found => l10n.songEditSearchAgain,
+                _SearchState.notFound => l10n.songEditTryAgain,
+                _SearchState.error => l10n.songEditTryAgain,
+                _SearchState.applied => l10n.songEditSearchAgain,
               }),
             ),
           ),
@@ -370,36 +370,42 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
 
           // ── Edit fields ──
           _buildField(
-            'Título',
+            l10n.songEditTitleField,
             _titleCtrl,
             Icons.music_note_rounded,
             colors,
             theme,
           ),
           _buildField(
-            'Artista',
+            l10n.songEditArtistField,
             _artistCtrl,
             Icons.person_rounded,
             colors,
             theme,
           ),
-          _buildField('Álbum', _albumCtrl, Icons.album_rounded, colors, theme),
           _buildField(
-            'Gênero',
+            l10n.songEditAlbumField,
+            _albumCtrl,
+            Icons.album_rounded,
+            colors,
+            theme,
+          ),
+          _buildField(
+            l10n.songEditGenreField,
             _genreCtrl,
             Icons.category_rounded,
             colors,
             theme,
           ),
           _buildField(
-            'Compositor',
+            l10n.songEditComposerField,
             _composerCtrl,
             Icons.edit_rounded,
             colors,
             theme,
           ),
           _buildField(
-            'Faixa',
+            l10n.songEditTrackField,
             _trackCtrl,
             Icons.tag_rounded,
             colors,
@@ -420,7 +426,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
               child: TextButton.icon(
                 onPressed: _deleteSong,
                 icon: const Icon(Icons.delete_forever_rounded, size: 20),
-                label: const Text('Excluir música do dispositivo'),
+                label: Text(l10n.songEditDeleteFromDevice),
                 style: TextButton.styleFrom(foregroundColor: colors.error),
               ),
             ),
@@ -446,6 +452,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
 
   // ── Search state feedback banner ──
   Widget _buildSearchFeedback(ColorScheme colors, ThemeData theme) {
+    final l10n = AppLocalizations.of(context);
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       child: switch (_searchState) {
@@ -455,7 +462,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
           icon: Icons.hourglass_top_rounded,
           color: colors.primary.withValues(alpha: 0.1),
           iconColor: colors.primary,
-          text: 'Pesquisando em MusicBrainz e iTunes...',
+          text: l10n.songEditSearchingApi,
           theme: theme,
           colors: colors,
         ),
@@ -464,8 +471,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
           icon: Icons.check_circle_rounded,
           color: Colors.green.withValues(alpha: 0.1),
           iconColor: Colors.green.shade400,
-          text:
-              '${_searchResults.length} resultado${_searchResults.length != 1 ? 's' : ''} encontrado${_searchResults.length != 1 ? 's' : ''}',
+          text: l10n.songEditResultsFound(_searchResults.length),
           subtitle: _buildSourcesSummary(),
           theme: theme,
           colors: colors,
@@ -475,8 +481,8 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
           icon: Icons.search_off_rounded,
           color: Colors.orange.withValues(alpha: 0.1),
           iconColor: Colors.orange.shade400,
-          text: 'Nenhum resultado encontrado',
-          subtitle: 'Tente editar o título ou artista e buscar novamente',
+          text: l10n.songEditNoResults,
+          subtitle: l10n.songEditNoResultsHint,
           theme: theme,
           colors: colors,
         ),
@@ -494,7 +500,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
           icon: Icons.auto_fix_high_rounded,
           color: Colors.green.withValues(alpha: 0.1),
           iconColor: Colors.green.shade400,
-          text: 'Metadados aplicados com sucesso',
+          text: l10n.songEditMetadataApplied,
           subtitle: _selectedResult?.album != null
               ? '${_selectedResult!.artist} — ${_selectedResult!.album}'
               : _selectedResult?.artist ?? '',
@@ -566,7 +572,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
     final parts = <String>[];
     if (mbCount > 0) parts.add('$mbCount MusicBrainz');
     if (itCount > 0) parts.add('$itCount iTunes');
-    return '${parts.join(' · ')} — toque para aplicar';
+    return AppLocalizations.of(context).songEditTapToApply(parts.join(' · '));
   }
 
   // ── Results list ──
@@ -667,7 +673,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
               child: Text(
-                'Aplicar',
+                AppLocalizations.of(context).songEditApply,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: colors.primary,
                   fontWeight: FontWeight.w600,
@@ -745,11 +751,12 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
 
   // ── File info ──
   Widget _buildFileInfo(ColorScheme colors, ThemeData theme) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Informações do Arquivo',
+          l10n.songEditFileInfo,
           style: theme.textTheme.titleSmall?.copyWith(
             color: colors.onSurface.withValues(alpha: 0.6),
           ),
@@ -763,22 +770,22 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
           ),
           child: Column(
             children: [
-              _infoRow('Duração', widget.song.durationFormatted, colors, theme),
+              _infoRow(l10n.songEditDuration, widget.song.durationFormatted, colors, theme),
               if (widget.song.filePath.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.xs),
                 _infoRow(
-                  'Formato',
+                  l10n.songEditFormat,
                   widget.song.filePath.split('.').last.toUpperCase(),
                   colors,
                   theme,
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                _infoRow('Caminho', widget.song.filePath, colors, theme),
+                _infoRow(l10n.songEditPath, widget.song.filePath, colors, theme),
               ],
               if (widget.song.dateAdded != null) ...[
                 const SizedBox(height: AppSpacing.xs),
                 _infoRow(
-                  'Adicionado',
+                  l10n.songEditAdded,
                   _formatDate(widget.song.dateAdded!),
                   colors,
                   theme,

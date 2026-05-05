@@ -19,6 +19,7 @@ class _LibraryStatsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -41,7 +42,7 @@ class _LibraryStatsBar extends StatelessWidget {
           children: [
             _StatItem(
               value: '$songCount',
-              label: 'Músicas',
+              label: l10n.homeStatsSongs,
               colors: colors,
               theme: theme,
             ),
@@ -52,7 +53,7 @@ class _LibraryStatsBar extends StatelessWidget {
             ),
             _StatItem(
               value: '$albumCount',
-              label: 'Álbuns',
+              label: l10n.homeStatsAlbums,
               colors: colors,
               theme: theme,
             ),
@@ -63,7 +64,7 @@ class _LibraryStatsBar extends StatelessWidget {
             ),
             _StatItem(
               value: '$artistCount',
-              label: 'Artistas',
+              label: l10n.homeStatsArtists,
               colors: colors,
               theme: theme,
             ),
@@ -74,7 +75,7 @@ class _LibraryStatsBar extends StatelessWidget {
             ),
             _StatItem(
               value: durationLabel,
-              label: 'Duração',
+              label: l10n.homeStatsDuration,
               colors: colors,
               theme: theme,
             ),

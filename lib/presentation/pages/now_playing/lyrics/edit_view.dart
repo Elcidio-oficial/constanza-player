@@ -16,11 +16,12 @@ class _EditViewState extends ConsumerState<_EditView> {
     final colors = theme.colorScheme;
     final lines = ref.watch(lyricsProvider.select((s) => s.lines));
     final n = ref.read(lyricsProvider.notifier);
+    final l10n = AppLocalizations.of(context);
 
     if (lines.isEmpty) {
       return Center(
         child: Text(
-          'Toque + para adicionar a primeira linha',
+          l10n.lyricsEditEmptyHint,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: colors.onSurface.withValues(alpha: 0.4),
           ),
@@ -47,7 +48,7 @@ class _EditViewState extends ConsumerState<_EditView> {
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
-                  'Toque no timestamp para sincronizar · Segure para limpar',
+                  l10n.lyricsEditTip,
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.35),
                   ),
