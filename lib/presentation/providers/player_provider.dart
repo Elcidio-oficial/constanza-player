@@ -575,6 +575,38 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       final repeatModeIndex = data['repeatMode'] as int? ?? 0;
       final audioSessionId = data['audioSessionId'] as int?;
 
+      // Caso o foreground service de áudio tenha sobrevivido ao destruir/recriar
+      // da UI Flutter (ex.: usuário voltou ao app via notificação após tela
+      // bloqueada por muito tempo), o handler já está tocando. Sincronizar a
+      // partir dele em vez de chamar loadSong (que reinicia setUrl e zera a
+      // posição real, fazendo a faixa "voltar ao início").
+      final liveItem = _handler.mediaItem.valueOrNull;
+      final handlerActive =
+          liveItem != null &&
+          _handler.processingState != ProcessingState.idle;
+      if (handlerActive) {
+        final liveId = liveItem.id;
+        final liveSong = queue.firstWhere(
+          (s) => s.id == liveId,
+          orElse: () => originalQueue.firstWhere(
+            (s) => s.id == liveId,
+            orElse: () => song,
+          ),
+        );
+        state = state.copyWith(
+          currentSong: liveSong,
+          queue: queue,
+          originalQueue: originalQueue,
+          position: _handler.position,
+          duration: _handler.duration ?? liveSong.duration,
+          isPlaying: _handler.playing,
+          shuffleEnabled: shuffleEnabled,
+          repeatMode: RepeatMode.values[repeatModeIndex.clamp(0, 2)],
+          audioSessionId: audioSessionId,
+        );
+        return;
+      }
+
       state = state.copyWith(
         currentSong: song,
         queue: queue,

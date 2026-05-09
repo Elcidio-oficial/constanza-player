@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
 import 'package:constanza_player/domain/entities/album.dart';
 import 'package:constanza_player/domain/entities/song.dart';
+import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
@@ -13,6 +13,7 @@ import 'package:constanza_player/presentation/widgets/song_tile/song_tile.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/presentation/widgets/artist_links_text.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
+import 'package:constanza_player/services/share_service.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
@@ -393,28 +394,11 @@ class AlbumDetailPage extends ConsumerWidget {
                   title: Text(l10n.npShare),
                   onTap: () {
                     ctx.pop();
-                    final buf = StringBuffer()
-                      ..writeln('${album.name} — ${album.artist}')
-                      ..writeln(
-                        [
-                          if (album.year != null) '${album.year}',
-                          l10n.librarySongCount(albumSongs.length),
-                          durationLabel,
-                        ].join(' · '),
-                      )
-                      ..writeln()
-                      ..writeln('${l10n.songEditTrackField}:');
-                    for (var i = 0; i < albumSongs.length; i++) {
-                      buf.writeln('${i + 1}. ${albumSongs[i].title}');
-                    }
-                    Clipboard.setData(
-                      ClipboardData(text: buf.toString().trim()),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.albumDetailInfoCopied),
-                        duration: const Duration(seconds: 2),
-                      ),
+                    ShareService.shareAlbum(
+                      context: context,
+                      album: album,
+                      songs: albumSongs,
+                      palette: ref.read(artworkPaletteProvider),
                     );
                   },
                 ),

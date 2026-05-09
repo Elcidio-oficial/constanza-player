@@ -188,6 +188,9 @@ class AudioSettingsNotifier extends StateNotifier<AudioSettingsState> {
     }
   }
 
+  /// Recarrega as configurações de áudio do SharedPreferences — chamado após backup.
+  void reloadFromStorage() => _loadFromStorage();
+
   void _save() => SettingsStorageService.saveAudioSettings(state.toJson());
 
   // ── EQ ──────────────────────────────────────────────────

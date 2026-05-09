@@ -1,5 +1,9 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
@@ -14,6 +18,7 @@ import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/providers/audio_settings_provider.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
+import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/pages/settings/background_settings_page.dart';
 import 'package:constanza_player/presentation/pages/settings/equalizer_page.dart';
@@ -1868,14 +1873,14 @@ class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
 // BACKUP SHEET — export via share, import via clipboard
 // ============================================================
 
-class _BackupSheet extends StatefulWidget {
+class _BackupSheet extends ConsumerStatefulWidget {
   const _BackupSheet();
 
   @override
-  State<_BackupSheet> createState() => _BackupSheetState();
+  ConsumerState<_BackupSheet> createState() => _BackupSheetState();
 }
 
-class _BackupSheetState extends State<_BackupSheet> {
+class _BackupSheetState extends ConsumerState<_BackupSheet> {
   bool _busy = false;
 
   Future<void> _export() async {
@@ -1893,22 +1898,39 @@ class _BackupSheetState extends State<_BackupSheet> {
     }
   }
 
-  Future<void> _importFromClipboard() async {
+  Future<void> _importFromFile() async {
     setState(() => _busy = true);
     try {
-      final data = await Clipboard.getData(Clipboard.kTextPlain);
-      final text = data?.text?.trim();
-      if (text == null || text.isEmpty) {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['json'],
+        withData: true,
+      );
+      if (!mounted) return;
+      if (result == null || result.files.isEmpty) {
+        return;
+      }
+      final picked = result.files.first;
+
+      String? content;
+      final bytes = picked.bytes;
+      if (bytes != null && bytes.isNotEmpty) {
+        content = utf8.decode(bytes, allowMalformed: true);
+      } else if (picked.path != null) {
+        content = await File(picked.path!).readAsString();
+      }
+      if (content == null || content.isEmpty) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Área de transferência vazia'),
-            duration: Duration(seconds: 2),
+            content: Text('Arquivo vazio ou ilegível'),
+            duration: Duration(seconds: 3),
           ),
         );
         return;
       }
-      final restored = await BackupService.importFromString(text);
+
+      final restored = await BackupService.importFromString(content);
       if (!mounted) return;
       if (restored == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1917,17 +1939,38 @@ class _BackupSheetState extends State<_BackupSheet> {
             duration: Duration(seconds: 3),
           ),
         );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '$restored chave${restored == 1 ? '' : 's'} restaurada${restored == 1 ? '' : 's'}. Reinicie o app para aplicar.',
-            ),
-            duration: const Duration(seconds: 4),
-          ),
-        );
-        Navigator.of(context).pop();
+        return;
       }
+
+      // ── Aplicar imediatamente — sem necessidade de reiniciar o app ──────
+      // 1. Tema e configurações de áudio: recarga direta no estado Riverpod.
+      await ref.read(themeProvider.notifier).reloadFromStorage();
+      ref.read(audioSettingsProvider.notifier).reloadFromStorage();
+      // 2. Playlists: recarrega do SharedPreferences e aguarda a biblioteca
+      //    resolver os IDs das músicas via restoreSongsFromLibrary (app_shell).
+      ref.read(playlistProvider.notifier).loadFromStorage();
+      // 3. Biblioteca: recarrega favoritos/pastas/exclusões e refaz o scan.
+      //    Fire-and-forget — a UI reage via LibraryStatus (loading → loaded).
+      unawaited(ref.read(libraryProvider.notifier).reloadFromBackup());
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Backup restaurado ($restored iten${restored == 1 ? '' : 's'}). A biblioteca está a atualizar…',
+          ),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao abrir arquivo: $e'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -1969,7 +2012,8 @@ class _BackupSheetState extends State<_BackupSheet> {
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Exporte playlists, favoritos, exclusões e ajustes para um arquivo '
-              'JSON. Para restaurar, copie o conteúdo do arquivo e use "Importar".',
+              'JSON. Para restaurar, toque em "Importar backup" e selecione o '
+              'arquivo no seu armazenamento.',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.5),
               ),
@@ -1981,10 +2025,10 @@ class _BackupSheetState extends State<_BackupSheet> {
               label: const Text('Exportar backup'),
             ),
             const SizedBox(height: AppSpacing.sm),
-            OutlinedButton.icon(
-              onPressed: _busy ? null : _importFromClipboard,
-              icon: const Icon(Icons.content_paste_go_rounded, size: 18),
-              label: const Text('Importar (da área de transferência)'),
+            FilledButton.tonalIcon(
+              onPressed: _busy ? null : _importFromFile,
+              icon: const Icon(Icons.folder_open_rounded, size: 18),
+              label: const Text('Importar backup'),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(

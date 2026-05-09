@@ -30,7 +30,6 @@ class AppShell extends ConsumerStatefulWidget {
 class _AppShellState extends ConsumerState<AppShell>
     with WidgetsBindingObserver {
   bool _audioSettingsApplied = false;
-  bool _playlistsRestored = false;
   int _lastColorSongId = -1;
   Timer? _colorDebounce;
   DateTime? _lastBackPress;
@@ -84,10 +83,13 @@ class _AppShellState extends ConsumerState<AppShell>
     final themeState = ref.watch(themeProvider);
     final currentIndex = widget.navigationShell.currentIndex;
 
-    // Restaurar músicas das playlists quando a library carregar
+    // Restaurar músicas das playlists sempre que a library transitar para loaded.
+    // restoreSongsFromLibrary() é idempotente: retorna imediatamente se não há
+    // IDs pendentes. Isto cobre tanto a carga inicial como o rescan pós-backup.
     ref.listen<LibraryState>(libraryProvider, (prev, next) {
-      if (next.isLoaded && !_playlistsRestored) {
-        _playlistsRestored = true;
+      final wasNotLoaded = prev?.status != LibraryStatus.loaded;
+      final nowLoaded = next.status == LibraryStatus.loaded;
+      if (wasNotLoaded && nowLoaded) {
         Future.microtask(() {
           ref
               .read(playlistProvider.notifier)

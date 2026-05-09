@@ -488,7 +488,21 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.share_outlined),
+              leading: Icon(Icons.image_outlined, color: colors.primary),
+              title: const Text('Partilhar como poster'),
+              subtitle: Text(
+                'Capa + letra com cores dinâmicas',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.4),
+                ),
+              ),
+              onTap: () {
+                ctx.pop();
+                _shareLyricsPoster(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.text_snippet_rounded),
               title: Text(l10n.lyricsExportLrc),
               onTap: () {
                 ctx.pop();
@@ -678,6 +692,21 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           ],
         );
       },
+    );
+  }
+
+  void _shareLyricsPoster(BuildContext context) {
+    final lyrics = ref.read(lyricsProvider);
+    final position = ref.read(playerProvider).position;
+    final song = ref.read(playerProvider).currentSong ?? widget.song;
+    final palette = ref.read(artworkPaletteProvider);
+    final hl = lyrics.currentLineIndex(position);
+    ShareService.shareLyrics(
+      context: context,
+      song: song,
+      lines: lyrics.lines,
+      highlightIndex: hl >= 0 ? hl : null,
+      palette: palette,
     );
   }
 

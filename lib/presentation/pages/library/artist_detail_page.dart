@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
@@ -8,6 +7,7 @@ import 'package:constanza_player/domain/entities/album.dart';
 import 'package:constanza_player/domain/entities/artist.dart';
 import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/presentation/providers/artist_image_provider.dart';
+import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
@@ -17,6 +17,7 @@ import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:constanza_player/presentation/pages/library/album_detail_page.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
+import 'package:constanza_player/services/share_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
@@ -591,25 +592,11 @@ class ArtistDetailPage extends ConsumerWidget {
                   title: Text(l10n.commonShare),
                   onTap: () {
                     ctx.pop();
-                    final buf = StringBuffer()
-                      ..writeln(artist.name)
-                      ..writeln(
-                        '${l10n.librarySongCount(artistSongs.length)}'
-                        ' · ${l10n.albumsCount(artistAlbums.length)}',
-                      )
-                      ..writeln()
-                      ..writeln('${l10n.artistDetailSongs}:');
-                    for (var i = 0; i < artistSongs.length; i++) {
-                      buf.writeln('${i + 1}. ${artistSongs[i].title}');
-                    }
-                    Clipboard.setData(
-                      ClipboardData(text: buf.toString().trim()),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.artistDetailInfoCopied),
-                        duration: const Duration(seconds: 2),
-                      ),
+                    ShareService.shareArtist(
+                      context: context,
+                      artist: artist,
+                      songs: artistSongs,
+                      palette: ref.read(artworkPaletteProvider),
                     );
                   },
                 ),

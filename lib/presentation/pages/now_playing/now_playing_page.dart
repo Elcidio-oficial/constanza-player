@@ -26,6 +26,7 @@ import 'package:constanza_player/presentation/widgets/artist_links_text.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:constanza_player/services/lyrics_fetch_service.dart';
+import 'package:constanza_player/services/share_service.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -1159,15 +1160,10 @@ class _Header extends ConsumerWidget {
                   title: Text('Partilhar', style: theme.textTheme.bodyMedium),
                   onTap: () {
                     ctx.pop();
-                    final text =
-                        '${currentSong.title} - ${currentSong.artist}'
-                        '\nÁlbum: ${currentSong.album}';
-                    Clipboard.setData(ClipboardData(text: text));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Info da música copiada!'),
-                        duration: const Duration(seconds: 2),
-                      ),
+                    ShareService.shareSongs(
+                      context: context,
+                      songs: [currentSong],
+                      palette: ref.read(artworkPaletteProvider),
                     );
                   },
                 ),
@@ -1309,7 +1305,24 @@ class _ArtworkCarousel extends ConsumerStatefulWidget {
 class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
   late PageController _pageCtrl;
   int _currentPage = 0;
-  bool _syncing = false; // prevents feedback loop on external changes
+  // Inicia em true para bloquear onPageChanged espúrios durante o settle inicial
+  // do PageView (viewportFraction < 1.0 + initialPage faz o controller assentar
+  // ao longo de alguns frames). Sem isto, ao entrar na NP o evento de settle
+  // disparava playIndex(...) e reiniciava a faixa do zero — bug visível depois
+  // de skips via notificação com tela bloqueada.
+  bool _syncing = true;
+
+  // Timestamp do último PointerDown sobre o PageView. Usado como guard
+  // definitivo contra onPageChanged espúrios: quando o ecrã do telemóvel
+  // acorda do off (ou a Activity é restaurada após skip via notificação), o
+  // engine entrega frames de settle pendentes do PageView que disparam
+  // onPageChanged sem intervenção do utilizador. Sem este timestamp, esse
+  // evento era interpretado como swipe e chamava notifier.next()/previous()
+  // ou playIndex(idx) — fazendo a faixa atual reiniciar do zero (sem shuffle)
+  // ou saltar para uma aleatória (com shuffle). Só tratamos onPageChanged
+  // como swipe real quando ouve PointerDown nos últimos ~800ms.
+  int _lastTouchMs = 0;
+  static const int _touchWindowMs = 800;
 
   @override
   void initState() {
@@ -1320,6 +1333,12 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
       viewportFraction: 0.82,
       initialPage: _currentPage,
     );
+    // Libera onPageChanged depois que o layout assentou.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _syncing = false;
+      });
+    });
   }
 
   @override
@@ -1330,8 +1349,55 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
 
   void _onPageChanged(int index) {
     if (_syncing) return;
+    // Guard de toque: só tratar como swipe se houve PointerDown recente.
+    // Eventos de settle que chegam após resume (tela ligada/notification skip)
+    // ou após animateToPage programático não devem mudar a faixa.
+    final touchAgeMs =
+        DateTime.now().millisecondsSinceEpoch - _lastTouchMs;
+    if (touchAgeMs > _touchWindowMs) {
+      _currentPage = index;
+      return;
+    }
+    final player = ref.read(playerProvider);
+    final currentIdx = player.currentIndex;
+
+    // Sync externo (notificação/lockscreen/widget) que terminou animateToPage
+    // antes do onPageChanged final disparar — sem este guard, o evento atrasado
+    // chama playIndex(currentIdx) e reinicia a música atual do zero.
+    if (index == currentIdx) {
+      _currentPage = index;
+      return;
+    }
+
+    // Repeat one: swipe não troca de música — volta para a atual.
+    if (player.repeatMode == RepeatMode.one && currentIdx >= 0) {
+      _syncing = true;
+      _pageCtrl
+          .animateToPage(
+            currentIdx,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+          )
+          .whenComplete(() {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _syncing = false;
+            });
+          });
+      return;
+    }
+
+    final notifier = ref.read(playerProvider.notifier);
+    // Shuffle: swipe segue mesma regra dos botões — escolhe aleatório.
+    // O ref.listen abaixo sincroniza o carrossel com o índice escolhido.
+    if (player.shuffleEnabled && player.queue.length > 1) {
+      final forward = index > _currentPage;
+      _currentPage = index;
+      forward ? notifier.next() : notifier.previous();
+      return;
+    }
+
     _currentPage = index;
-    ref.read(playerProvider.notifier).playIndex(index);
+    notifier.playIndex(index);
   }
 
   @override
@@ -1351,7 +1417,15 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
               duration: const Duration(milliseconds: 350),
               curve: Curves.easeOutCubic,
             )
-            .then((_) => _syncing = false);
+            .whenComplete(() {
+              // Adia o reset 1 frame: o onPageChanged final do PageView pode
+              // disparar APÓS o future de animateToPage resolver, e sem este
+              // delay ele cairia no _onPageChanged sem o guard, chamando
+              // playIndex(currentIndex) e reiniciando a música do zero.
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) _syncing = false;
+              });
+            });
       }
     });
 
@@ -1380,7 +1454,11 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
 
     return SizedBox(
       height: artSize + 16, // extra space for depth translation
-      child: PageView.builder(
+      child: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) =>
+            _lastTouchMs = DateTime.now().millisecondsSinceEpoch,
+        child: PageView.builder(
         controller: _pageCtrl,
         itemCount: queue.length,
         onPageChanged: _onPageChanged,
@@ -1430,6 +1508,7 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
             ),
           );
         },
+      ),
       ),
     );
   }

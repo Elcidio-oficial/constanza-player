@@ -309,6 +309,9 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
     }
   }
 
+  /// Recarrega o tema do SharedPreferences — chamado após restauração de backup.
+  Future<void> reloadFromStorage() => _loadFromStorage();
+
   void _save() => SettingsStorageService.saveTheme(state.toJson());
 
   void setThemeMode(ThemeMode mode) {

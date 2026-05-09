@@ -6,11 +6,13 @@ import 'package:constanza_player/core/utils/app_page_route.dart';
 import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/presentation/pages/library/album_detail_page.dart';
 import 'package:constanza_player/presentation/pages/library/song_edit_page.dart';
+import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/services/media_tag_service.dart';
+import 'package:constanza_player/services/share_service.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
 import 'playlist_selector_bottom_sheet.dart';
@@ -210,14 +212,10 @@ class SongOptionsBottomSheet extends ConsumerWidget {
                 onTap: () {
                   HapticFeedback.lightImpact();
                   context.pop();
-                  final text =
-                      '${song.title} - ${song.artist}\n${l10n.songEditAlbumField}: ${song.album}';
-                  Clipboard.setData(ClipboardData(text: text));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.songOptionsInfoCopied),
-                      duration: const Duration(seconds: 2),
-                    ),
+                  ShareService.shareSongs(
+                    context: context,
+                    songs: [song],
+                    palette: ref.read(artworkPaletteProvider),
                   );
                 },
               ),

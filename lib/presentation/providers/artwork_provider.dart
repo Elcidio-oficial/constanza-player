@@ -219,6 +219,32 @@ class ArtworkNotifier extends StateNotifier<int> {
     }
   }
 
+  /// Consulta artwork em alta resolução (1024px, JPEG quality 100).
+  /// Usado para geração de posters / compartilhamento — onde precisamos
+  /// da imagem nítida em telas grandes (1080+).
+  static Future<Uint8List?> queryArtworkHighRes(
+    int id, {
+    ArtworkType type = ArtworkType.AUDIO,
+  }) async {
+    if (id == 0) return null;
+    try {
+      final data = await _colorQuery
+          .queryArtwork(
+            id,
+            type,
+            format: ArtworkFormat.JPEG,
+            size: 1024,
+            quality: 100,
+          )
+          .timeout(const Duration(seconds: 6));
+      if (data == null || data.isEmpty) return null;
+      return data;
+    } catch (e) {
+      debugPrint('[ArtworkNotifier] queryArtworkHighRes error: $e');
+      return null;
+    }
+  }
+
   /// Extrai palette completa via histograma HSL (192 buckets).
   /// A decodificação da imagem ocorre na main thread (dart:ui requer root isolate),
   /// mas o cálculo pesado do histograma é delegado a um Isolate via compute(),
