@@ -278,6 +278,14 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     }
   }
 
+  /// Aplica dados restaurados de um backup imediatamente sem reiniciar o app.
+  /// Recarrega settings (favoritos, pastas, exclusões) do SharedPreferences e
+  /// faz um rescan completo com os novos dados.
+  Future<void> reloadFromBackup() async {
+    _loadSettings(); // atualiza _savedFavoriteIds, _savedExcludedIds, selectedFolders
+    await rescan();  // reconstrói a biblioteca com as novas configurações
+  }
+
   /// Solicita permissão novamente.
   Future<void> retryPermission() async {
     final isPermanent = await PermissionService.isPermanentlyDenied();

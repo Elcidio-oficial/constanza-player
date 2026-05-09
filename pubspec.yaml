@@ -1,7 +1,7 @@
 name: constanza_player
 description: "Constanza Músicas — Sua música. Seu silêncio. Seu momento."
 publish_to: 'none'
-version: 1.2.2+8
+version: 1.3.3+11
 
 environment:
   sdk: ^3.10.7
@@ -39,6 +39,10 @@ dependencies:
 
   # === IMAGE PICKER ===
   image_picker: ^1.1.2
+
+  # === FILE PICKER ===
+  # Seletor nativo de arquivos via SAF (Android Storage Access Framework).
+  file_picker: ^8.1.4
 
   # === NETWORK / IMAGENS ONLINE ===
   http: ^1.2.2

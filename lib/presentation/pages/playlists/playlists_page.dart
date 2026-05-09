@@ -7,6 +7,7 @@ import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
 import 'package:constanza_player/domain/entities/playlist.dart';
 import 'package:constanza_player/domain/entities/song.dart';
+import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
@@ -15,6 +16,7 @@ import 'package:constanza_player/presentation/widgets/song_tile/song_tile.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
+import 'package:constanza_player/services/share_service.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
@@ -679,24 +681,12 @@ class PlaylistDetailPage extends ConsumerWidget {
                   title: const Text('Partilhar'),
                   onTap: () {
                     ctx.pop();
-                    final buf = StringBuffer()
-                      ..writeln(currentPlaylist.name)
-                      ..writeln(
-                        '${songs.length} música${songs.length != 1 ? 's' : ''} · $durationLabel',
-                      )
-                      ..writeln();
-                    if (songs.isNotEmpty) {
-                      buf.writeln('Músicas:');
-                      for (var i = 0; i < songs.length; i++) {
-                        buf.writeln(
-                          '${i + 1}. ${songs[i].title} — ${songs[i].artist}',
-                        );
-                      }
-                    }
-                    Clipboard.setData(
-                      ClipboardData(text: buf.toString().trim()),
+                    ShareService.sharePlaylist(
+                      context: context,
+                      playlist: currentPlaylist,
+                      songs: songs,
+                      palette: ref.read(artworkPaletteProvider),
                     );
-                    _showSnack(context, 'Info da playlist copiada!');
                   },
                 ),
                 if (songs.isNotEmpty)

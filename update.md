@@ -7,6 +7,48 @@
 
 ---
 
+## [1.3.3] — 2026-05-09
+### Posters de Partilha — Redesign Premium
+- **`_SongPoster`** reformulado: arte de capa edge-to-edge no topo (1080 px), degradê inferior escuro sobre ela, conteúdo posicionado absolutamente (`Positioned`) com `spaceBetween` entre (TopBar + TitleBlock) e (Waveform + Branding). Elimina o espaço em branco desperdiciado (~400 px) que existia antes com `Spacer()`.
+- **`_LyricsPoster`** redesenhado para replicar o visual do ecrã de letras do app: fundo `_LyricsBackground` (arte a 22% opacidade + sobreposição preta uniforme + dois blobs de cor nos cantos). Elimina o blob/mancha no centro causado pelo `RadialGradient` antigo.
+- **`_LyricsHeader`** novo: miniatura 112 px + barra de acento + título/subtítulo — substitui o cabeçalho vazio anterior.
+- **`_LyricsLinesView`**: linhas de letra centradas com espaçamento fixo de 28 px (`MainAxisAlignment.center`) em vez de `spaceEvenly` que deixava espaço excessivo em baixo.
+- Removidas classes obsoletas `_PosterBackground` e `_ArtCard`.
+
+### Backup & Restauração — Correção completa
+- **Chave errada** (`constanza_history` → `constanza_play_history`): o histórico de reprodução nunca era exportado nem importado. Corrigido em `_exportedKeys` do `BackupService`.
+- **Sem reload de providers após importação**: depois do `importFromString()`, o app não atualizava o estado em memória — as preferências importadas só apareciam após reiniciar o app. Corrigido: `settings_page.dart` agora chama `themeProvider.reloadFromStorage()`, `audioSettingsProvider.reloadFromStorage()`, `playlistProvider.loadFromStorage()` e `libraryProvider.reloadFromBackup()` imediatamente após a importação.
+- **`_playlistsRestored` bloqueava restauração de playlists após rescan**: a flag só era verdadeira uma vez; quando o backup disparava um novo rescan da biblioteca, as músicas das playlists nunca eram resolvidas. Corrigido usando deteção de transição `wasNotLoaded && nowLoaded` em vez de flag one-shot.
+- **`reloadFromBackup()`** novo em `LibraryNotifier`: recarrega favoritos/pastas excluídas/selecionadas do storage e chama `rescan()` — restauração completa sem reiniciar o app.
+- `ThemeNotifier.reloadFromStorage()` e `AudioSettingsNotifier.reloadFromStorage()` tornados públicos para serem chamados externamente.
+- `_BackupSheet` convertido de `StatefulWidget` → `ConsumerStatefulWidget` para ter acesso ao `ref` e chamar os providers após a importação.
+
+---
+
+## [1.3.2] — 2026-05-06
+### Backup & Restauração — Seletor nativo de arquivos
+- **Removida** a importação por área de transferência e o campo de caminho manual.
+- **Substituídos** por um único botão **Importar backup** que abre o seletor nativo do Android (Storage Access Framework) filtrando `.json`. O utilizador navega no armazenamento, escolhe o arquivo e a restauração ocorre.
+- Implementação usa `file_picker: ^8.1.4` com `withData: true` (lê os bytes via SAF, sem depender de path absoluto — funciona com Drive, Downloads, etc.) e fallback para leitura por path quando os bytes não vêm preenchidos.
+- Decodificação UTF-8 com `allowMalformed: true` e tratamento de erros com `SnackBar` específico para arquivo vazio/ilegível vs. formato inválido.
+
+### Now Playing — Correção de bug de retomada da tela
+- **Bug A:** ao desligar a tela do telemóvel, pular faixas via notificação/headset e religar a tela com a NowPlaying visível, a faixa atual reiniciava do zero.
+- **Bug B:** com **shuffle** ativo, ao religar a tela, o carrossel "embaralhava" rapidamente as capas e mudava a música sozinho.
+- **Causa raiz:** quando o engine do Flutter é retomado após o ecrã acordar, frames de settle pendentes do `PageView` disparam `onPageChanged` sem intervenção do utilizador. O guard `_syncing` antigo não era robusto o suficiente — em alguns timings, o evento atrasado caía no caminho de "swipe real" e chamava `playIndex(idx)`/`notifier.next()`/`previous()`, reiniciando a faixa (sem shuffle) ou saltando para uma aleatória (com shuffle).
+- **Fix:** envolvido o `PageView` com um `Listener` que regista o timestamp do último `PointerDown`. O `_onPageChanged` só trata o evento como swipe real quando houve toque nos últimos **800 ms**; caso contrário, apenas atualiza `_currentPage` sem chamar nenhuma navegação. Soluciona ambos os sintomas de forma definitiva.
+
+---
+
+## [1.3.1] — 2026-05-06
+### Backup & Restauração — Importação por caminho
+- **Novo** `BackupService.importFromPath(path)`: lê o JSON diretamente do disco, validando existência do arquivo (retorna `-1` quando o caminho é inválido) e reaproveitando o pipeline de `importFromString`.
+- **Sheet de Backup** redesenhado: campo de texto com ícone de pasta para o caminho do arquivo, botão "Colar caminho" no suffix (puxa da área de transferência), botão principal **Importar do caminho** e fallback secundário **Ou importar da área de transferência**.
+- Hint com exemplo de path Android (`/storage/emulated/0/Download/constanza-backup.json`) e mensagens de erro específicas para arquivo inexistente vs. formato inválido.
+- Sem novas dependências — usa `dart:io File` já disponível via `backup_service.dart`.
+
+---
+
 ## [1.3.0] — 2026-04-28
 ### Configurações enxutas
 - **Removido** de Configurações: Densidade da Lista, Capa de Álbum na lista, Ordenação Padrão, Filtrar músicas curtas, Spotify API e Cache de análises.

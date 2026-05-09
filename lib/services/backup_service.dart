@@ -28,7 +28,7 @@ class BackupService {
     'constanza_music_folders',
     'constanza_user_playlists',
     'constanza_excluded_songs',
-    'constanza_history',
+    'constanza_play_history',
     'constanza_play_counts',
     'constanza_profile_name',
     'constanza_profile_photo',
@@ -81,6 +81,23 @@ class BackupService {
     } catch (e) {
       debugPrint('[BackupService] export failed: $e');
       return false;
+    }
+  }
+
+  /// Tenta importar a partir de um arquivo no caminho informado. Retorna a
+  /// contagem de chaves restauradas, `null` se o formato é inválido, ou `-1`
+  /// se o arquivo não foi encontrado/legível.
+  static Future<int?> importFromPath(String path) async {
+    try {
+      final trimmed = path.trim().replaceAll('"', '');
+      if (trimmed.isEmpty) return -1;
+      final file = File(trimmed);
+      if (!await file.exists()) return -1;
+      final content = await file.readAsString();
+      return importFromString(content);
+    } catch (e) {
+      debugPrint('[BackupService] importFromPath failed: $e');
+      return -1;
     }
   }
 
