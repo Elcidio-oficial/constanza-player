@@ -307,8 +307,11 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     if (state.queue.isEmpty) return;
     switch (state.repeatMode) {
       case RepeatMode.one:
-        _handler.seek(Duration.zero);
-        _handler.play();
+        // Reload the source instead of seek+play: after ProcessingState.completed
+        // just_audio's audio pipeline is closed on Android and plain seek+play
+        // leaves the player in a mute "zombie" state (position moves, no sound).
+        // _loadAndPlay also calls resetVolume(), fixing the crossfade-zeroed-volume case.
+        if (state.currentSong != null) _loadAndPlay(state.currentSong!);
       case RepeatMode.all:
         _playIndex((state.currentIndex + 1) % state.queue.length);
       case RepeatMode.off:
@@ -354,6 +357,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     if (state.queue.isEmpty) return;
     // Repeat one: restart current song instead of advancing
     if (state.repeatMode == RepeatMode.one) {
+      _handler.resetVolume();
       _handler.seek(Duration.zero);
       _handler.play();
       return;
@@ -369,6 +373,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     if (state.queue.isEmpty) return;
     // Repeat one: restart current song
     if (state.repeatMode == RepeatMode.one) {
+      _handler.resetVolume();
       _handler.seek(Duration.zero);
       _handler.play();
       return;

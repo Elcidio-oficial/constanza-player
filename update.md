@@ -7,6 +7,14 @@
 
 ---
 
+## [1.3.4] — 2026-05-14
+### Correções de áudio & ícone
+- **Zombie state no repeat (Android)**: após `ProcessingState.completed`, o pipeline de áudio do just_audio é encerrado no Android. `seek(zero)+play` deixava o player em estado mudo (posição avançava, sem som). Corrigido: `_onPlaybackCompleted` chama `_loadAndPlay()` em `RepeatMode.one`, que reinicializa o source e chama `resetVolume()`.
+- **Volume zerado após crossfade**: `resetVolume()` adicionado antes de `seek` nos dois paths de navegação rápida (prev/next já em progresso), garantindo que o volume não fica em 0 quando o crossfade foi interrompido a meio.
+- **Ícone do launcher**: novo ícone atualizado em todos os tamanhos (mdpi → xxxhdpi + drawable foreground); fundo do launcher alterado de `#000000` para `#1A1A2E`.
+
+---
+
 ## [1.3.3] — 2026-05-09
 ### Posters de Partilha — Redesign Premium
 - **`_SongPoster`** reformulado: arte de capa edge-to-edge no topo (1080 px), degradê inferior escuro sobre ela, conteúdo posicionado absolutamente (`Positioned`) com `spaceBetween` entre (TopBar + TitleBlock) e (Waveform + Branding). Elimina o espaço em branco desperdiciado (~400 px) que existia antes com `Spacer()`.
