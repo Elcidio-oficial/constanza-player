@@ -531,9 +531,7 @@ class _SelectionActionBar extends ConsumerWidget {
                   }
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        '${selectedSongs.length} música${selectedSongs.length != 1 ? 's' : ''} adicionada${selectedSongs.length != 1 ? 's' : ''} à fila',
-                      ),
+                      content: Text(l10n.songsAddedToQueueOk(selectedSongs.length)),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -664,7 +662,7 @@ class _MultiAddToPlaylistSheet extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
-              'Adicionar ${songs.length} músicas a…',
+              AppLocalizations.of(context).songsAddManyTo(songs.length),
               style: theme.textTheme.titleSmall,
             ),
           ),
@@ -673,7 +671,7 @@ class _MultiAddToPlaylistSheet extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Text(
-                'Sem playlists criadas',
+                AppLocalizations.of(context).playlistsNoUserPlaylists,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colors.onSurface.withValues(alpha: 0.4),
                 ),
@@ -695,9 +693,7 @@ class _MultiAddToPlaylistSheet extends ConsumerWidget {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        '${songs.length} músicas adicionadas a ${pl.name}',
-                      ),
+                      content: Text(AppLocalizations.of(context).songsAddedToOk(songs.length, pl.name)),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -741,8 +737,14 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
           top: Radius.circular(AppSpacing.radiusXl),
         ),
       ),
+      // Limita a altura do sheet à fração viável da viewport; o conteúdo
+      // interno passa a rolar caso ultrapasse — sem isso o Column estoura em
+      // janelas pequenas (Windows 900x600) gerando "BOTTOM OVERFLOWED".
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+      ),
       child: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.md,
             AppSpacing.sm,
@@ -764,7 +766,7 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              _SectionLabel('DENSIDADE', theme, colors),
+              _SectionLabel(AppLocalizations.of(context).libraryDensity, theme, colors),
               const SizedBox(height: AppSpacing.xs),
               Row(
                 children: [
@@ -789,9 +791,9 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
               Divider(color: colors.outline.withValues(alpha: 0.12)),
               SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
-                title: Text('Capa do álbum', style: theme.textTheme.bodyMedium),
+                title: Text(AppLocalizations.of(context).libraryAlbumArt, style: theme.textTheme.bodyMedium),
                 subtitle: Text(
-                  'Mostrar thumbnail nas músicas',
+                  AppLocalizations.of(context).libraryAlbumArtDesc,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.4),
                   ),
@@ -828,13 +830,13 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                         : colors.onSurface.withValues(alpha: 0.5),
                   ),
                   title: Text(
-                    'Filtrar músicas curtas',
+                    AppLocalizations.of(context).libraryFilterShortTracks,
                     style: theme.textTheme.bodyMedium,
                   ),
                   subtitle: Text(
                     filterEnabled
-                        ? 'Ocultar faixas menores que ${minDur}s'
-                        : 'Desativado',
+                        ? AppLocalizations.of(context).libraryFilterShortTracksHidden(minDur)
+                        : AppLocalizations.of(context).libraryFilterDisabled,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.4),
                     ),
@@ -866,7 +868,7 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                               min: 0,
                               max: 120,
                               divisions: 24,
-                              label: minDur == 0 ? 'Desativado' : '${minDur}s',
+                              label: minDur == 0 ? AppLocalizations.of(context).libraryFilterDisabled : '${minDur}s',
                               onChanged: (v) => ref
                                   .read(libraryProvider.notifier)
                                   .setMinTrackDuration(v.round()),
@@ -889,7 +891,7 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                 ),
               ),
               Divider(color: colors.outline.withValues(alpha: 0.12)),
-              _SectionLabel('ORDENAÇÃO', theme, colors),
+              _SectionLabel(AppLocalizations.of(context).librarySorting, theme, colors),
               const SizedBox(height: AppSpacing.xs),
               for (final order in SortOrder.values)
                 ListTile(
@@ -902,7 +904,7 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                         : colors.onSurface.withValues(alpha: 0.5),
                   ),
                   title: Text(
-                    _labelFor(order),
+                    _labelFor(order, context),
                     style: TextStyle(
                       color: order == current
                           ? (accentColor ?? colors.primary)
@@ -939,13 +941,16 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
     SortOrder.duration => Icons.timer_outlined,
   };
 
-  String _labelFor(SortOrder o) => switch (o) {
-    SortOrder.title => 'Título',
-    SortOrder.artist => 'Artista',
-    SortOrder.album => 'Álbum',
-    SortOrder.dateAdded => 'Data adicionada',
-    SortOrder.duration => 'Duração',
-  };
+  String _labelFor(SortOrder o, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return switch (o) {
+      SortOrder.title => l10n.librarySortTitle,
+      SortOrder.artist => l10n.librarySortArtist,
+      SortOrder.album => l10n.librarySortAlbum,
+      SortOrder.dateAdded => l10n.librarySortDateAdded,
+      SortOrder.duration => l10n.librarySortDuration,
+    };
+  }
 }
 
 class _SectionLabel extends StatelessWidget {
@@ -980,10 +985,11 @@ class _DensityChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final label = switch (density) {
-      ListDensity.compact => 'Compacto',
-      ListDensity.normal => 'Normal',
-      ListDensity.comfortable => 'Confortável',
+      ListDensity.compact => l10n.libraryDensityCompact,
+      ListDensity.normal => l10n.libraryDensityNormal,
+      ListDensity.comfortable => l10n.libraryDensityComfortable,
     };
     final icon = switch (density) {
       ListDensity.compact => Icons.density_small_rounded,

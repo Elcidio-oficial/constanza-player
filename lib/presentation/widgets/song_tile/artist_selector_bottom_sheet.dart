@@ -38,6 +38,9 @@ class ArtistSelectorBottomSheet extends StatelessWidget {
       showModalBottomSheet(
         context: context,
         backgroundColor: colors.surfaceContainer,
+        // Listas longas de artistas (colaborações) + janela baixa estouravam
+        // ("BOTTOM OVERFLOWED"). Com isScrollControlled + scroll abaixo, rola.
+        isScrollControlled: true,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppSpacing.radiusXl),
@@ -54,6 +57,7 @@ class ArtistSelectorBottomSheet extends StatelessWidget {
     final theme = Theme.of(context);
 
     return SafeArea(
+      child: SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -88,6 +92,7 @@ class ArtistSelectorBottomSheet extends StatelessWidget {
             ),
           const SizedBox(height: AppSpacing.md),
         ],
+      ),
       ),
     );
   }

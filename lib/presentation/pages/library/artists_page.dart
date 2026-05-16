@@ -73,7 +73,7 @@ class _ArtistsPageState extends ConsumerState<ArtistsPage> {
               },
             ),
             IconButton(
-              tooltip: _shapeTooltip(_shape),
+              tooltip: _shapeTooltip(_shape, context),
               icon: Icon(_shapeIcon(_shape)),
               onPressed: () => setState(() {
                 _shape = ArtistCardShape
@@ -163,11 +163,14 @@ class _ArtistsPageState extends ConsumerState<ArtistsPage> {
     ArtistCardShape.rounded => Icons.rounded_corner_rounded,
   };
 
-  String _shapeTooltip(ArtistCardShape s) => switch (s) {
-    ArtistCardShape.circle => 'Circular',
-    ArtistCardShape.square => 'Quadrado',
-    ArtistCardShape.rounded => 'Arredondado',
-  };
+  String _shapeTooltip(ArtistCardShape s, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return switch (s) {
+      ArtistCardShape.circle => l10n.artistsShapeCircle,
+      ArtistCardShape.square => l10n.artistsShapeSquare,
+      ArtistCardShape.rounded => l10n.artistsShapeRounded,
+    };
+  }
 }
 
 class _SearchBar extends StatelessWidget {
@@ -190,7 +193,7 @@ class _SearchBar extends StatelessWidget {
         onChanged: onChanged,
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
-          hintText: 'Buscar artista',
+          hintText: AppLocalizations.of(context).artistsSearchHint,
           prefixIcon: const Icon(Icons.search_rounded, size: 22),
           filled: true,
           fillColor: colors.surfaceContainerHigh.withValues(alpha: 0.6),
@@ -212,10 +215,11 @@ class _FilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const entries = [
-      (ArtistFilter.all, 'Todos', Icons.apps_rounded),
-      (ArtistFilter.popularity, 'Populares', Icons.trending_up_rounded),
-      (ArtistFilter.favorites, 'Favoritos', Icons.favorite_rounded),
+    final l10n = AppLocalizations.of(context);
+    final entries = [
+      (ArtistFilter.all, l10n.artistsFilterAll, Icons.apps_rounded),
+      (ArtistFilter.popularity, l10n.artistsFilterPopular, Icons.trending_up_rounded),
+      (ArtistFilter.favorites, l10n.artistsFilterFavorites, Icons.favorite_rounded),
     ];
     return SizedBox(
       height: 40,
@@ -262,7 +266,7 @@ class _GenreChips extends StatelessWidget {
         itemBuilder: (_, i) {
           if (i == 0) {
             return ChoiceChip(
-              label: const Text('Todos gêneros'),
+              label: Text(AppLocalizations.of(context).artistsAllGenres),
               selected: selected == null,
               onSelected: (_) => onSelect(null),
             );
@@ -441,7 +445,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Nenhum artista encontrado',
+            AppLocalizations.of(context).artistsNoneFound,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: colors.onSurface.withValues(alpha: 0.4),
             ),

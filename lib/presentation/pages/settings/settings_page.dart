@@ -229,8 +229,8 @@ class SettingsPage extends ConsumerWidget {
                 icon: Icons.palette_outlined,
                 title: l10n.settingsCustomColors,
                 subtitle: themeState.useCustomNpColors
-                    ? 'Cores manuais ativas'
-                    : 'Extrair da capa do álbum',
+                    ? l10n.settingsCustomColorsActive
+                    : l10n.settingsCustomColorsExtract,
                 colors: colors,
                 theme: theme,
                 onTap: () => _showCustomNpColorsSheet(context, ref),
@@ -269,7 +269,7 @@ class SettingsPage extends ConsumerWidget {
                 title: l10n.settingsEqualizer,
                 subtitle: audioState.eqEnabled
                     ? audioState.currentPreset.name
-                    : 'Desligado',
+                    : l10n.settingsEqualizerOff,
                 colors: colors,
                 theme: theme,
                 onTap: () => Navigator.push(
@@ -290,7 +290,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.volume_up_outlined,
                 title: l10n.settingsVolumeNormalization,
-                subtitle: 'Nivelar volume entre músicas',
+                subtitle: l10n.settingsVolumeNormalizationDesc,
                 colors: colors,
                 theme: theme,
                 trailing: Switch.adaptive(
@@ -327,7 +327,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.graphic_eq_rounded,
                 title: l10n.settingsGapless,
-                subtitle: 'Sem silêncio entre faixas',
+                subtitle: l10n.settingsGaplessDesc,
                 colors: colors,
                 theme: theme,
                 trailing: Switch.adaptive(
@@ -345,7 +345,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.battery_charging_full_rounded,
                 title: l10n.settingsBackgroundPlayback,
-                subtitle: 'Isentar de otimização de bateria',
+                subtitle: l10n.settingsBackgroundPlaybackDesc,
                 colors: colors,
                 theme: theme,
                 onTap: () => _requestBatteryExemption(context),
@@ -377,8 +377,8 @@ class SettingsPage extends ConsumerWidget {
                 icon: Icons.refresh_rounded,
                 title: l10n.settingsRescan,
                 subtitle: libState.isLoading
-                    ? 'Escaneando...'
-                    : '${libState.songs.length} músicas encontradas',
+                    ? l10n.settingsRescanScanning
+                    : l10n.settingsRescanCount(libState.songs.length),
                 colors: colors,
                 theme: theme,
                 onTap: libState.isLoading
@@ -387,7 +387,7 @@ class SettingsPage extends ConsumerWidget {
                         ref.read(libraryProvider.notifier).rescan();
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Re-escaneando biblioteca...'),
+                            content: Text(l10n.settingsRescanRunning),
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -397,7 +397,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.copy_all_rounded,
                 title: l10n.settingsDuplicates,
-                subtitle: 'Detectar e remover cópias da biblioteca',
+                subtitle: l10n.settingsDuplicatesDesc,
                 colors: colors,
                 theme: theme,
                 onTap: () => Navigator.push(
@@ -421,7 +421,7 @@ class SettingsPage extends ConsumerWidget {
             children: [
               _SettingsTile(
                 icon: Icons.info_outline_rounded,
-                title: 'Sobre o ${AppConstants.appName}',
+                title: l10n.settingsAboutApp(AppConstants.appName),
                 subtitle: 'v${AppConstants.appVersion}',
                 colors: colors,
                 theme: theme,
@@ -431,7 +431,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.star_outline_rounded,
                 title: l10n.settingsRate,
-                subtitle: 'Ajude-nos com sua avaliação',
+                subtitle: l10n.settingsRateDesc,
                 colors: colors,
                 theme: theme,
                 onTap: () {},
@@ -440,7 +440,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.cloud_sync_outlined,
                 title: l10n.settingsBackup,
-                subtitle: 'Exportar/importar playlists, favoritos e ajustes',
+                subtitle: l10n.settingsBackupDesc,
                 colors: colors,
                 theme: theme,
                 onTap: () => _showBackupSheet(context),
@@ -449,7 +449,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.bug_report_outlined,
                 title: l10n.settingsDiagnostics,
-                subtitle: 'Ver e enviar logs de erros',
+                subtitle: l10n.settingsDiagnosticsDesc,
                 colors: colors,
                 theme: theme,
                 onTap: () => _showDiagnosticsSheet(context),
@@ -458,7 +458,7 @@ class SettingsPage extends ConsumerWidget {
               _SettingsTile(
                 icon: Icons.description_outlined,
                 title: l10n.settingsLicenses,
-                subtitle: 'Licenças de código aberto',
+                subtitle: l10n.settingsLicensesDesc,
                 colors: colors,
                 theme: theme,
                 onTap: () => showLicensePage(
@@ -491,7 +491,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  'Feito com ♡ por ${AppConstants.appAuthor}',
+                  l10n.settingsMadeBy(AppConstants.appAuthor),
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.2),
                   ),
@@ -627,9 +627,9 @@ class SettingsPage extends ConsumerWidget {
     if (!context.mounted) return;
     if (already) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('App já está isento de otimização de bateria'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).settingsBackgroundExemptionAlready),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -640,8 +640,8 @@ class SettingsPage extends ConsumerWidget {
       SnackBar(
         content: Text(
           granted
-              ? 'Isenção concedida. Reprodução em background mais estável.'
-              : 'Isenção não concedida. Reprodução pode ser interrompida.',
+              ? AppLocalizations.of(context).settingsBackgroundExemptionGranted
+              : AppLocalizations.of(context).settingsBackgroundExemptionDenied,
         ),
         duration: const Duration(seconds: 3),
       ),
@@ -943,6 +943,7 @@ class SettingsPage extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: colors.surfaceContainer,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
@@ -950,40 +951,44 @@ class SettingsPage extends ConsumerWidget {
         ),
       ),
       builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.sm,
-            AppSpacing.md,
-            AppSpacing.lg,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(ctx).height * 0.85,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: AppSpacing.xs),
-              Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colors.outline.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.lg,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: AppSpacing.xs),
+                Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.outline.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                l10n.settingsNowPlayingColor,
-                style: theme.textTheme.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.xxs),
-              Text(
-                l10n.npColorSheetSubtitle,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.4),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  l10n.settingsNowPlayingColor,
+                  style: theme.textTheme.titleMedium,
                 ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              // Degradê option
-              _ColorStyleOption(
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  l10n.npColorSheetSubtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.4),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                // Degradê option
+                _ColorStyleOption(
                 title: l10n.npColorStyleDegrade,
                 description: l10n.npColorOptionDegradeDesc,
                 icon: Icons.gradient_rounded,
@@ -1025,7 +1030,30 @@ class SettingsPage extends ConsumerWidget {
                   ctx.pop();
                 },
               ),
-            ],
+              const SizedBox(height: AppSpacing.sm),
+              // Artwork fullscreen option — like Car Mode
+              _ColorStyleOption(
+                title: l10n.npColorStyleArtwork,
+                description: l10n.npColorOptionArtworkDesc,
+                icon: Icons.wallpaper_rounded,
+                isSelected: current == NowPlayingColorStyle.artwork,
+                colors: colors,
+                theme: theme,
+                previewColors: const [
+                  Color(0xFF2A2A2A),
+                  Color(0xFF4A4A4A),
+                  Color(0xFF1A1A1A),
+                ],
+                isLinear: false,
+                onTap: () {
+                  ref
+                      .read(themeProvider.notifier)
+                      .setNowPlayingColorStyle(NowPlayingColorStyle.artwork);
+                  ctx.pop();
+                },
+              ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1788,9 +1816,9 @@ class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
     if (mounted) setState(() => _busy = false);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Logs limpos'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).diagnosticsCleared),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -1800,6 +1828,7 @@ class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
     final hasLogs = _count > 0;
 
     return SafeArea(
@@ -1826,17 +1855,17 @@ class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Diagnóstico',
+              l10n.diagnosticsTitle,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               _count < 0
-                  ? 'Carregando...'
+                  ? l10n.diagnosticsLoading
                   : hasLogs
-                  ? '$_count entrada${_count == 1 ? '' : 's'} de log'
-                  : 'Nenhum erro registrado',
+                  ? l10n.diagnosticsCount(_count)
+                  : l10n.diagnosticsNone,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.5),
               ),
@@ -1844,8 +1873,7 @@ class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'O app grava localmente erros não-fatais e crashes em release. '
-              'Compartilhe o arquivo se algo estranho acontecer — ajuda a diagnosticar.',
+              l10n.diagnosticsExplanation,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.45),
               ),
@@ -1854,13 +1882,13 @@ class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
             FilledButton.icon(
               onPressed: !hasLogs || _busy ? null : _share,
               icon: const Icon(Icons.ios_share_rounded, size: 18),
-              label: const Text('Compartilhar logs'),
+              label: Text(l10n.diagnosticsShare),
             ),
             const SizedBox(height: AppSpacing.sm),
             OutlinedButton.icon(
               onPressed: !hasLogs || _busy ? null : _clear,
               icon: const Icon(Icons.delete_outline_rounded, size: 18),
-              label: const Text('Limpar logs'),
+              label: Text(l10n.diagnosticsClear),
             ),
           ],
         ),
@@ -1890,9 +1918,9 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
     setState(() => _busy = false);
     if (!ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Falha ao gerar backup'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).backupExportFailed),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -1922,9 +1950,9 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
       if (content == null || content.isEmpty) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Arquivo vazio ou ilegível'),
-            duration: Duration(seconds: 3),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).backupFileEmptyOrUnreadable),
+            duration: const Duration(seconds: 3),
           ),
         );
         return;
@@ -1934,9 +1962,9 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
       if (!mounted) return;
       if (restored == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Formato de backup inválido'),
-            duration: Duration(seconds: 3),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).backupInvalidFormat),
+            duration: const Duration(seconds: 3),
           ),
         );
         return;
@@ -1957,9 +1985,7 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Backup restaurado ($restored iten${restored == 1 ? '' : 's'}). A biblioteca está a atualizar…',
-          ),
+          content: Text(AppLocalizations.of(context).backupRestoredOk(restored)),
           duration: const Duration(seconds: 4),
         ),
       );
@@ -1967,7 +1993,7 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro ao abrir arquivo: $e'),
+          content: Text(AppLocalizations.of(context).backupFileOpenError(e.toString())),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -2005,15 +2031,13 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Backup & Restauração',
+              AppLocalizations.of(context).backupTitle,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Exporte playlists, favoritos, exclusões e ajustes para um arquivo '
-              'JSON. Para restaurar, toque em "Importar backup" e selecione o '
-              'arquivo no seu armazenamento.',
+              AppLocalizations.of(context).backupDescription,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.5),
               ),
@@ -2022,18 +2046,17 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
             FilledButton.icon(
               onPressed: _busy ? null : _export,
               icon: const Icon(Icons.upload_rounded, size: 18),
-              label: const Text('Exportar backup'),
+              label: Text(AppLocalizations.of(context).backupExport),
             ),
             const SizedBox(height: AppSpacing.sm),
             FilledButton.tonalIcon(
               onPressed: _busy ? null : _importFromFile,
               icon: const Icon(Icons.folder_open_rounded, size: 18),
-              label: const Text('Importar backup'),
+              label: Text(AppLocalizations.of(context).backupImportFile),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'O Android também faz backup automático na conta Google. Esta '
-              'opção é portátil e independente da conta.',
+              AppLocalizations.of(context).backupNote,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.35),
               ),

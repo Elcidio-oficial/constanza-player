@@ -187,6 +187,10 @@ class ConstanzaAudioHandler extends BaseAudioHandler
   @override
   Future<void> seek(Duration position) async => _player.seek(position);
 
+  Future<void> setPlayerVolume(double volume) async {
+    await _player.setVolume(volume.clamp(0.0, 1.0));
+  }
+
   @override
   Future<void> setSpeed(double speed) async {
     _speed = speed;

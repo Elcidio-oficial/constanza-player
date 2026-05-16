@@ -1,19 +1,23 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
+
+import 'package:constanza_player/services/media_library/media_library_backend.dart';
 
 /// Serviço que escreve artwork de alta qualidade em ficheiro temp.
 ///
-/// O Android 13+ (Material You / Monet) extrai cores dinâmicas
-/// automaticamente do Bitmap no MediaMetadata. Para que funcione,
-/// o audio_service precisa de uma imagem válida e acessível.
+/// Usado pelo Android 13+ (Material You / Monet) para extrair cores
+/// dinâmicas automaticamente do Bitmap no MediaMetadata. Para que
+/// funcione, o audio_service precisa de uma imagem válida acessível.
 ///
 /// IMPORTANTE: Cada música gera um ficheiro com nome único baseado
 /// no songId. Isso força o Android/MediaSession a recarregar o bitmap
 /// quando a música muda, em vez de usar cache do URI anterior.
+///
+/// No Windows o resultado é simplesmente ignorado pelo player — não há
+/// notificação Android para alimentar — mas o serviço continua funcional
+/// (delega ao [MediaLibrary] backend, que extrai artwork de tags embedded).
 class ArtworkFileService {
-  static final _audioQuery = OnAudioQuery();
   static String? _cacheDir;
   static int _lastSongId = -1;
   static Uri? _lastUri;
@@ -23,14 +27,12 @@ class ArtworkFileService {
   ///
   /// Retorna null se o artwork não estiver disponível.
   static Future<Uri?> getArtworkFileUri(int songId) async {
-    // Cache: se já escrevemos para este songId, retorna o URI
     if (songId == _lastSongId && _lastUri != null) return _lastUri;
 
     try {
-      final Uint8List? bytes = await _audioQuery.queryArtwork(
+      final bytes = await MediaLibrary.instance.queryArtwork(
         songId,
         ArtworkType.AUDIO,
-        format: ArtworkFormat.JPEG,
         size: 600,
         quality: 90,
       );
@@ -47,7 +49,6 @@ class ArtworkFileService {
       final file = File('$_cacheDir/notif_art_$songId.jpg');
       await file.writeAsBytes(bytes, flush: true);
 
-      // Limpar artwork anterior para não acumular ficheiros
       final prevSongId = _lastSongId;
       _lastSongId = songId;
       _lastUri = Uri.file(file.path);

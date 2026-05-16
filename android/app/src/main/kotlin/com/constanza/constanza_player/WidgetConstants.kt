@@ -19,6 +19,7 @@ object WidgetConstants {
     const val ACTION_OPEN_PLAYLISTS    = "com.constanza.constanza_player.WIDGET_OPEN_PLAYLISTS"
     const val ACTION_OPEN_SETTINGS     = "com.constanza.constanza_player.WIDGET_OPEN_SETTINGS"
     const val ACTION_OPEN_NOW_PLAYING  = "com.constanza.constanza_player.WIDGET_OPEN_NOW_PLAYING"
+    const val ACTION_OPEN_SLEEP_TIMER  = "com.constanza.constanza_player.WIDGET_OPEN_SLEEP_TIMER"
 
     const val EXTRA_DEEPLINK_ROUTE = "deeplink_route"
 

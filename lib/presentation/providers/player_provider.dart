@@ -13,7 +13,8 @@ import 'package:constanza_player/services/notification_color_service.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
 import 'package:constanza_player/presentation/providers/audio_analysis_provider.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:constanza_player/presentation/providers/audio_settings_provider.dart';
+import 'package:constanza_player/services/media_library/media_library_backend.dart';
 import 'package:constanza_player/services/widget_service.dart';
 
 // ============================================================
@@ -304,6 +305,15 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
   // ── Completed (callback do handler) ──────────────────────
 
   void _onCompleted() {
+    // Sleep timer "fim da música atual" — intercepta ANTES do auto-advance
+    // para pausar em vez de tocar a próxima.
+    final audioSettings = _ref.read(audioSettingsProvider);
+    if (audioSettings.sleepTimerEndOfTrack) {
+      _handler.pause();
+      _ref.read(audioSettingsProvider.notifier).onTrackCompleted();
+      return;
+    }
+
     if (state.queue.isEmpty) return;
     switch (state.repeatMode) {
       case RepeatMode.one:
@@ -515,6 +525,9 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
 
   void setSpeed(double speed) => _handler.setSpeed(speed);
 
+  Future<void> setPlayerVolume(double volume) =>
+      _handler.setPlayerVolume(volume);
+
   void setCrossfadeDuration(int seconds) =>
       _handler.setCrossfadeDuration(seconds);
 
@@ -665,10 +678,9 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
   /// Envia artwork ao plugin nativo para colorizar notificação e lock screen.
   Future<void> _sendArtworkToNotification(int songId) async {
     try {
-      final bytes = await OnAudioQuery().queryArtwork(
+      final bytes = await MediaLibrary.instance.queryArtwork(
         songId,
         ArtworkType.AUDIO,
-        format: ArtworkFormat.JPEG,
         size: 300,
         quality: 85,
       );

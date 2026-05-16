@@ -14,9 +14,10 @@ import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/widgets/mini_player/mini_player.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:constanza_player/services/media_library/media_library_backend.dart';
 import 'package:constanza_player/services/notification_color_service.dart';
 import 'package:constanza_player/services/permission_service.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.navigationShell});
@@ -240,9 +241,9 @@ class _AppShellState extends ConsumerState<AppShell>
         }
         _lastBackPress = now;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Toque duas vezes para sair'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).snackbarExitTwice),
+            duration: const Duration(seconds: 2),
           ),
         );
       },
@@ -321,10 +322,9 @@ class _AppShellState extends ConsumerState<AppShell>
     // Query de alta qualidade para notificação (se os 48px falharam)
     if (data == null || data.isEmpty) {
       try {
-        data = await OnAudioQuery().queryArtwork(
+        data = await MediaLibrary.instance.queryArtwork(
           songId,
           ArtworkType.AUDIO,
-          format: ArtworkFormat.JPEG,
           size: 300,
           quality: 85,
         );
@@ -364,25 +364,17 @@ class _PremiumNavBar extends ConsumerWidget {
   final ColorScheme colors;
   final bool hasBackground;
 
-  static const _items = [
-    _NavItem(Icons.home_outlined, Icons.home_rounded, 'Home'),
-    _NavItem(
-      Icons.library_music_outlined,
-      Icons.library_music_rounded,
-      'Músicas',
-    ),
-    _NavItem(
-      Icons.queue_music_outlined,
-      Icons.queue_music_rounded,
-      'Playlists',
-    ),
-    _NavItem(Icons.search_outlined, Icons.search_rounded, 'Busca'),
-    _NavItem(Icons.settings_outlined, Icons.settings_rounded, 'Config'),
-  ];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final items = [
+      _NavItem(Icons.home_outlined, Icons.home_rounded, l10n.navHome),
+      _NavItem(Icons.library_music_outlined, Icons.library_music_rounded, l10n.navSongs),
+      _NavItem(Icons.queue_music_outlined, Icons.queue_music_rounded, l10n.navPlaylists),
+      _NavItem(Icons.search_outlined, Icons.search_rounded, l10n.navSearch),
+      _NavItem(Icons.settings_outlined, Icons.settings_rounded, l10n.navSettings),
+    ];
     final navStyle = ref.watch(themeProvider.select((s) => s.navBarStyle));
     final artworkColor = ref.watch(artworkColorProvider);
     final bottomPad = MediaQuery.paddingOf(context).bottom;
@@ -416,8 +408,8 @@ class _PremiumNavBar extends ConsumerWidget {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(_items.length, (i) {
-          final item = _items[i];
+        children: List.generate(items.length, (i) {
+          final item = items[i];
           final active = i == currentIndex;
           return Expanded(
             child: GestureDetector(

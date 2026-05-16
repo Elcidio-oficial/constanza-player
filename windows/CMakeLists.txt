@@ -32,6 +32,13 @@ set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
 # Use Unicode for all projects.
 add_definitions(-DUNICODE -D_UNICODE)
 
+# Force synchronous PDB writes for every target (app + plugins).
+# Sem isto, builds paralelos do MSBuild fazem múltiplos CL.EXE escreverem
+# no mesmo .pdb (ex.: share_plus) e falham com "error C1041 ... use /FS".
+# Aplicado globalmente ANTES dos add_subdirectory para cobrir os plugins,
+# que não passam pela função APPLY_STANDARD_SETTINGS.
+add_compile_options(/FS)
+
 # Compilation settings that should be applied to most targets.
 #
 # Be cautious about adding new options here, as plugins use this function by

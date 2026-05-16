@@ -76,6 +76,7 @@
                 <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
                 <action android:name="com.constanza.constanza_player.WIDGET_NEXT" />
                 <action android:name="com.constanza.constanza_player.WIDGET_TOGGLE_FAV" />
+                <action android:name="com.constanza.constanza_player.WIDGET_TOGGLE_REPEAT" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/music_widget_info" />
         </receiver>
@@ -87,6 +88,7 @@
                 <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
                 <action android:name="com.constanza.constanza_player.WIDGET_NEXT" />
                 <action android:name="com.constanza.constanza_player.WIDGET_TOGGLE_FAV" />
+                <action android:name="com.constanza.constanza_player.WIDGET_TOGGLE_REPEAT" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_large_info" />
         </receiver>
@@ -126,7 +128,11 @@
                 <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
                 <action android:name="com.constanza.constanza_player.WIDGET_NEXT" />
                 <action android:name="com.constanza.constanza_player.WIDGET_TOGGLE_FAV" />
+                <action android:name="com.constanza.constanza_player.WIDGET_OPEN_NOW_PLAYING" />
                 <action android:name="com.constanza.constanza_player.WIDGET_OPEN_QUEUE" />
+                <action android:name="com.constanza.constanza_player.WIDGET_OPEN_PLAYLISTS" />
+                <action android:name="com.constanza.constanza_player.WIDGET_OPEN_SETTINGS" />
+                <action android:name="com.constanza.constanza_player.WIDGET_OPEN_SLEEP_TIMER" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_recommended_info" />
         </receiver>

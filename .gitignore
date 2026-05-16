@@ -56,3 +56,7 @@ app.*.map.json
 
 # Localizations — gerados a partir de lib/l10n/*.arb via flutter gen-l10n
 /lib/l10n/gen/
+
+# Certificado de assinatura MSIX (auto-assinado, nao versionar)
+certs/*.pfx
+certs/*.cer

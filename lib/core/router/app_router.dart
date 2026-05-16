@@ -28,6 +28,8 @@ import 'package:constanza_player/presentation/pages/library/history_page.dart';
 import 'package:constanza_player/presentation/pages/library/duplicates_page.dart';
 import 'package:constanza_player/presentation/pages/settings/equalizer_page.dart';
 import 'package:constanza_player/presentation/pages/library/folders_page.dart';
+import 'package:constanza_player/presentation/pages/car_mode/car_mode_page.dart';
+import 'package:constanza_player/presentation/pages/mini_player/mini_player_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -231,6 +233,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/folders',
         pageBuilder: (context, state) =>
             buildPageWithDefaultTransition(context, state, const FoldersPage()),
+      ),
+      GoRoute(
+        path: '/mini-player',
+        builder: (context, state) => const MiniPlayerPage(),
+      ),
+      GoRoute(
+        path: '/car-mode',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const CarModePage(),
+          transitionDuration: const Duration(milliseconds: 400),
+          reverseTransitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, _, child) {
+            final curved = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+              reverseCurve: Curves.easeInCubic,
+            );
+            return FadeTransition(
+              opacity: curved,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.96, end: 1.0).animate(curved),
+                child: child,
+              ),
+            );
+          },
+        ),
       ),
     ],
   );

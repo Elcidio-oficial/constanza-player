@@ -49,6 +49,9 @@ class AudioSettingsState {
     this.sleepTimerMinutes = 0,
     this.sleepTimerEndTime,
     this.sleepTimerTick = 0, // incrementado a cada minuto → força rebuild
+    this.sleepTimerEndOfTrack = false,
+    this.sleepTimerFadeOut = true,
+    this.sleepTimerLastUsedMinutes = 15,
   });
 
   final bool eqEnabled;
@@ -63,15 +66,23 @@ class AudioSettingsState {
   final int sleepTimerMinutes; // minutos configurados (0 = off)
   final DateTime? sleepTimerEndTime;
   final int sleepTimerTick; // contador interno para forçar rebuild do label
+  final bool sleepTimerEndOfTrack; // modo "fim da música atual" (transient)
+  final bool sleepTimerFadeOut; // pref persistido — fade out nos últimos 10s
+  final int sleepTimerLastUsedMinutes; // último valor escolhido (persistido)
 
   // ── Getters calculados ──────────────────────────────────
 
-  bool get hasSleepTimer => sleepTimerMinutes > 0 && sleepTimerEndTime != null;
+  bool get hasSleepTimer =>
+      sleepTimerEndOfTrack ||
+      (sleepTimerMinutes > 0 && sleepTimerEndTime != null);
 
   /// Label dinâmico com tempo restante — atualiza a cada tick do timer UI.
   String get sleepTimerLabel {
     if (!hasSleepTimer) return 'Desligado';
-    final remaining = sleepTimerEndTime!.difference(DateTime.now());
+    if (sleepTimerEndOfTrack) return 'Fim da música';
+    final endTime = sleepTimerEndTime;
+    if (endTime == null) return 'Desligado';
+    final remaining = endTime.difference(DateTime.now());
     if (remaining.isNegative) return 'Desligado';
     final totalMins = remaining.inMinutes;
     final secs = remaining.inSeconds.remainder(60);
@@ -108,7 +119,9 @@ class AudioSettingsState {
     'playbackSpeed': playbackSpeed,
     'volumeNormalization': volumeNormalization,
     'gaplessPlayback': gaplessPlayback,
-    // sleepTimer é transiente — não persiste
+    // sleepTimer ativo é transiente; persistimos só as PREFERÊNCIAS
+    'sleepTimerFadeOut': sleepTimerFadeOut,
+    'sleepTimerLastUsedMinutes': sleepTimerLastUsedMinutes,
   };
 
   factory AudioSettingsState.fromJson(Map<String, dynamic> json) {
@@ -126,6 +139,9 @@ class AudioSettingsState {
       playbackSpeed: (json['playbackSpeed'] as num?)?.toDouble() ?? 1.0,
       volumeNormalization: json['volumeNormalization'] as bool? ?? false,
       gaplessPlayback: json['gaplessPlayback'] as bool? ?? false,
+      sleepTimerFadeOut: json['sleepTimerFadeOut'] as bool? ?? true,
+      sleepTimerLastUsedMinutes:
+          json['sleepTimerLastUsedMinutes'] as int? ?? 15,
     );
   }
 
@@ -142,6 +158,9 @@ class AudioSettingsState {
     int? sleepTimerMinutes,
     DateTime? sleepTimerEndTime,
     int? sleepTimerTick,
+    bool? sleepTimerEndOfTrack,
+    bool? sleepTimerFadeOut,
+    int? sleepTimerLastUsedMinutes,
     bool clearSleepTimer = false,
   }) {
     return AudioSettingsState(
@@ -161,6 +180,12 @@ class AudioSettingsState {
           ? null
           : (sleepTimerEndTime ?? this.sleepTimerEndTime),
       sleepTimerTick: sleepTimerTick ?? this.sleepTimerTick,
+      sleepTimerEndOfTrack: clearSleepTimer
+          ? false
+          : (sleepTimerEndOfTrack ?? this.sleepTimerEndOfTrack),
+      sleepTimerFadeOut: sleepTimerFadeOut ?? this.sleepTimerFadeOut,
+      sleepTimerLastUsedMinutes:
+          sleepTimerLastUsedMinutes ?? this.sleepTimerLastUsedMinutes,
     );
   }
 }
@@ -178,6 +203,13 @@ class AudioSettingsNotifier extends StateNotifier<AudioSettingsState> {
 
   Timer? _sleepCountdownTimer; // tick a cada 1s → atualiza label
   Timer? _sleepFireTimer; // dispara 1x quando o tempo acabar
+  Timer? _sleepFadeStartTimer; // agenda o início do fade (T - 10s)
+  Timer? _sleepFadeTickTimer; // tick a cada 100ms durante os 10s de fade
+
+  // Duração do fade-out em segundos.
+  static const _kFadeOutSeconds = 10;
+  // Quantidade de ticks durante o fade (100ms cada → 100 ticks em 10s).
+  static const _kFadeOutTicks = 100;
 
   // ── Persistência ────────────────────────────────────────
 
@@ -253,8 +285,9 @@ class AudioSettingsNotifier extends StateNotifier<AudioSettingsState> {
 
   // ── Sleep Timer ─────────────────────────────────────────
 
-  /// Configura o sleep timer. [minutes] == 0 cancela.
-  void setSleepTimer(int minutes) {
+  /// Configura o sleep timer com [minutes] minutos. [minutes] == 0 cancela.
+  /// Se [fadeOut] for omitido, usa a preferência salva.
+  void setSleepTimer(int minutes, {bool? fadeOut}) {
     _cancelTimers();
 
     if (minutes == 0) {
@@ -262,34 +295,100 @@ class AudioSettingsNotifier extends StateNotifier<AudioSettingsState> {
       return;
     }
 
+    final useFade = fadeOut ?? state.sleepTimerFadeOut;
     final endTime = DateTime.now().add(Duration(minutes: minutes));
     state = state.copyWith(
       sleepTimerMinutes: minutes,
       sleepTimerEndTime: endTime,
       sleepTimerTick: 0,
+      sleepTimerEndOfTrack: false,
+      sleepTimerLastUsedMinutes: minutes,
     );
+    _save();
 
-    // Timer de countdown — atualiza a UI a cada segundo para o label dinâmico.
+    // Countdown — atualiza UI a cada segundo (label dinâmico).
     _sleepCountdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       state = state.copyWith(sleepTimerTick: state.sleepTimerTick + 1);
     });
 
-    // Timer principal — dispara quando o tempo acaba e pausa a música.
-    _sleepFireTimer = Timer(Duration(minutes: minutes), () {
-      if (!mounted) return;
-      final playerState = _ref.read(playerProvider);
-      if (playerState.isPlaying) {
-        _ref.read(playerProvider.notifier).togglePlayPause();
-      }
-      _cancelTimers();
-      if (mounted) state = state.copyWith(clearSleepTimer: true);
-    });
+    // Fade-out: agenda o início para T - 10s. Só faz sentido se o timer ≥ 11s
+    // (margem para o fade caber inteiro antes do pause).
+    final totalSecs = minutes * 60;
+    if (useFade && totalSecs > _kFadeOutSeconds) {
+      _sleepFadeStartTimer = Timer(
+        Duration(seconds: totalSecs - _kFadeOutSeconds),
+        _runFadeOut,
+      );
+    }
+
+    // Fire principal — pause + reset volume + clear state.
+    _sleepFireTimer = Timer(Duration(minutes: minutes), _onTimerExpire);
+  }
+
+  /// Modo "fim da música atual" — sem countdown; pausa quando a faixa terminar.
+  /// O hook está em PlayerNotifier._onCompleted que chama [onTrackCompleted].
+  void setSleepTimerEndOfTrack() {
+    _cancelTimers();
+    state = state.copyWith(
+      sleepTimerMinutes: 0,
+      sleepTimerEndTime: null,
+      sleepTimerEndOfTrack: true,
+      sleepTimerTick: 0,
+    );
+  }
+
+  /// Chamado pelo PlayerNotifier quando a faixa atual completou E o modo EoT está ativo.
+  void onTrackCompleted() {
+    if (!state.sleepTimerEndOfTrack) return;
+    _onTimerExpire();
+  }
+
+  /// Toggle do fade-out — persiste a preferência.
+  void setFadeOut(bool enabled) {
+    state = state.copyWith(sleepTimerFadeOut: enabled);
+    _save();
   }
 
   void cancelSleepTimer() {
     _cancelTimers();
+    // Restaura volume caso o fade tenha começado.
+    _ref.read(playerProvider.notifier).setPlayerVolume(1.0);
     state = state.copyWith(clearSleepTimer: true);
+  }
+
+  /// Roda o fade-out de 10s — 100 ticks de 100ms, volume linear 1.0 → 0.0.
+  void _runFadeOut() {
+    _sleepFadeStartTimer = null;
+    var tick = 0;
+    _sleepFadeTickTimer = Timer.periodic(const Duration(milliseconds: 100), (t) {
+      tick++;
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      final progress = tick / _kFadeOutTicks;
+      final v = (1.0 - progress).clamp(0.0, 1.0);
+      _ref.read(playerProvider.notifier).setPlayerVolume(v);
+      if (tick >= _kFadeOutTicks) {
+        t.cancel();
+        _sleepFadeTickTimer = null;
+      }
+    });
+  }
+
+  /// Disparado quando o timer principal expira (ou EoT termina): pausa,
+  /// limpa estado e RESTAURA o volume para a próxima reprodução.
+  void _onTimerExpire() {
+    _cancelTimers();
+    final notifier = _ref.read(playerProvider.notifier);
+    final playerState = _ref.read(playerProvider);
+    if (playerState.isPlaying) {
+      notifier.pause();
+    }
+    // Restaura volume — sem isto, a próxima play arranca em volume 0.
+    notifier.setPlayerVolume(1.0);
+    if (mounted) state = state.copyWith(clearSleepTimer: true);
   }
 
   void _cancelTimers() {
@@ -297,6 +396,10 @@ class AudioSettingsNotifier extends StateNotifier<AudioSettingsState> {
     _sleepCountdownTimer = null;
     _sleepFireTimer?.cancel();
     _sleepFireTimer = null;
+    _sleepFadeStartTimer?.cancel();
+    _sleepFadeStartTimer = null;
+    _sleepFadeTickTimer?.cancel();
+    _sleepFadeTickTimer = null;
   }
 
   @override

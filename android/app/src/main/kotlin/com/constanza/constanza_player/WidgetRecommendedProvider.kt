@@ -34,9 +34,9 @@ class WidgetRecommendedProvider : BaseWidgetProvider() {
         views.setOnClickPendingIntent(R.id.widget_play_pause,      pendingIntent(context, WidgetConstants.ACTION_PLAY_PAUSE, 61))
         views.setOnClickPendingIntent(R.id.widget_next,            pendingIntent(context, WidgetConstants.ACTION_NEXT, 62))
         views.setOnClickPendingIntent(R.id.widget_favorite,        pendingIntent(context, WidgetConstants.ACTION_TOGGLE_FAV, 63))
-        views.setOnClickPendingIntent(R.id.widget_action_queue,    pendingIntent(context, WidgetConstants.ACTION_OPEN_NOW_PLAYING, 64))
+        views.setOnClickPendingIntent(R.id.widget_action_queue,    pendingIntent(context, WidgetConstants.ACTION_OPEN_QUEUE, 64))
         views.setOnClickPendingIntent(R.id.widget_action_playlist, pendingIntent(context, WidgetConstants.ACTION_OPEN_PLAYLISTS, 65))
-        views.setOnClickPendingIntent(R.id.widget_action_sleep,    pendingIntent(context, WidgetConstants.ACTION_OPEN_SETTINGS, 66))
+        views.setOnClickPendingIntent(R.id.widget_action_sleep,    pendingIntent(context, WidgetConstants.ACTION_OPEN_SLEEP_TIMER, 66))
         launchPendingIntent(context)?.let { views.setOnClickPendingIntent(R.id.widget_root, it) }
 
         mgr.updateAppWidget(widgetId, views)

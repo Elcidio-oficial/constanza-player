@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
@@ -39,7 +40,7 @@ class HistoryPage extends ConsumerWidget {
             if (history.isNotEmpty)
               IconButton(
                 icon: const Icon(Icons.delete_outline_rounded),
-                tooltip: 'Limpar historico',
+                tooltip: AppLocalizations.of(context).historyClearTooltip,
                 onPressed: () => _showClearDialog(context, ref),
               ),
           ],
@@ -56,7 +57,7 @@ class HistoryPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      'Nenhuma reproducao registrada',
+                      AppLocalizations.of(context).historyEmpty,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.4),
                       ),
@@ -78,6 +79,7 @@ class HistoryPage extends ConsumerWidget {
 
                   // Find song in library for playback
                   final song = songs.where((s) => s.id == songId).firstOrNull;
+                  final l10n = AppLocalizations.of(context);
                   final timeLabel = _formatTime(time);
 
                   // Show date header
@@ -102,7 +104,7 @@ class HistoryPage extends ConsumerWidget {
                             AppSpacing.xs,
                           ),
                           child: Text(
-                            _formatDate(time),
+                            _formatDate(time, l10n),
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: colors.onSurface.withValues(alpha: 0.35),
                               letterSpacing: 1.0,
@@ -165,27 +167,13 @@ class HistoryPage extends ConsumerWidget {
 
   static String _dateKey(DateTime d) => '${d.year}-${d.month}-${d.day}';
 
-  static String _formatDate(DateTime d) {
+  static String _formatDate(DateTime d, AppLocalizations l10n) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final date = DateTime(d.year, d.month, d.day);
-    if (date == today) return 'HOJE';
-    if (date == today.subtract(const Duration(days: 1))) return 'ONTEM';
-    final months = [
-      'JAN',
-      'FEV',
-      'MAR',
-      'ABR',
-      'MAI',
-      'JUN',
-      'JUL',
-      'AGO',
-      'SET',
-      'OUT',
-      'NOV',
-      'DEZ',
-    ];
-    return '${d.day} ${months[d.month - 1]} ${d.year}';
+    if (date == today) return l10n.historyDateToday;
+    if (date == today.subtract(const Duration(days: 1))) return l10n.historyDateYesterday;
+    return DateFormat('dd MMM yyyy', l10n.localeName).format(d).toUpperCase();
   }
 
   static String _formatTime(DateTime d) {
@@ -194,19 +182,20 @@ class HistoryPage extends ConsumerWidget {
 
   void _showClearDialog(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Limpar Historico'),
-        content: const Text('Deseja apagar todo o historico de reproducao?'),
+        title: Text(l10n.historyClearTitle),
+        content: Text(l10n.historyClearBody),
         actions: [
-          TextButton(onPressed: () => ctx.pop(), child: const Text('Cancelar')),
+          TextButton(onPressed: () => ctx.pop(), child: Text(l10n.commonCancel)),
           TextButton(
             onPressed: () {
               ref.read(playlistProvider.notifier).clearHistory();
               ctx.pop();
             },
-            child: Text('Limpar', style: TextStyle(color: colors.error)),
+            child: Text(l10n.historyClearAction, style: TextStyle(color: colors.error)),
           ),
         ],
       ),

@@ -1,4 +1,4 @@
-// ignore_for_file: curly_braces_in_flow_control_structures, unused_element_parameter
+// ignore_for_file: unused_local_variable, curly_braces_in_flow_control_structures, unused_element_parameter
 
 import 'dart:async';
 import 'dart:ui' as ui;
@@ -192,11 +192,18 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
           fit: StackFit.expand,
           children: [
             Container(color: const Color(0xFF080808)),
-            // Blurred artwork bg — fora do AnimatedBuilder pois não depende da cor animada
-            if (npStyleOuter == NowPlayingStyle.classic && hasSong)
-              _BlurredArtworkBg(songId: songId, opacity: 0.55),
-            if (npStyleOuter == NowPlayingStyle.fullBlur && hasSong)
-              _BlurredArtworkBg(songId: songId, opacity: 0.92),
+            // Cover-art mode tem precedência: capa nítida em tela cheia + scrim.
+            if (themeState.nowPlayingColorStyle ==
+                    NowPlayingColorStyle.artwork &&
+                hasSong) ...[
+              _SharpArtworkBg(songId: songId),
+              Container(color: Colors.black.withValues(alpha: 0.60)),
+            ] else ...[
+              if (npStyleOuter == NowPlayingStyle.classic && hasSong)
+                _BlurredArtworkBg(songId: songId, opacity: 0.55),
+              if (npStyleOuter == NowPlayingStyle.fullBlur && hasSong)
+                _BlurredArtworkBg(songId: songId, opacity: 0.92),
+            ],
 
             // Camada de gradientes animados — isolada em RepaintBoundary para
             // evitar que os 600ms de tween invalidem o Scaffold/content acima.
@@ -213,6 +220,10 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
                   final colorStyle = themeState.nowPlayingColorStyle;
                   final isGradient =
                       colorStyle == NowPlayingColorStyle.gradient;
+                  // No modo "capa em tela cheia" suprimimos os gradients —
+                  // a artwork (já renderizada fora do AnimatedBuilder) substitui o fundo.
+                  final isArtworkBg =
+                      colorStyle == NowPlayingColorStyle.artwork;
 
                   // For degradê mode: use c1 as single base color with bright top
                   final dgBase = c1;
@@ -239,7 +250,7 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
                       // ═══════════════════════════════════════════
                       // DEGRADÊ MODE — Single-color linear gradient
                       // ═══════════════════════════════════════════
-                      if (useColor && !isGradient) ...[
+                      if (useColor && !isGradient && !isArtworkBg) ...[
                         // Linear gradient — faithful to artwork color
                         Container(
                           decoration: BoxDecoration(
@@ -281,7 +292,7 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
                       // ═══════════════════════════════════════════
                       // GRADIENT MODE — Multi-color radial blobs
                       // ═══════════════════════════════════════════
-                      if (useColor && isGradient) ...[
+                      if (useColor && isGradient && !isArtworkBg) ...[
                         // Blob 1 — Top-left (color 1)
                         Container(
                           decoration: BoxDecoration(
@@ -418,7 +429,7 @@ class _NowPlayingContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Only rebuild on song change — progress/controls watch their own state
     final song = ref.watch(playerProvider.select((s) => s.currentSong));
-    final hasSong = ref.watch(playerProvider.select((s) => s.hasSong));
+    final hasSong = song != null;
     final themeState = ref.watch(themeProvider);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
@@ -438,7 +449,7 @@ class _NowPlayingContent extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Nenhuma música selecionada',
+              AppLocalizations.of(context).npNoSongSelected,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.3),
               ),
@@ -448,7 +459,7 @@ class _NowPlayingContent extends ConsumerWidget {
       );
     }
 
-    final Song currentSong = song!;
+    final Song currentSong = song;
     final artColor = ref.watch(artworkColorProvider);
     final isLandscape = mq.orientation == Orientation.landscape;
 
@@ -982,8 +993,8 @@ class _Header extends ConsumerWidget {
                       ),
                       title: Text(
                         isFav
-                            ? 'Remover dos Favoritos'
-                            : 'Adicionar aos Favoritos',
+                            ? AppLocalizations.of(context).npRemoveFavorite
+                            : AppLocalizations.of(context).npAddFavorite,
                         style: theme.textTheme.bodyMedium,
                       ),
                       onTap: () {
@@ -1003,7 +1014,7 @@ class _Header extends ConsumerWidget {
                     color: colors.onSurface.withValues(alpha: 0.7),
                   ),
                   title: Text(
-                    'Tocar em Seguida',
+                    AppLocalizations.of(context).commonPlayNext,
                     style: theme.textTheme.bodyMedium,
                   ),
                   onTap: () {
@@ -1013,7 +1024,9 @@ class _Header extends ConsumerWidget {
                         .addNextInQueue(currentSong);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('Adicionado à fila'),
+                        content: Text(
+                          AppLocalizations.of(context).npAddedToQueue,
+                        ),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -1025,7 +1038,7 @@ class _Header extends ConsumerWidget {
                     color: colors.onSurface.withValues(alpha: 0.7),
                   ),
                   title: Text(
-                    'Adicionar a Playlist',
+                    AppLocalizations.of(context).npAddToPlaylist,
                     style: theme.textTheme.bodyMedium,
                   ),
                   onTap: () {
@@ -1039,7 +1052,7 @@ class _Header extends ConsumerWidget {
                     color: colors.onSurface.withValues(alpha: 0.7),
                   ),
                   title: Text(
-                    'Ir para Artista',
+                    AppLocalizations.of(context).npGoToArtist,
                     style: theme.textTheme.bodyMedium,
                   ),
                   onTap: () {
@@ -1092,7 +1105,7 @@ class _Header extends ConsumerWidget {
                                   horizontal: AppSpacing.md,
                                 ),
                                 child: Text(
-                                  'Escolher Artista',
+                                  AppLocalizations.of(context).npChooseArtist,
                                   style: theme.textTheme.titleSmall?.copyWith(
                                     color: colors.onSurface.withValues(
                                       alpha: 0.7,
@@ -1132,7 +1145,7 @@ class _Header extends ConsumerWidget {
                     color: colors.onSurface.withValues(alpha: 0.7),
                   ),
                   title: Text(
-                    'Ir para Álbum',
+                    AppLocalizations.of(context).npGoToAlbum,
                     style: theme.textTheme.bodyMedium,
                   ),
                   onTap: () {
@@ -1157,7 +1170,10 @@ class _Header extends ConsumerWidget {
                     Icons.share_outlined,
                     color: colors.onSurface.withValues(alpha: 0.7),
                   ),
-                  title: Text('Partilhar', style: theme.textTheme.bodyMedium),
+                  title: Text(
+                    AppLocalizations.of(context).commonShare,
+                    style: theme.textTheme.bodyMedium,
+                  ),
                   onTap: () {
                     ctx.pop();
                     ShareService.shareSongs(
@@ -1173,7 +1189,7 @@ class _Header extends ConsumerWidget {
                     color: colors.onSurface.withValues(alpha: 0.7),
                   ),
                   title: Text(
-                    'Editar / Detalhes',
+                    AppLocalizations.of(context).npEditDetails,
                     style: theme.textTheme.bodyMedium,
                   ),
                   onTap: () {
@@ -1232,7 +1248,7 @@ class _Header extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   child: Text(
-                    'Adicionar a Playlist',
+                    AppLocalizations.of(context).npAddToPlaylist,
                     style: theme.textTheme.titleMedium,
                   ),
                 ),
@@ -1240,7 +1256,7 @@ class _Header extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Text(
-                      'Nenhuma playlist criada',
+                      AppLocalizations.of(context).npNoPlaylistsCreated,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colors.onSurface.withValues(alpha: 0.4),
                       ),
@@ -1267,7 +1283,11 @@ class _Header extends ConsumerWidget {
                         ctx.pop();
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Adicionada a "${p.name}"'),
+                            content: Text(
+                              AppLocalizations.of(
+                                context,
+                              ).npAddedToPlaylistShort(p.name),
+                            ),
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -1352,8 +1372,7 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
     // Guard de toque: só tratar como swipe se houve PointerDown recente.
     // Eventos de settle que chegam após resume (tela ligada/notification skip)
     // ou após animateToPage programático não devem mudar a faixa.
-    final touchAgeMs =
-        DateTime.now().millisecondsSinceEpoch - _lastTouchMs;
+    final touchAgeMs = DateTime.now().millisecondsSinceEpoch - _lastTouchMs;
     if (touchAgeMs > _touchWindowMs) {
       _currentPage = index;
       return;
@@ -1459,56 +1478,56 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
         onPointerDown: (_) =>
             _lastTouchMs = DateTime.now().millisecondsSinceEpoch,
         child: PageView.builder(
-        controller: _pageCtrl,
-        itemCount: queue.length,
-        onPageChanged: _onPageChanged,
-        physics: const BouncingScrollPhysics(),
-        itemBuilder: (context, index) {
-          return AnimatedBuilder(
-            animation: _pageCtrl,
-            builder: (context, child) {
-              double page = _currentPage.toDouble();
-              try {
-                if (_pageCtrl.hasClients &&
-                    _pageCtrl.position.hasContentDimensions) {
-                  page = _pageCtrl.page ?? page;
-                }
-              } catch (_) {}
+          controller: _pageCtrl,
+          itemCount: queue.length,
+          onPageChanged: _onPageChanged,
+          physics: const BouncingScrollPhysics(),
+          itemBuilder: (context, index) {
+            return AnimatedBuilder(
+              animation: _pageCtrl,
+              builder: (context, child) {
+                double page = _currentPage.toDouble();
+                try {
+                  if (_pageCtrl.hasClients &&
+                      _pageCtrl.position.hasContentDimensions) {
+                    page = _pageCtrl.page ?? page;
+                  }
+                } catch (_) {}
 
-              final offset = index - page;
-              final absOffset = offset.abs().clamp(0.0, 1.0);
+                final offset = index - page;
+                final absOffset = offset.abs().clamp(0.0, 1.0);
 
-              // PageTransformer: scale + vertical depth
-              final scale = 1.0 - absOffset * 0.15; // 1.0 → 0.85
-              final translateY = absOffset * 12.0; // depth effect
+                // PageTransformer: scale + vertical depth
+                final scale = 1.0 - absOffset * 0.15; // 1.0 → 0.85
+                final translateY = absOffset * 12.0; // depth effect
 
-              return Transform.translate(
-                offset: Offset(0, translateY),
-                child: Transform.scale(
-                  scale: scale,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: child,
+                return Transform.translate(
+                  offset: Offset(0, translateY),
+                  child: Transform.scale(
+                    scale: scale,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: child,
+                    ),
                   ),
-                ),
-              );
-            },
-            child: RepaintBoundary(
-              child: GestureDetector(
-                onDoubleTap: () =>
-                    ref.read(playerProvider.notifier).toggleFavorite(),
-                child: Hero(
-                  tag: 'artwork_${queue[index].numericId}',
-                  child: _buildStyleWidget(
-                    songId: queue[index].numericId,
-                    isCurrentPage: index == currentIdx,
+                );
+              },
+              child: RepaintBoundary(
+                child: GestureDetector(
+                  onDoubleTap: () =>
+                      ref.read(playerProvider.notifier).toggleFavorite(),
+                  child: Hero(
+                    tag: 'artwork_${queue[index].numericId}',
+                    child: _buildStyleWidget(
+                      songId: queue[index].numericId,
+                      isCurrentPage: index == currentIdx,
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -1598,6 +1617,40 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
 // ============================================================
 // ESTILO 4: FULL BLUR — circle + immersive colored glow
 // ============================================================
+
+// ── Sharp artwork background — full cover, no blur ──
+class _SharpArtworkBg extends ConsumerWidget {
+  const _SharpArtworkBg({required this.songId});
+  final int songId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Pede a maior resolução suportada pelo cache (clamp interno é 900px) —
+    // a default de 300px ficava esticada e borrada quando preenchia a tela.
+    const bgSize = 900;
+    final notifier = ref.read(artworkProvider.notifier);
+    ref.watch(
+      artworkProvider.select((_) {
+        return identityHashCode(
+          notifier.getArtwork(songId, ArtworkType.AUDIO, size: bgSize),
+        );
+      }),
+    );
+    final data =
+        notifier.getArtwork(songId, ArtworkType.AUDIO, size: bgSize);
+    if (data == null || data.isEmpty) return const SizedBox.shrink();
+    return RepaintBoundary(
+      child: Image.memory(
+        data,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        gaplessPlayback: true,
+        filterQuality: FilterQuality.high,
+      ),
+    );
+  }
+}
 
 // ── Blurred artwork background ──
 class _BlurredArtworkBg extends ConsumerWidget {
@@ -1995,14 +2048,14 @@ class _SecondaryActions extends ConsumerWidget {
         children: [
           _action(
             icon: Icons.queue_music_rounded,
-            label: 'Fila',
+            label: AppLocalizations.of(context).npTabQueue,
             onTap: () => Navigator.of(
               context,
             ).push(AppPageRoute(page: const _QueuePage())),
           ),
           _action(
             icon: Icons.lyrics_outlined,
-            label: 'Letras',
+            label: AppLocalizations.of(context).npTabLyrics,
             onTap: () {
               final song = ref.read(playerProvider).currentSong;
               if (song != null) {
@@ -2014,28 +2067,42 @@ class _SecondaryActions extends ConsumerWidget {
           ),
           Consumer(
             builder: (_, ref, __) {
-              final eqOn = ref.watch(
-                audioSettingsProvider.select((s) => s.eqEnabled),
-              );
+              final s = ref.watch(audioSettingsProvider);
+              final active = s.hasSleepTimer;
               return _action(
-                icon: Icons.equalizer_rounded,
-                label: 'EQ',
-                active: eqOn,
-                onTap: () => _showEqSheet(context, ref),
+                icon: active ? Icons.bedtime_rounded : Icons.bedtime_outlined,
+                label: active
+                    ? _formatSleepTimerShort(context, s)
+                    : AppLocalizations.of(context).sleepTimer,
+                active: active,
+                onTap: () => _showSleepSheet(context, ref),
+                onLongPress: active
+                    ? () => ref
+                          .read(audioSettingsProvider.notifier)
+                          .cancelSleepTimer()
+                    : null,
               );
             },
           ),
+          _action(
+            icon: Icons.directions_car_rounded,
+            label: AppLocalizations.of(context).carModeTitle,
+            onTap: () => context.push('/car-mode'),
+          ),
           Consumer(
             builder: (_, ref, __) {
+              final eqOn = ref.watch(
+                audioSettingsProvider.select((s) => s.eqEnabled),
+              );
               final speed = ref.watch(
                 audioSettingsProvider.select((s) => s.playbackSpeed),
               );
-              final isCustom = (speed - 1.0).abs() > 0.01;
+              final speedActive = (speed - 1.0).abs() > 0.01;
               return _action(
-                icon: Icons.speed_rounded,
-                label: 'Veloc.',
-                active: isCustom,
-                onTap: () => _showSpeedSheet(context, ref),
+                icon: Icons.more_horiz_rounded,
+                label: AppLocalizations.of(context).commonMore,
+                active: eqOn || speedActive,
+                onTap: () => _showMoreSheet(context, ref),
               );
             },
           ),
@@ -2044,14 +2111,29 @@ class _SecondaryActions extends ConsumerWidget {
     );
   }
 
+  /// Formata o label do botão quando o timer está ativo (curto, p/ caber).
+  String _formatSleepTimerShort(BuildContext context, AudioSettingsState s) {
+    final l10n = AppLocalizations.of(context);
+    if (s.sleepTimerEndOfTrack) return l10n.sleepTimerEndOfTrackShort;
+    final endTime = s.sleepTimerEndTime;
+    if (endTime == null) return l10n.sleepTimerOff;
+    final remaining = endTime.difference(DateTime.now());
+    if (remaining.isNegative) return l10n.sleepTimerOff;
+    final m = remaining.inMinutes;
+    final sec = remaining.inSeconds.remainder(60);
+    return '${m.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
+  }
+
   Widget _action({
     required IconData icon,
     required String label,
     bool active = false,
     VoidCallback? onTap,
+    VoidCallback? onLongPress,
   }) {
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -2100,6 +2182,123 @@ class _SecondaryActions extends ConsumerWidget {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => const _SpeedBottomSheet(),
+    );
+  }
+
+  // ── Sleep Timer Bottom Sheet ──
+  void _showSleepSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => const _SleepTimerBottomSheet(),
+    );
+  }
+
+  // ── More Sheet (EQ + Velocidade) ──
+  void _showMoreSheet(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final colors = Theme.of(context).colorScheme;
+    final themeData = Theme.of(context);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusXl),
+        ),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                l10n.npMoreSheetTitle,
+                style: themeData.textTheme.titleSmall?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Consumer(
+                builder: (_, cRef, __) {
+                  final eqOn = cRef.watch(
+                    audioSettingsProvider.select((s) => s.eqEnabled),
+                  );
+                  return ListTile(
+                    leading: Icon(
+                      Icons.equalizer_rounded,
+                      color: eqOn
+                          ? accentColor
+                          : Colors.white.withValues(alpha: 0.7),
+                    ),
+                    title: Text(
+                      l10n.npEqualizer,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    trailing: eqOn
+                        ? Icon(
+                            Icons.check_rounded,
+                            color: accentColor,
+                            size: 18,
+                          )
+                        : null,
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      _showEqSheet(context, ref);
+                    },
+                  );
+                },
+              ),
+              Consumer(
+                builder: (_, cRef, __) {
+                  final speed = cRef.watch(
+                    audioSettingsProvider.select((s) => s.playbackSpeed),
+                  );
+                  final isCustom = (speed - 1.0).abs() > 0.01;
+                  return ListTile(
+                    leading: Icon(
+                      Icons.speed_rounded,
+                      color: isCustom
+                          ? accentColor
+                          : Colors.white.withValues(alpha: 0.7),
+                    ),
+                    title: Text(
+                      l10n.npTabSpeed,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    trailing: isCustom
+                        ? Text(
+                            '${speed.toStringAsFixed(speed == speed.roundToDouble() ? 1 : 2)}x',
+                            style: TextStyle(
+                              color: accentColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )
+                        : null,
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      _showSpeedSheet(context, ref);
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: AppSpacing.xs),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -2160,7 +2359,7 @@ class _EqBottomSheet extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      'Equalizador',
+                      AppLocalizations.of(context).npEqualizer,
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w500,
@@ -2518,7 +2717,7 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
             ),
             const SizedBox(height: AppSpacing.xxs),
             Text(
-              'Velocidade de reprodução',
+              AppLocalizations.of(context).npSpeedTitle,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: Colors.white.withValues(alpha: 0.35),
               ),
@@ -2635,7 +2834,7 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
               GestureDetector(
                 onTap: () => _setSpeed(1.0),
                 child: Text(
-                  'Redefinir para 1x',
+                  AppLocalizations.of(context).npSpeedReset,
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: colors.primary.withValues(alpha: 0.8),
                   ),
@@ -2644,6 +2843,264 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
             ],
             const SizedBox(height: AppSpacing.lg),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// SLEEP TIMER BOTTOM SHEET — premium picker with fade-out toggle
+// ============================================================
+
+/// Public entry-point para abrir a Fila de fora do NowPlayingPage
+/// (deeplink do widget de ecrã inicial).
+void openQueuePage(BuildContext context) {
+  Navigator.of(context).push(AppPageRoute(page: const _QueuePage()));
+}
+
+/// Public entry-point para abrir o sheet de fora do NowPlayingPage
+/// (deeplinks de widget, atalhos, etc).
+void showSleepTimerSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (ctx) => const _SleepTimerBottomSheet(),
+  );
+}
+
+class _SleepTimerBottomSheet extends ConsumerStatefulWidget {
+  const _SleepTimerBottomSheet();
+
+  @override
+  ConsumerState<_SleepTimerBottomSheet> createState() =>
+      _SleepTimerBottomSheetState();
+}
+
+class _SleepTimerBottomSheetState
+    extends ConsumerState<_SleepTimerBottomSheet> {
+  static const _presets = [5, 10, 15, 30, 45, 60, 90];
+
+  Timer? _tickTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Tick a cada segundo p/ atualizar o display do tempo restante.
+    _tickTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _tickTimer?.cancel();
+    super.dispose();
+  }
+
+  String _remainingDisplay(AudioSettingsState s, AppLocalizations l10n) {
+    if (s.sleepTimerEndOfTrack) return l10n.sleepTimerEndOfTrackShort;
+    final endTime = s.sleepTimerEndTime;
+    if (endTime == null) return l10n.sleepTimerOff;
+    final remaining = endTime.difference(DateTime.now());
+    if (remaining.isNegative) return l10n.sleepTimerOff;
+    final m = remaining.inMinutes;
+    final sec = remaining.inSeconds.remainder(60);
+    return '${m.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(audioSettingsProvider);
+    final notifier = ref.read(audioSettingsProvider.notifier);
+    final baseColors = Theme.of(context).colorScheme;
+    final colors = baseColors.brightness == Brightness.dark
+        ? baseColors
+        : ColorScheme.dark(primary: baseColors.primary);
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final active = s.hasSleepTimer;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusXl),
+        ),
+        border: Border(
+          top: BorderSide(color: colors.outline.withValues(alpha: 0.1)),
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppSpacing.xs),
+            Container(
+              width: 32,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            // Big display
+            Text(
+              _remainingDisplay(s, l10n),
+              style: theme.textTheme.displaySmall?.copyWith(
+                color: active ? colors.primary : Colors.white,
+                fontWeight: FontWeight.w300,
+                letterSpacing: -1,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              l10n.sleepTimerSubtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.white.withValues(alpha: 0.35),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            // Preset chips
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              child: Wrap(
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
+                alignment: WrapAlignment.center,
+                children: [
+                  for (final m in _presets)
+                    _chip(
+                      context,
+                      label: l10n.sleepTimerMinutesShort(m),
+                      selected:
+                          !s.sleepTimerEndOfTrack && s.sleepTimerMinutes == m,
+                      onTap: () => notifier.setSleepTimer(m),
+                    ),
+                  _chip(
+                    context,
+                    label: l10n.sleepTimerEndOfTrack,
+                    selected: s.sleepTimerEndOfTrack,
+                    onTap: notifier.setSleepTimerEndOfTrack,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            // Fade out toggle
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.sleepTimerFadeOut,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          l10n.sleepTimerFadeOutDesc,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch.adaptive(
+                    value: s.sleepTimerFadeOut,
+                    activeTrackColor: colors.primary,
+                    onChanged: notifier.setFadeOut,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            // Cancel button (only when active)
+            if (active) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextButton.icon(
+                    onPressed: () {
+                      notifier.cancelSleepTimer();
+                      Navigator.of(context).pop();
+                    },
+                    icon: Icon(
+                      Icons.timer_off_outlined,
+                      color: Colors.white.withValues(alpha: 0.7),
+                      size: 18,
+                    ),
+                    label: Text(
+                      l10n.sleepTimerCancel,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white.withValues(alpha: 0.05),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusFull,
+                        ),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+            const SizedBox(height: AppSpacing.md),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _chip(
+    BuildContext context, {
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected
+              ? colors.primary
+              : Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(
+            color: selected
+                ? colors.primary
+                : Colors.white.withValues(alpha: 0.08),
+          ),
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: selected
+                ? colors.onPrimary
+                : Colors.white.withValues(alpha: 0.7),
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+          ),
         ),
       ),
     );
@@ -2877,7 +3334,7 @@ class _QueuePage extends ConsumerWidget {
       backgroundColor: colors.surface,
       appBar: AppBar(
         title: Text(
-          'Fila  (${ps.queue.length})',
+          AppLocalizations.of(context).npQueueTitle(ps.queue.length),
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w300,
           ),
@@ -2890,7 +3347,7 @@ class _QueuePage extends ConsumerWidget {
           if (ps.queue.length > 1)
             IconButton(
               icon: const Icon(Icons.clear_all_rounded),
-              tooltip: 'Limpar fila',
+              tooltip: AppLocalizations.of(context).npQueueClear,
               onPressed: () => _confirmClear(context, n),
             ),
         ],
@@ -2898,7 +3355,7 @@ class _QueuePage extends ConsumerWidget {
       body: ps.queue.isEmpty
           ? Center(
               child: Text(
-                'Fila vazia',
+                AppLocalizations.of(context).npQueueEmpty,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colors.onSurface.withValues(alpha: 0.4),
                 ),
@@ -2955,19 +3412,22 @@ class _QueuePage extends ConsumerWidget {
       builder: (ctx) {
         final colors = Theme.of(ctx).colorScheme;
         return AlertDialog(
-          title: const Text('Limpar fila'),
-          content: const Text('Remove todas as músicas excepto a actual?'),
+          title: Text(AppLocalizations.of(ctx).npQueueClearTitle),
+          content: Text(AppLocalizations.of(ctx).npQueueClearBody),
           actions: [
             TextButton(
               onPressed: () => ctx.pop(),
-              child: const Text('Cancelar'),
+              child: Text(AppLocalizations.of(ctx).commonCancel),
             ),
             TextButton(
               onPressed: () {
                 n.clearQueue();
                 ctx.pop();
               },
-              child: Text('Limpar', style: TextStyle(color: colors.error)),
+              child: Text(
+                AppLocalizations.of(ctx).npQueueClearAction,
+                style: TextStyle(color: colors.error),
+              ),
             ),
           ],
         );
@@ -3229,7 +3689,7 @@ class _AnalysisBadge extends ConsumerWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              'Analisando BPM e tonalidade...',
+              AppLocalizations.of(context).npAnalyzeLoading,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.3),
                 fontSize: 10,
@@ -3265,7 +3725,7 @@ class _AnalysisBadge extends ConsumerWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                'Toque para reanalisar',
+                AppLocalizations.of(context).npAnalyzeRetry,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: colors.onSurface.withValues(alpha: 0.3),
                   fontSize: 10,
@@ -3290,18 +3750,21 @@ class _AnalysisBadge extends ConsumerWidget {
     final bpmLabel = hasBpm ? '$displayBpm BPM' : '';
     final keyLabel = hasKey
         ? () {
-            final scaleLabel = displayScale == 'Major' ? 'Maior' : 'Menor';
+            final scaleLabel = displayScale == 'Major'
+                ? AppLocalizations.of(context).npScaleMajor
+                : AppLocalizations.of(context).npScaleMinor;
             final base = '$displayKey $scaleLabel';
             return displayCamelot != null ? '$base ($displayCamelot)' : base;
           }()
         : '';
 
     final energyCategory = () {
+      final l10n = AppLocalizations.of(context);
       if (displayBpm == null) return '';
-      if (displayBpm < 80) return 'Relaxante';
-      if (displayBpm < 110) return 'Moderado';
-      if (displayBpm < 140) return 'Energético';
-      return 'Intenso';
+      if (displayBpm < 80) return l10n.npEnergyRelaxing;
+      if (displayBpm < 110) return l10n.npEnergyModerate;
+      if (displayBpm < 140) return l10n.npEnergyEnergetic;
+      return l10n.npEnergyIntense;
     }();
 
     if (!hasBpm && !hasKey && !isLoading) return const SizedBox.shrink();

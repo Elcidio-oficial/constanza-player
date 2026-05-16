@@ -81,7 +81,7 @@
                     android:id="@+id/widget_repeat"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:src="@android:drawable/ic_menu_rotate"
+                    android:src="@drawable/ic_widget_repeat_off"
                     android:tint="#AAFFFFFF"
                     android:background="@android:color/transparent"
                     android:contentDescription="Repeat"

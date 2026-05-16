@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+import 'package:constanza_player/services/media_library/media_library_backend.dart';
 
 // ============================================================
 // ARTWORK PALETTE — multi-color palette extracted from artwork
@@ -122,7 +122,7 @@ class ArtworkNotifier extends StateNotifier<int> {
   ArtworkNotifier() : super(0);
 
   final ArtworkCache _cache = ArtworkCache();
-  final OnAudioQuery _audioQuery = OnAudioQuery();
+  MediaLibraryBackend get _backend => MediaLibrary.instance;
 
   /// Indica se a permissão foi concedida e é seguro fazer queries.
   bool _ready = false;
@@ -158,7 +158,7 @@ class ArtworkNotifier extends StateNotifier<int> {
 
     _cache.markLoading(key);
     try {
-      final data = await _audioQuery
+      final data = await _backend
           .queryArtwork(key.id, key.type, size: key.size, quality: 100)
           .timeout(const Duration(seconds: 5));
       _cache.put(key, data);
@@ -197,15 +197,11 @@ class ArtworkNotifier extends StateNotifier<int> {
       LinkedHashMap();
   static const _maxPaletteCache = 100;
 
-  /// Instância estática reutilizada exclusivamente para extração de cor,
-  /// evitando criar um novo OnAudioQuery a cada troca de música.
-  static final OnAudioQuery _colorQuery = OnAudioQuery();
-
   /// Consulta artwork diretamente do device para extração de cor.
   /// Bypassa o cache de artworks (que usa tamanhos variados por widget).
   static Future<Uint8List?> queryArtworkForColor(int id) async {
     try {
-      final data = await _colorQuery.queryArtwork(
+      final data = await MediaLibrary.instance.queryArtwork(
         id,
         ArtworkType.AUDIO,
         size: 64,
@@ -228,14 +224,8 @@ class ArtworkNotifier extends StateNotifier<int> {
   }) async {
     if (id == 0) return null;
     try {
-      final data = await _colorQuery
-          .queryArtwork(
-            id,
-            type,
-            format: ArtworkFormat.JPEG,
-            size: 1024,
-            quality: 100,
-          )
+      final data = await MediaLibrary.instance
+          .queryArtwork(id, type, size: 1024, quality: 100)
           .timeout(const Duration(seconds: 6));
       if (data == null || data.isEmpty) return null;
       return data;
