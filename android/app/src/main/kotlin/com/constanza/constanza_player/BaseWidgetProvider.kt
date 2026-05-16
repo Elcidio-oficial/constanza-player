@@ -38,25 +38,29 @@ abstract class BaseWidgetProvider : AppWidgetProvider() {
             WidgetConstants.ACTION_PLAY_PAUSE -> sendMediaButton(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
             WidgetConstants.ACTION_NEXT       -> sendMediaButton(context, KeyEvent.KEYCODE_MEDIA_NEXT)
             WidgetConstants.ACTION_TOGGLE_FAV -> {
-                invokeFlutter(context, "toggleFavorite")
-                // Optimistic UI: alterna estado local e re-renderiza imediatamente.
-                val prefs = context.getSharedPreferences(WidgetConstants.PREFS, Context.MODE_PRIVATE)
-                val cur = prefs.getBoolean(WidgetConstants.KEY_IS_FAVORITE, false)
-                prefs.edit().putBoolean(WidgetConstants.KEY_IS_FAVORITE, !cur).apply()
-                updateAllWidgets(context, providerClass)
+                // Só optimistic-update se o engine estiver vivo. Caso contrário,
+                // o estado real não vai mudar e teríamos um "ghost state" no widget.
+                if (invokeFlutter(context, "toggleFavorite")) {
+                    val prefs = context.getSharedPreferences(WidgetConstants.PREFS, Context.MODE_PRIVATE)
+                    val cur = prefs.getBoolean(WidgetConstants.KEY_IS_FAVORITE, false)
+                    prefs.edit().putBoolean(WidgetConstants.KEY_IS_FAVORITE, !cur).apply()
+                    refreshAllProviders(context)
+                }
             }
             WidgetConstants.ACTION_TOGGLE_REPEAT -> {
-                invokeFlutter(context, "cycleRepeatMode")
-                val prefs = context.getSharedPreferences(WidgetConstants.PREFS, Context.MODE_PRIVATE)
-                val cur = prefs.getInt(WidgetConstants.KEY_REPEAT_MODE, 0)
-                prefs.edit().putInt(WidgetConstants.KEY_REPEAT_MODE, (cur + 1) % 3).apply()
-                updateAllWidgets(context, providerClass)
+                if (invokeFlutter(context, "cycleRepeatMode")) {
+                    val prefs = context.getSharedPreferences(WidgetConstants.PREFS, Context.MODE_PRIVATE)
+                    val cur = prefs.getInt(WidgetConstants.KEY_REPEAT_MODE, 0)
+                    prefs.edit().putInt(WidgetConstants.KEY_REPEAT_MODE, (cur + 1) % 3).apply()
+                    refreshAllProviders(context)
+                }
             }
             WidgetConstants.ACTION_OPEN_SEARCH       -> openApp(context, "/search")
-            WidgetConstants.ACTION_OPEN_QUEUE        -> openApp(context, "/now-playing")
+            WidgetConstants.ACTION_OPEN_QUEUE        -> openApp(context, "/queue")
             WidgetConstants.ACTION_OPEN_PLAYLISTS    -> openApp(context, "/playlists")
             WidgetConstants.ACTION_OPEN_SETTINGS     -> openApp(context, "/settings")
             WidgetConstants.ACTION_OPEN_NOW_PLAYING  -> openApp(context, "/now-playing")
+            WidgetConstants.ACTION_OPEN_SLEEP_TIMER  -> openApp(context, "/sleep-timer")
         }
     }
 
@@ -128,13 +132,27 @@ abstract class BaseWidgetProvider : AppWidgetProvider() {
         context.sendBroadcast(up)
     }
 
-    /** Invoca um método no Flutter via FlutterEngine cacheado. No-op se app está killed. */
-    private fun invokeFlutter(context: Context, method: String) {
-        val engine = FlutterEngineCache.getInstance().get(WidgetConstants.FLUTTER_ENGINE_ID) ?: return
-        try {
+    /** Invoca um método no Flutter via FlutterEngine cacheado.
+     *  Retorna `true` se o engine estava vivo e a chamada foi enviada; `false` se o app
+     *  está killed — nesse caso o caller não deve fazer optimistic update no prefs. */
+    private fun invokeFlutter(context: Context, method: String): Boolean {
+        val engine = FlutterEngineCache.getInstance().get(WidgetConstants.FLUTTER_ENGINE_ID)
+            ?: return false
+        return try {
             MethodChannel(engine.dartExecutor.binaryMessenger, WidgetConstants.WIDGET_CHANNEL)
                 .invokeMethod(method, null)
+            true
         } catch (_: Exception) {
+            false
+        }
+    }
+
+    /** Refresha TODOS os providers de widget — necessário porque o utilizador pode
+     *  ter widgets de classes diferentes (Music + Large + Capsule…) na mesma tela,
+     *  e mudar fav/repeat afeta o estado global de reprodução. */
+    private fun refreshAllProviders(context: Context) {
+        for (cls in ALL_PROVIDERS) {
+            updateAllWidgets(context, cls)
         }
     }
 
@@ -147,7 +165,26 @@ abstract class BaseWidgetProvider : AppWidgetProvider() {
 
     private fun loadRoundedBitmap(path: String, radiusFraction: Float): Bitmap? {
         return try {
-            val src = BitmapFactory.decodeFile(path) ?: return null
+            // 1) Lê só os metadados — sem alocar pixels.
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(path, bounds)
+            val srcW = bounds.outWidth
+            val srcH = bounds.outHeight
+            if (srcW <= 0 || srcH <= 0) return null
+
+            // 2) Subsample para alvo ~256px (suficiente para qualquer slot de widget;
+            //    evita ANR/OOM em artwork 2000×2000 que poderia ocupar ~16MB).
+            val target = 256
+            var sample = 1
+            while ((srcW / (sample * 2)) >= target && (srcH / (sample * 2)) >= target) {
+                sample *= 2
+            }
+            val opts = BitmapFactory.Options().apply {
+                inSampleSize = sample
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+            }
+            val src = BitmapFactory.decodeFile(path, opts) ?: return null
+
             val size = minOf(src.width, src.height)
             val sq = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(sq)
@@ -156,11 +193,21 @@ abstract class BaseWidgetProvider : AppWidgetProvider() {
             }
             val r = size * radiusFraction
             canvas.drawRoundRect(RectF(0f, 0f, size.toFloat(), size.toFloat()), r, r, paint)
+            if (src !== sq) src.recycle()
             sq
         } catch (_: Exception) { null }
     }
 
     companion object {
+        private val ALL_PROVIDERS: List<Class<*>> = listOf(
+            MusicWidgetProvider::class.java,
+            WidgetLargeProvider::class.java,
+            WidgetMediumSearchProvider::class.java,
+            WidgetCapsuleProvider::class.java,
+            WidgetRecommendationProvider::class.java,
+            WidgetRecommendedProvider::class.java,
+        )
+
         fun updateAllWidgets(context: Context, providerClass: Class<*>) {
             val mgr = AppWidgetManager.getInstance(context)
             val ids = mgr.getAppWidgetIds(ComponentName(context, providerClass))

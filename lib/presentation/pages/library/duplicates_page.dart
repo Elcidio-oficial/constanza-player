@@ -95,8 +95,8 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
         SnackBar(
           content: Text(
             failCount == 0
-                ? '$successCount música${successCount != 1 ? 's' : ''} removida${successCount != 1 ? 's' : ''}'
-                : '$successCount removida${successCount != 1 ? 's' : ''}, $failCount falhou (permissão negada)',
+                ? AppLocalizations.of(context).duplicatesRemovedOk(successCount)
+                : AppLocalizations.of(context).duplicatesRemovedPartial(successCount, failCount),
           ),
           backgroundColor: failCount == 0 ? colors.primary : Colors.orange,
         ),
@@ -112,19 +112,17 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
           builder: (ctx) {
             final colors = Theme.of(ctx).colorScheme;
             return AlertDialog(
-              title: const Text('Remover duplicadas'),
-              content: Text(
-                'Isso irá excluir $count música${count != 1 ? 's' : ''} do dispositivo permanentemente.\n\nAs músicas selecionadas para manter serão preservadas.',
-              ),
+              title: Text(AppLocalizations.of(ctx).duplicatesRemoveTitle),
+              content: Text(AppLocalizations.of(ctx).duplicatesRemoveConfirm(count)),
               actions: [
                 TextButton(
                   onPressed: () => ctx.pop(false),
-                  child: const Text('Cancelar'),
+                  child: Text(AppLocalizations.of(ctx).commonCancel),
                 ),
                 FilledButton(
                   onPressed: () => ctx.pop(true),
                   style: FilledButton.styleFrom(backgroundColor: colors.error),
-                  child: const Text('Remover'),
+                  child: Text(AppLocalizations.of(ctx).duplicatesRemoveLabel),
                 ),
               ],
             );
@@ -171,7 +169,7 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
           const CircularProgressIndicator(),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Analisando biblioteca...',
+            AppLocalizations.of(context).duplicatesScanning,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: colors.onSurface.withValues(alpha: 0.6),
             ),
@@ -195,13 +193,13 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Nenhuma duplicata encontrada',
+              AppLocalizations.of(context).duplicatesNoDuplicates,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Sua biblioteca está organizada.',
+              AppLocalizations.of(context).duplicatesLibraryOrganized,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colors.onSurface.withValues(alpha: 0.5),
               ),
@@ -474,7 +472,7 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        isKeep ? 'Manter' : 'Remover',
+                        isKeep ? AppLocalizations.of(context).duplicatesKeep : AppLocalizations.of(context).duplicatesRemoveLabel,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: isKeep
                               ? Colors.green.shade400
@@ -554,8 +552,8 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
               : const Icon(Icons.delete_sweep_rounded),
           label: Text(
             _isLoading
-                ? 'Removendo...'
-                : 'Remover $_totalToDelete duplicada${_totalToDelete != 1 ? 's' : ''}',
+                ? AppLocalizations.of(context).duplicatesRemoving
+                : AppLocalizations.of(context).duplicatesRemoveCount(_totalToDelete),
           ),
           style: FilledButton.styleFrom(
             backgroundColor: _totalToDelete > 0 ? colors.error : null,

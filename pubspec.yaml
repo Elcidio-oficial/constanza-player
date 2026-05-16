@@ -28,9 +28,26 @@ dependencies:
   audio_session: ^0.1.21
   on_audio_query: ^2.9.0
 
+  # === WINDOWS DESKTOP ===
+  # audiotags: leitura de metadata (ID3v2/FLAC/MP4/OGG) via FFI — substitui
+  # on_audio_query no Windows (que é Android/iOS only).
+  audiotags: ^1.4.2
+  # smtc_windows: System Media Transport Controls — notificação de mídia
+  # nativa do Windows (substitui audio_service no Windows).
+  smtc_windows: ^0.1.3
+  # just_audio_media_kit: backend de playback para Windows/Linux usando libmpv.
+  # just_audio nativamente só suporta Android/iOS/Web — sem este pacote
+  # setFilePath() "sucede" silenciosamente mas nenhum áudio sai.
+  just_audio_media_kit: ^2.1.0
+  media_kit_libs_windows_audio: ^1.0.9
+  # window_manager: remove a title bar nativa do Windows e expõe APIs para
+  # set min size, maximize, drag region, etc. Mesma libs em Linux e macOS.
+  window_manager: ^0.5.1
+
   # === STORAGE ===
   permission_handler: ^12.0.1
   path_provider: ^2.1.5
+  path: ^1.9.0
   shared_preferences: ^2.3.3
 
   # === UI/UX ===
@@ -64,6 +81,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.3
+  msix: ^3.16.13
 
 flutter_launcher_icons:
   android: true
@@ -71,6 +89,37 @@ flutter_launcher_icons:
   image_path: "assets/icon/icon.png"
   adaptive_icon_background: "#1A1A2E"
   adaptive_icon_foreground: "assets/icon/icon.png"
+  windows:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    icon_size: 256
+
+# === MSIX (pacote sideload auto-assinado) ===
+# Gera build/windows/.../constanza_player.msix + um certificado de teste.
+# Para instalar: confiar no .cer (Trusted People) e abrir o .msix.
+msix_config:
+  display_name: Constanza Músicas
+  publisher_display_name: Constanza
+  # Subject do certificado de teste auto-gerado. Em sideload pode ser
+  # qualquer CN; só precisa bater entre o .cer instalado e o pacote.
+  publisher: CN=Constanza, O=Constanza, C=BR
+  identity_name: com.constanza.constanzaPlayer
+  # MSIX exige versão de 4 partes (x.y.z.w). Mantemos sincronizado com a
+  # versão do app (1.3.4) + revisão 0.
+  msix_version: 1.3.4.0
+  logo_path: assets/icon/icon.png
+  # Acesso à internet — necessário para busca de letras (lrclib) e capas.
+  capabilities: "internetClient"
+  # Arquitetura do build atual.
+  architecture: x64
+  store: false
+  # Certificado auto-assinado determinístico (gerado por certs/make_cert.ps1).
+  # Subject DEVE bater com `publisher` acima, senão a instalação falha.
+  certificate_path: certs/constanza.pfx
+  certificate_password: constanza123
+  # Não tenta instalar o cert via prompt interativo (quebra em CI/terminal
+  # não-interativo). A instalação do .cer é passo manual documentado.
+  install_certificate: false
 
 flutter:
   uses-material-design: true

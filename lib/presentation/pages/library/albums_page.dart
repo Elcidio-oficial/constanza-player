@@ -73,7 +73,7 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
               },
             ),
             IconButton(
-              tooltip: _shapeTooltip(_shape),
+              tooltip: _shapeTooltip(_shape, context),
               icon: Icon(_shapeIcon(_shape)),
               onPressed: () => setState(() {
                 _shape = AlbumCardShape
@@ -168,11 +168,14 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
     AlbumCardShape.circle => Icons.album_rounded,
   };
 
-  String _shapeTooltip(AlbumCardShape s) => switch (s) {
-    AlbumCardShape.square => 'Quadrado',
-    AlbumCardShape.rounded => 'Arredondado',
-    AlbumCardShape.circle => 'Vinil',
-  };
+  String _shapeTooltip(AlbumCardShape s, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return switch (s) {
+      AlbumCardShape.square => l10n.albumsShapeSquare,
+      AlbumCardShape.rounded => l10n.albumsShapeRounded,
+      AlbumCardShape.circle => l10n.albumsShapeVinyl,
+    };
+  }
 }
 
 class _SearchBar extends StatelessWidget {
@@ -195,7 +198,7 @@ class _SearchBar extends StatelessWidget {
         onChanged: onChanged,
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
-          hintText: 'Buscar álbum ou artista',
+          hintText: AppLocalizations.of(context).albumsSearchHint,
           prefixIcon: const Icon(Icons.search_rounded, size: 22),
           filled: true,
           fillColor: colors.surfaceContainerHigh.withValues(alpha: 0.6),
@@ -217,10 +220,11 @@ class _FilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const entries = [
-      (AlbumFilter.all, 'Todos', Icons.apps_rounded),
-      (AlbumFilter.popularity, 'Populares', Icons.trending_up_rounded),
-      (AlbumFilter.favorites, 'Favoritos', Icons.favorite_rounded),
+    final l10n = AppLocalizations.of(context);
+    final entries = [
+      (AlbumFilter.all, l10n.albumsFilterAll, Icons.apps_rounded),
+      (AlbumFilter.popularity, l10n.albumsFilterPopular, Icons.trending_up_rounded),
+      (AlbumFilter.favorites, l10n.albumsFilterFavorites, Icons.favorite_rounded),
     ];
     return SizedBox(
       height: 40,
@@ -267,7 +271,7 @@ class _GenreChips extends StatelessWidget {
         itemBuilder: (_, i) {
           if (i == 0) {
             return ChoiceChip(
-              label: const Text('Todos gêneros'),
+              label: Text(AppLocalizations.of(context).albumsAllGenres),
               selected: selected == null,
               onSelected: (_) => onSelect(null),
             );
@@ -438,7 +442,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Nenhum álbum encontrado',
+            AppLocalizations.of(context).albumsNoneFound,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: colors.onSurface.withValues(alpha: 0.4),
             ),

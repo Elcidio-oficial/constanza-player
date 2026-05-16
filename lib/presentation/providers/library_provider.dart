@@ -7,6 +7,7 @@ import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/domain/entities/album.dart';
 import 'package:constanza_player/domain/entities/artist.dart';
 import 'package:constanza_player/services/audio_scanner_service.dart';
+import 'package:constanza_player/services/media_library/media_library_backend.dart';
 import 'package:constanza_player/services/permission_service.dart';
 import 'package:constanza_player/services/settings_storage_service.dart';
 
@@ -330,6 +331,13 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     );
     await SettingsStorageService.saveMusicFolders(folders);
 
+    // No Windows/Linux/macOS, as pastas selecionadas SÃO as raízes de scan
+    // do filesystem (não há MediaStore para listar tudo previamente).
+    // Em Android este chamada é no-op no backend.
+    await MediaLibrary.instance.setScanFolders(folders);
+    // Invalida cache de scan — força re-leitura com novas raízes.
+    _allScannedSongs = const [];
+
     if (folders.isEmpty) {
       state = state.copyWith(
         status: LibraryStatus.needsFolderSetup,
@@ -532,6 +540,13 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
         artists: artists,
         allFolders: folders,
       );
+      // Reidrata os mapas id→path do backend Windows (no-op no Android).
+      // Sem isto, queryArtwork retorna null após startup-from-cache porque
+      // o filesystem nunca foi varrido nesta execução.
+      MediaLibrary.instance.indexFromSongs(restored);
+      // Também guarda em _allScannedSongs para que setSelectedFolders e
+      // discoverFolders tenham um ponto de partida sem precisar re-escanear.
+      _allScannedSongs = restored;
       return true;
     } catch (e) {
       debugPrint('Library cache load failed: $e');
@@ -624,11 +639,25 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
 
   /// Filtra músicas escaneadas por pastas e atualiza estado + cache.
   Future<void> _applyFolderFilter(List<String> folders) async {
-    final folderSet = Set<String>.from(folders);
+    // Match exato + prefixo: no Windows (e Linux/macOS) o usuário pica uma
+    // pasta-raiz esperando varredura recursiva. No Android cada subpasta com
+    // música aparece como item próprio, então o match exato continua sendo
+    // o caminho dominante — o prefixo só é exercido em desktop.
+    bool insideAnySelected(String songFolder) {
+      for (final f in folders) {
+        if (songFolder == f) return true;
+        // Trata tanto / quanto \\ como separador de subpastas.
+        if (songFolder.startsWith('$f/') || songFolder.startsWith('$f\\')) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     final filtered = _allScannedSongs
         .where(
           (s) =>
-              folderSet.contains(s.folderPath) &&
+              insideAnySelected(s.folderPath) &&
               !_savedExcludedIds.contains(s.id),
         )
         .toList();

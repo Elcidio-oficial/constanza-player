@@ -9,17 +9,19 @@ import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/providers/user_profile_provider.dart';
+import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
 /// Premium header with greeting + avatar. Tap to edit profile.
 class ProfileHeader extends ConsumerWidget {
   const ProfileHeader({super.key});
 
-  String get _greeting {
+  String _greeting(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final h = DateTime.now().hour;
-    if (h < 6) return 'Boa madrugada';
-    if (h < 12) return 'Bom dia';
-    if (h < 18) return 'Boa tarde';
-    return 'Boa noite';
+    if (h < 6) return l10n.profileGreetingLateNight;
+    if (h < 12) return l10n.profileGreetingMorning;
+    if (h < 18) return l10n.profileGreetingAfternoon;
+    return l10n.profileGreetingNight;
   }
 
   @override
@@ -34,7 +36,8 @@ class ProfileHeader extends ConsumerWidget {
     final accent2 = palette?.secondary ?? colors.tertiary;
     final accent3 = palette?.muted ?? colors.primaryContainer;
 
-    final name = profile.hasName ? profile.name! : 'Toque para criar perfil';
+    final l10n = AppLocalizations.of(context);
+    final name = profile.hasName ? profile.name! : l10n.profileTapToCreate;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -62,7 +65,7 @@ class ProfileHeader extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _greeting,
+                    _greeting(context),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.45),
                       letterSpacing: 1.4,
@@ -309,7 +312,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
                   ),
                 ),
                 Text(
-                  'Seu Perfil',
+                  AppLocalizations.of(context).profileTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
@@ -358,8 +361,8 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
                   onSubmitted: (_) => _save(),
                   maxLength: 32,
                   decoration: InputDecoration(
-                    labelText: 'Seu nome',
-                    hintText: 'Como você quer ser chamado?',
+                    labelText: AppLocalizations.of(context).profileNameLabel,
+                    hintText: AppLocalizations.of(context).profileNameHint,
                     counterText: '',
                     filled: true,
                     fillColor: colors.onSurface.withValues(alpha: 0.04),
@@ -396,9 +399,9 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
                         ),
                       ),
                     ),
-                    child: const Text(
-                      'Salvar',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                    child: Text(
+                      AppLocalizations.of(context).commonSave,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -426,7 +429,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library_rounded),
-              title: const Text('Escolher da galeria'),
+              title: Text(AppLocalizations.of(context).bgSettingsPickFromGallery),
               onTap: () {
                 Navigator.pop(ctx);
                 _pick(ImageSource.gallery);
@@ -434,7 +437,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt_rounded),
-              title: const Text('Tirar foto'),
+              title: Text(AppLocalizations.of(context).profileTakePhoto),
               onTap: () {
                 Navigator.pop(ctx);
                 _pick(ImageSource.camera);
@@ -447,7 +450,7 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
                   color: theme.colorScheme.error,
                 ),
                 title: Text(
-                  'Remover foto',
+                  AppLocalizations.of(context).profileRemovePhoto,
                   style: TextStyle(color: theme.colorScheme.error),
                 ),
                 onTap: () {

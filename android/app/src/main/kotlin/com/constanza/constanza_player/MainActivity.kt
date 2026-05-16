@@ -8,6 +8,7 @@ package com.constanza.constanza_player
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager
 import com.ryanheise.audioservice.AudioServiceFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
@@ -59,6 +60,21 @@ class MainActivity : AudioServiceFragmentActivity() {
         // Cacheia o engine para que BroadcastReceivers (widgets) possam
         // invocar métodos no Dart enquanto o app/processo estiver vivo.
         FlutterEngineCache.getInstance().put(WidgetConstants.FLUTTER_ENGINE_ID, flutterEngine)
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.constanza.screen")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "keepOn" -> {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        result.success(null)
+                    }
+                    "release" -> {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WidgetConstants.WIDGET_CHANNEL)
             .setMethodCallHandler { call, result ->

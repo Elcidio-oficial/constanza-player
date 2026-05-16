@@ -12,12 +12,17 @@ class LyricsState {
     this.lines = const [],
     this.isEditing = false,
     this.isLoaded = false,
+    this.onlineMiss = false,
   });
 
   final String? songId;
   final List<LyricLine> lines;
   final bool isEditing;
   final bool isLoaded;
+
+  /// `true` quando já se confirmou que não existe letra online para esta
+  /// música (busca feita e esgotada). Persistido entre sessões.
+  final bool onlineMiss;
 
   bool get isEmpty => lines.isEmpty;
   bool get hasSyncedLines => lines.any((l) => l.isSynced);
@@ -38,12 +43,14 @@ class LyricsState {
     List<LyricLine>? lines,
     bool? isEditing,
     bool? isLoaded,
+    bool? onlineMiss,
   }) {
     return LyricsState(
       songId: songId ?? this.songId,
       lines: lines ?? this.lines,
       isEditing: isEditing ?? this.isEditing,
       isLoaded: isLoaded ?? this.isLoaded,
+      onlineMiss: onlineMiss ?? this.onlineMiss,
     );
   }
 }
@@ -61,11 +68,24 @@ class LyricsNotifier extends StateNotifier<LyricsState> {
     if (state.songId == songId && state.isLoaded) return;
     await LyricsService.init();
     final lines = LyricsService.load(songId);
-    state = LyricsState(songId: songId, lines: lines, isLoaded: true);
+    state = LyricsState(
+      songId: songId,
+      lines: lines,
+      isLoaded: true,
+      onlineMiss: lines.isEmpty && LyricsService.isMarkedMissing(songId),
+    );
   }
 
   void unload() {
     state = const LyricsState();
+  }
+
+  /// Regista o resultado de uma busca online esgotada (nada encontrado),
+  /// persistindo para não repetir a busca automática.
+  Future<void> markOnlineMiss() async {
+    if (state.songId == null) return;
+    await LyricsService.markMissing(state.songId!);
+    state = state.copyWith(onlineMiss: true);
   }
 
   // ── Modo edição ─────────────────────────────────────────
@@ -130,7 +150,7 @@ class LyricsNotifier extends StateNotifier<LyricsState> {
 
   Future<void> importLrc(String lrcText) async {
     final lines = LyricsService.parseLrc(lrcText);
-    state = state.copyWith(lines: lines);
+    state = state.copyWith(lines: lines, onlineMiss: false);
     // Persiste imediatamente
     if (state.songId != null) {
       await LyricsService.save(state.songId!, lines);
@@ -143,7 +163,7 @@ class LyricsNotifier extends StateNotifier<LyricsState> {
         .where((l) => l.trim().isNotEmpty)
         .map((l) => LyricLine(text: l.trim()))
         .toList();
-    state = state.copyWith(lines: lines);
+    state = state.copyWith(lines: lines, onlineMiss: false);
     if (state.songId != null) {
       await LyricsService.save(state.songId!, lines);
     }

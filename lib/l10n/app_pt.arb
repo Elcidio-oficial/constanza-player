@@ -421,6 +421,7 @@
 
   "npColorStyleDegrade": "Degradê",
   "npColorStyleGradient": "Gradiente",
+  "npColorStyleArtwork": "Capa da música",
 
   "albumsTitle": "Álbuns",
   "albumsCount": "{count, plural, =1{1 álbum} other{{count} álbuns}}",
@@ -465,6 +466,7 @@
   "npColorSheetSubtitle": "Escolha o estilo de cor de fundo",
   "npColorOptionDegradeDesc": "Transição suave de uma cor dominante para preto",
   "npColorOptionGradientDesc": "Múltiplas cores da capa em gradiente radial fluido",
+  "npColorOptionArtworkDesc": "Capa da música em tela cheia desfocada, como o Modo Carro",
 
   "customNpTitle": "Cores do Now Playing",
   "customNpSubtitle": "Personalize as cores de fundo do player",
@@ -599,6 +601,22 @@
   "lyricsCopy2": "Copiar",
   "lyricsEditEmptyHint": "Toque + para adicionar a primeira linha",
   "lyricsEditTip": "Toque no timestamp para sincronizar · Segure para limpar",
+  "lyricsSearchingOnline": "Procurando letras online…",
+  "lyricsNotFoundTitle": "Nenhuma letra encontrada",
+  "lyricsNotFoundSubtitle": "Não encontrámos letras para esta música.",
+  "lyricsRetry": "Tentar novamente",
+  "lyricsManualSearch": "Buscar manualmente",
+  "lyricsManualSearchTitle": "Buscar letras online",
+  "lyricsManualSearchHint": "Ajuste o título e o artista para refinar a busca.",
+  "lyricsFieldTitle": "Título",
+  "lyricsFieldArtist": "Artista",
+  "lyricsSearchAction": "Buscar",
+  "lyricsNoResults": "Nenhum resultado encontrado",
+  "lyricsSyncedBadge": "Sincronizada",
+  "lyricsResultsCount": "{count} resultados",
+  "@lyricsResultsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
 
   "songOptionsPlayNow": "Reproduzir",
   "songOptionsAddedToQueue": "Adicionado à fila",
@@ -739,5 +757,169 @@
   "playlistsEmptyCreated": "Nenhuma playlist criada",
   "playlistsEmptyCreateFirst": "Crie sua primeira playlist",
   "playlistsEmptyNewAction": "+ Nova Playlist",
-  "homeSeeAllAction": "Ver tudo"
+  "homeSeeAllAction": "Ver tudo",
+
+  "foldersLibraryUpdated": "Biblioteca atualizada",
+  "foldersInfoBanner": "Selecione as pastas e, opcionalmente, entre em cada pasta para escolher músicas específicas. Toque em \"Aplicar\" para atualizar a biblioteca.",
+  "foldersDiscovering": "A descobrir pastas…",
+  "foldersNoneFound": "Nenhuma pasta encontrada",
+  "foldersSearch": "Procurar pastas",
+  "foldersApplyChanges": "Aplicar alterações",
+  "foldersDiscardTitle": "Descartar alterações?",
+  "foldersDiscardBody": "Tens alterações não guardadas. Sair sem aplicar?",
+  "foldersDiscardAction": "Descartar",
+  "foldersFolderSummary": "{folders} pasta(s) · {selected} selecionada(s)",
+  "@foldersFolderSummary": {
+    "placeholders": {
+      "folders": { "type": "int" },
+      "selected": { "type": "int" }
+    }
+  },
+  "foldersSongsTotal": "{count} música(s)",
+  "@foldersSongsTotal": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "foldersIncludeFolder": "Incluir pasta no scan",
+  "foldersSongsPartial": "{included} / {total} música(s)",
+  "@foldersSongsPartial": {
+    "placeholders": {
+      "included": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "historyClearTooltip": "Limpar historico",
+  "historyClearTitle": "Limpar Historico",
+  "historyClearBody": "Deseja apagar todo o historico de reproducao?",
+  "historyClearAction": "Limpar",
+  "historyDateToday": "HOJE",
+  "historyDateYesterday": "ONTEM",
+
+  "duplicatesRemoveTitle": "Remover duplicadas",
+  "duplicatesRemoveConfirm": "Isso irá excluir {count} música(s) do dispositivo permanentemente.\n\nAs músicas selecionadas para manter serão preservadas.",
+  "@duplicatesRemoveConfirm": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "duplicatesKeep": "Manter",
+  "duplicatesRemoveLabel": "Remover",
+  "duplicatesRemoving": "Removendo...",
+  "duplicatesRemoveCount": "Remover {count} duplicada(s)",
+  "@duplicatesRemoveCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "duplicatesRemovedOk": "{count} música(s) removida(s)",
+  "@duplicatesRemovedOk": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "duplicatesRemovedPartial": "{success} removida(s), {fail} falhou (permissão negada)",
+  "@duplicatesRemovedPartial": {
+    "placeholders": {
+      "success": { "type": "int" },
+      "fail": { "type": "int" }
+    }
+  },
+  "duplicatesLibraryOrganized": "Sua biblioteca está organizada.",
+
+  "lyricsSharePoster": "Partilhar como poster",
+  "lyricsSharePosterDesc": "Capa + letra com cores dinâmicas",
+
+  "artistsSearchHint": "Buscar artista",
+  "artistsAllGenres": "Todos gêneros",
+  "artistsFilterAll": "Todos",
+  "artistsFilterPopular": "Populares",
+  "artistsFilterFavorites": "Favoritos",
+  "artistsShapeCircle": "Circular",
+  "artistsShapeSquare": "Quadrado",
+  "artistsShapeRounded": "Arredondado",
+  "artistsNoneFound": "Nenhum artista encontrado",
+
+  "albumsSearchHint": "Buscar álbum ou artista",
+  "albumsAllGenres": "Todos gêneros",
+  "albumsFilterAll": "Todos",
+  "albumsFilterPopular": "Populares",
+  "albumsFilterFavorites": "Favoritos",
+  "albumsShapeSquare": "Quadrado",
+  "albumsShapeRounded": "Arredondado",
+  "albumsShapeVinyl": "Vinil",
+  "albumsNoneFound": "Nenhum álbum encontrado",
+
+  "profileGreetingLateNight": "Boa madrugada",
+  "profileGreetingMorning": "Bom dia",
+  "profileGreetingAfternoon": "Boa tarde",
+  "profileGreetingNight": "Boa noite",
+  "profileTapToCreate": "Toque para criar perfil",
+  "profileTitle": "Seu Perfil",
+  "profileNameLabel": "Seu nome",
+  "profileNameHint": "Como você quer ser chamado?",
+  "profileTakePhoto": "Tirar foto",
+  "profileRemovePhoto": "Remover foto",
+
+  "playlistsRemovedFrom": "Removido de \"{name}\"",
+  "@playlistsRemovedFrom": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "playlistsExportM3U": "Exportar Playlist (M3U)",
+  "playlistsM3UCopied": "Playlist copiada para a area de transferencia",
+  "playlistsPlayNext": "Reproduzir em seguida",
+
+  "npNoSongSelected": "Nenhuma música selecionada",
+  "npTabQueue": "Fila",
+  "npTabLyrics": "Letras",
+  "npTabSpeed": "Veloc.",
+  "commonMore": "Mais",
+  "npMoreSheetTitle": "Mais opções",
+  "npSpeedReset": "Redefinir para 1x",
+  "npAnalyzeLoading": "Analisando BPM e tonalidade...",
+
+  "backupFileEmptyOrUnreadable": "Arquivo vazio ou ilegível",
+  "backupImportFile": "Importar backup",
+  "backupRestoredOk": "Backup restaurado ({count} iten(s)). A biblioteca está a atualizar…",
+  "@backupRestoredOk": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "backupFileOpenError": "Erro ao abrir arquivo: {error}",
+  "@backupFileOpenError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "diagnosticsLogsTitle": "Logs de diagnóstico — {appName} v{version}",
+  "@diagnosticsLogsTitle": {
+    "placeholders": {
+      "appName": { "type": "String" },
+      "version": { "type": "String" }
+    }
+  },
+
+  "carModeTitle": "Modo Carro",
+  "carModeExit": "Sair",
+  "carModeDim": "Diminuir tela",
+  "carModeQueue": "Fila",
+  "carModeQueueTitle": "Tocando em seguida",
+  "carModeQueueEmpty": "A fila está vazia",
+  "carModeSafetyNotice": "Mantenha os olhos na estrada",
+  "carModeVolume": "Volume",
+  "carModeViewPlayer": "Player",
+  "carModeViewLyrics": "Letras",
+  "carModeSwitchView": "Trocar visual",
+  "carModeNoLyrics": "Sem letras para esta música",
+  "carModeLyricsLoading": "Carregando letras…",
+
+  "sleepTimer": "Temporizador",
+  "sleepTimerTitle": "Temporizador de pausa",
+  "sleepTimerSubtitle": "Pausa a reprodução depois de um tempo",
+  "sleepTimerOff": "Desligado",
+  "sleepTimerEndOfTrack": "Fim da música atual",
+  "sleepTimerEndOfTrackShort": "Fim da música",
+  "sleepTimerCustom": "Personalizado",
+  "sleepTimerFadeOut": "Esmaecer volume",
+  "sleepTimerFadeOutDesc": "Reduz suavemente o volume nos últimos 10s",
+  "sleepTimerCancel": "Cancelar temporizador",
+  "sleepTimerMinutesShort": "{n} min",
+  "@sleepTimerMinutesShort": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "sleepTimerRemaining": "Faltam {time}",
+  "@sleepTimerRemaining": {
+    "placeholders": { "time": { "type": "String" } }
+  }
 }

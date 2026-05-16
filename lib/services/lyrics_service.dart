@@ -9,10 +9,27 @@ import 'package:constanza_player/domain/entities/lyric_line.dart';
 /// Suporta importação e exportação no formato LRC padrão.
 class LyricsService {
   static const _prefix = 'lyrics_v1_';
+  static const _missPrefix = 'lyrics_miss_v1_';
   static SharedPreferences? _prefs;
 
   static Future<void> init() async {
     _prefs ??= await SharedPreferences.getInstance();
+  }
+
+  // ── Marcador "sem letra online" ─────────────────────────────
+  // Evita repetir a busca automática a cada abertura quando já se
+  // confirmou que o LRCLIB não tem letra para esta música. O
+  // utilizador ainda pode forçar nova busca ("Tentar novamente").
+
+  static bool isMarkedMissing(String songId) =>
+      _prefs?.getBool('$_missPrefix$songId') ?? false;
+
+  static Future<void> markMissing(String songId) async {
+    await _prefs?.setBool('$_missPrefix$songId', true);
+  }
+
+  static Future<void> clearMissing(String songId) async {
+    await _prefs?.remove('$_missPrefix$songId');
   }
 
   // ── CRUD ───────────────────────────────────────────────────
@@ -35,6 +52,8 @@ class LyricsService {
       '$_prefix$songId',
       jsonEncode(lines.map((l) => l.toJson()).toList()),
     );
+    // Há letra guardada → o marcador de "sem letra" deixa de fazer sentido.
+    if (lines.isNotEmpty) await clearMissing(songId);
   }
 
   static Future<void> delete(String songId) async {

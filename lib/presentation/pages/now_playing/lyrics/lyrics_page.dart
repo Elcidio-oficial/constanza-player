@@ -1,4 +1,4 @@
-// ignore_for_file: curly_braces_in_flow_control_structures, unused_element_parameter
+// ignore_for_file: use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element_parameter
 part of '../now_playing_page.dart';
 
 class _LyricsPage extends ConsumerStatefulWidget {
@@ -19,6 +19,10 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
 
   bool _isSearching = false;
 
+  /// Música para a qual já se disparou a busca automática nesta sessão de
+  /// tela — evita repetir a chamada a cada rebuild.
+  String? _autoSearchedSongId;
+
   /// Tamanho da fonte (3 níveis)
   double _baseFontSize = 22.0;
   static const _fontSizes = [18.0, 22.0, 28.0];
@@ -26,9 +30,12 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
 
   String _fontLabel(AppLocalizations l10n, int idx) {
     switch (idx) {
-      case 0: return l10n.lyricsFontSmall;
-      case 2: return l10n.lyricsFontLarge;
-      default: return l10n.lyricsFontMedium;
+      case 0:
+        return l10n.lyricsFontSmall;
+      case 2:
+        return l10n.lyricsFontLarge;
+      default:
+        return l10n.lyricsFontMedium;
     }
   }
 
@@ -128,7 +135,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
 
   // ── Busca online ────────────────────────────────────────────
 
-  Future<void> _searchOnline() async {
+  Future<void> _searchOnline({bool auto = false}) async {
     if (_isSearching) return;
     setState(() => _isSearching = true);
     try {
@@ -176,7 +183,11 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           );
         }
       } else {
-        if (mounted) {
+        // Busca esgotada sem resultado — estado definitivo e persistido.
+        // O _EmptyLyrics passa a mostrar "Nenhuma letra encontrada" com
+        // botão de re-tentar, em vez de um snackbar ambíguo.
+        await ref.read(lyricsProvider.notifier).markOnlineMiss();
+        if (mounted && !auto) {
           final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -237,9 +248,25 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
         _lastScrolledIndex = -1;
         _userScrollTimer?.cancel();
         _userIsScrolling = false;
+        _autoSearchedSongId = null;
         ref.read(lyricsProvider.notifier).loadForSong(next);
       }
     });
+
+    // Busca automática ao abrir letras vazias: sem letra local e ainda
+    // sem confirmação de que não existe online. Resolve o "clicar duas
+    // vezes" — o utilizador já vê o resultado sem nenhuma ação.
+    if (lyrics.isLoaded &&
+        lyrics.isEmpty &&
+        !lyrics.isEditing &&
+        !lyrics.onlineMiss &&
+        !_isSearching &&
+        _autoSearchedSongId != currentSong.id) {
+      _autoSearchedSongId = currentSong.id;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _searchOnline(auto: true);
+      });
+    }
 
     // Auto-scroll no view mode
     if (!lyrics.isEditing && curIdx >= 0) {
@@ -256,7 +283,9 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             onImportLrc: () => _showImportDialog(context),
             onPasteText: () => _showPasteTextDialog(context),
             onSearchOnline: _searchOnline,
+            onManualSearch: () => _showManualSearchDialog(context),
             isSearching: _isSearching,
+            attempted: lyrics.onlineMiss,
             colors: colors,
             theme: theme,
           )
@@ -402,6 +431,10 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: colors.surfaceContainer,
+      // isScrollControlled: o sheet pode crescer além de ~9/16 da tela; com
+      // o SingleChildScrollView abaixo a lista nunca estoura ("BOTTOM
+      // OVERFLOWED") em janelas baixas (desktop) — apenas rola.
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppSpacing.radiusXl),
@@ -410,108 +443,110 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
       builder: (ctx) {
         final l10n = AppLocalizations.of(ctx);
         return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: AppSpacing.xs),
-            Container(
-              width: 32,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.outline.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            ListTile(
-              leading: const Icon(Icons.travel_explore_rounded),
-              title: Text(l10n.lyricsSearchOnline),
-              subtitle: Text(
-                l10n.lyricsSearchOnlineDescription,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.4),
-                ),
-              ),
-              onTap: () {
-                ctx.pop();
-                _searchOnline();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.copy_rounded),
-              title: Text(l10n.lyricsCopy),
-              onTap: () {
-                ctx.pop();
-                _copyLyrics(colors);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit_rounded),
-              title: Text(l10n.lyricsEdit),
-              onTap: () {
-                ctx.pop();
-                ref.read(lyricsProvider.notifier).toggleEdit();
-              },
-            ),
-            if (lyrics.lines.any((l) => !l.isSynced))
-              ListTile(
-                leading: Icon(Icons.timer_rounded, color: colors.primary),
-                title: Text(l10n.lyricsQuickSyncShort),
-                subtitle: Text(
-                  l10n.lyricsQuickSyncDescription,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.4),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: AppSpacing.xs),
+                Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.outline.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                onTap: () {
-                  ctx.pop();
-                  ref.read(lyricsProvider.notifier).save();
-                  Navigator.of(
-                    context,
-                  ).push(AppPageRoute(page: _QuickSyncPage(song: widget.song)));
-                },
-              ),
-            ListTile(
-              leading: const Icon(Icons.download_rounded),
-              title: Text(l10n.lyricsImportLrc),
-              onTap: () {
-                ctx.pop();
-                _showImportDialog(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.text_snippet_outlined),
-              title: Text(l10n.lyricsPastePlain),
-              onTap: () {
-                ctx.pop();
-                _showPasteTextDialog(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.image_outlined, color: colors.primary),
-              title: const Text('Partilhar como poster'),
-              subtitle: Text(
-                'Capa + letra com cores dinâmicas',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.4),
+                const SizedBox(height: AppSpacing.md),
+                ListTile(
+                  leading: const Icon(Icons.travel_explore_rounded),
+                  title: Text(l10n.lyricsSearchOnline),
+                  subtitle: Text(
+                    l10n.lyricsSearchOnlineDescription,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  onTap: () {
+                    ctx.pop();
+                    _searchOnline();
+                  },
                 ),
-              ),
-              onTap: () {
-                ctx.pop();
-                _shareLyricsPoster(context);
-              },
+                ListTile(
+                  leading: const Icon(Icons.copy_rounded),
+                  title: Text(l10n.lyricsCopy),
+                  onTap: () {
+                    ctx.pop();
+                    _copyLyrics(colors);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.edit_rounded),
+                  title: Text(l10n.lyricsEdit),
+                  onTap: () {
+                    ctx.pop();
+                    ref.read(lyricsProvider.notifier).toggleEdit();
+                  },
+                ),
+                if (lyrics.lines.any((l) => !l.isSynced))
+                  ListTile(
+                    leading: Icon(Icons.timer_rounded, color: colors.primary),
+                    title: Text(l10n.lyricsQuickSyncShort),
+                    subtitle: Text(
+                      l10n.lyricsQuickSyncDescription,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    onTap: () {
+                      ctx.pop();
+                      ref.read(lyricsProvider.notifier).save();
+                      Navigator.of(context).push(
+                        AppPageRoute(page: _QuickSyncPage(song: widget.song)),
+                      );
+                    },
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.download_rounded),
+                  title: Text(l10n.lyricsImportLrc),
+                  onTap: () {
+                    ctx.pop();
+                    _showImportDialog(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.text_snippet_outlined),
+                  title: Text(l10n.lyricsPastePlain),
+                  onTap: () {
+                    ctx.pop();
+                    _showPasteTextDialog(context);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.image_outlined, color: colors.primary),
+                  title: Text(AppLocalizations.of(context).lyricsSharePoster),
+                  subtitle: Text(
+                    AppLocalizations.of(context).lyricsSharePosterDesc,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  onTap: () {
+                    ctx.pop();
+                    _shareLyricsPoster(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.text_snippet_rounded),
+                  title: Text(l10n.lyricsExportLrc),
+                  onTap: () {
+                    ctx.pop();
+                    _exportLrc(context);
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.text_snippet_rounded),
-              title: Text(l10n.lyricsExportLrc),
-              onTap: () {
-                ctx.pop();
-                _exportLrc(context);
-              },
-            ),
-            const SizedBox(height: AppSpacing.md),
-          ],
-        ),
+          ),
         );
       },
     );
@@ -620,7 +655,10 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => ctx.pop(), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => ctx.pop(),
+            child: Text(l10n.commonCancel),
+          ),
           FilledButton(
             onPressed: () {
               final text = controller.text.trim();
@@ -695,6 +733,48 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
     );
   }
 
+  // ── Busca manual (seletor de candidatos) ────────────────────
+
+  Future<void> _showManualSearchDialog(BuildContext context) async {
+    final song = ref.read(playerProvider).currentSong ?? widget.song;
+    // Garante que o provider está vinculado a esta música antes de importar.
+    await ref.read(lyricsProvider.notifier).loadForSong(song.id);
+    if (!mounted) return;
+
+    final hit = await showModalBottomSheet<LyricsHit>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusXl),
+        ),
+      ),
+      builder: (ctx) => _ManualSearchSheet(
+        initialTitle: song.title,
+        initialArtist: song.artist,
+      ),
+    );
+    if (hit == null || !mounted) return;
+
+    final notifier = ref.read(lyricsProvider.notifier);
+    if (hit.hasSynced) {
+      await notifier.importLrc(hit.syncedLyrics!);
+    } else if (hit.hasPlain) {
+      await notifier.importPlainText(hit.plainLyrics!);
+    }
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          l10n.lyricsLinesFound(ref.read(lyricsProvider).lines.length),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   void _shareLyricsPoster(BuildContext context) {
     final lyrics = ref.read(lyricsProvider);
     final position = ref.read(playerProvider).position;
@@ -731,7 +811,10 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           actions: [
             TextButton(
               onPressed: () => ctx.pop(),
-              child: Text(l10n.commonClose, style: TextStyle(color: c.onSurface)),
+              child: Text(
+                l10n.commonClose,
+                style: TextStyle(color: c.onSurface),
+              ),
             ),
             FilledButton(
               onPressed: () {
@@ -784,6 +867,257 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
     final s = d.inSeconds.remainder(60);
     final cs = (d.inMilliseconds.remainder(1000) / 10).round();
     return '$m:${s.toString().padLeft(2, '0')}.${cs.toString().padLeft(2, '0')}';
+  }
+}
+
+// ============================================================
+// BUSCA MANUAL — bottom sheet com seletor de candidatos LRCLIB
+// Permite ajustar título/artista e escolher entre vários resultados,
+// com badge de "sincronizada" e duração para acertar a faixa certa.
+// ============================================================
+
+class _ManualSearchSheet extends StatefulWidget {
+  const _ManualSearchSheet({
+    required this.initialTitle,
+    required this.initialArtist,
+  });
+
+  final String initialTitle;
+  final String initialArtist;
+
+  @override
+  State<_ManualSearchSheet> createState() => _ManualSearchSheetState();
+}
+
+class _ManualSearchSheetState extends State<_ManualSearchSheet> {
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _artistCtrl;
+  bool _loading = false;
+  bool _searched = false;
+  List<LyricsHit> _results = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _titleCtrl = TextEditingController(text: widget.initialTitle);
+    _artistCtrl = TextEditingController(text: widget.initialArtist);
+    // Primeira busca automática com os dados da faixa atual.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _run());
+  }
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _artistCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _run() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      final hits = await LyricsFetchService.search(
+        title: _titleCtrl.text.trim(),
+        artist: _artistCtrl.text.trim(),
+      );
+      if (mounted) {
+        setState(() {
+          _results = hits;
+          _searched = true;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  String _fmt(Duration? d) {
+    if (d == null) return '';
+    final m = d.inMinutes;
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final c = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: viewInsets),
+      child: DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.7,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        builder: (ctx, scrollCtrl) => SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: AppSpacing.xs),
+              Container(
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: c.outline.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.sm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.lyricsManualSearchTitle,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      l10n.lyricsManualSearchHint,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: c.onSurface.withValues(alpha: 0.45),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextField(
+                      controller: _titleCtrl,
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText: l10n.lyricsFieldTitle,
+                        isDense: true,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    TextField(
+                      controller: _artistCtrl,
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: (_) => _run(),
+                      decoration: InputDecoration(
+                        labelText: l10n.lyricsFieldArtist,
+                        isDense: true,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _loading ? null : _run,
+                        icon: _loading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.search_rounded, size: 18),
+                        label: Text(l10n.lyricsSearchAction),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_searched && !_loading && _results.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      l10n.lyricsResultsCount(_results.length),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: c.onSurface.withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ),
+                ),
+              const Divider(height: AppSpacing.md),
+              Expanded(
+                child: _loading && _results.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : (_searched && _results.isEmpty)
+                    ? Center(
+                        child: Text(
+                          l10n.lyricsNoResults,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: c.onSurface.withValues(alpha: 0.4),
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        controller: scrollCtrl,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        itemCount: _results.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 2),
+                        itemBuilder: (_, i) {
+                          final h = _results[i];
+                          return ListTile(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.radiusMd,
+                              ),
+                            ),
+                            title: Text(
+                              h.trackName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              [
+                                h.artistName,
+                                if (h.albumName?.isNotEmpty ?? false)
+                                  h.albumName,
+                                if (h.duration != null) _fmt(h.duration),
+                              ].join(' · '),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: h.hasSynced
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: c.primary.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      l10n.lyricsSyncedBadge,
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: c.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  )
+                                : null,
+                            onTap: () => Navigator.of(context).pop(h),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

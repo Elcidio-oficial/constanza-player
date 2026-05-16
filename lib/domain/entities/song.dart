@@ -35,9 +35,12 @@ class Song extends Equatable {
   final bool isFavorite;
 
   /// Pasta onde o ficheiro está.
+  /// Aceita tanto separadores Unix (/) quanto Windows (\\).
   String get folderPath {
     if (filePath.isEmpty) return '';
-    final idx = filePath.lastIndexOf('/');
+    final lastSlash = filePath.lastIndexOf('/');
+    final lastBackslash = filePath.lastIndexOf(r'\');
+    final idx = lastSlash > lastBackslash ? lastSlash : lastBackslash;
     return idx > 0 ? filePath.substring(0, idx) : filePath;
   }
 

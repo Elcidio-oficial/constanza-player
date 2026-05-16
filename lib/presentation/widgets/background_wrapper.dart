@@ -15,12 +15,46 @@ class BackgroundWrapper extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Desktop (Windows/Linux): o fundo é pintado UMA vez no
+    // MaterialApp.builder, cobrindo a janela inteira (inclusive atrás da
+    // title bar) — ver main.dart. Repintar aqui geraria um recorte
+    // diferente e uma emenda visível logo abaixo da barra de título.
+    if (Platform.isWindows || Platform.isLinux) {
+      return child;
+    }
+
+    final hasBackground = ref.watch(
+      themeProvider.select((s) => s.hasBackground),
+    );
+
+    if (!hasBackground) {
+      return child;
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const AppBackgroundLayer(),
+        child,
+      ],
+    );
+  }
+}
+
+/// Apenas o fundo customizado (cor base + gradiente/imagem), sem conteúdo.
+///
+/// Reutilizável fora do [BackgroundWrapper] — usado também pela barra de
+/// título do Windows para acompanhar o fundo escolhido em vez de ficar
+/// preta fixa. Retorna [SizedBox.shrink] quando não há fundo ativo.
+class AppBackgroundLayer extends ConsumerWidget {
+  const AppBackgroundLayer({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final themeState = ref.watch(themeProvider);
     final colors = Theme.of(context).colorScheme;
 
-    if (!themeState.hasBackground) {
-      return child;
-    }
+    if (!themeState.hasBackground) return const SizedBox.shrink();
 
     return Stack(
       fit: StackFit.expand,
@@ -43,9 +77,6 @@ class BackgroundWrapper extends ConsumerWidget {
             opacity: themeState.backgroundOpacity,
             blur: themeState.backgroundBlur,
           ),
-
-        // === Conteúdo ===
-        child,
       ],
     );
   }

@@ -235,7 +235,7 @@ class HomePage extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             FilledButton.tonal(
               onPressed: () => ref.read(libraryProvider.notifier).rescan(),
-              child: const Text('Re-escanear'),
+              child: Text(AppLocalizations.of(context).settingsRescan),
             ),
           ],
         ),
@@ -472,14 +472,14 @@ class HomePage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Reproduzir Tudo',
+                            AppLocalizations.of(context).homeShuffleAllTitle,
                             style: theme.textTheme.titleSmall?.copyWith(
                               color: colors.onSurface,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           Text(
-                            '${songs.length} músicas · $durationLabel · modo aleatório',
+                            AppLocalizations.of(context).homeShuffleAllSubtitle(songs.length, durationLabel),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colors.onSurface.withValues(alpha: 0.45),
                             ),

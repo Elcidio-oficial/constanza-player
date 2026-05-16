@@ -25,7 +25,9 @@ enum MiniPlayerStyle { glass, artwork, minimal, card, dynamic }
 
 enum MediaBarStyle { minimal, glow, gradient, thick, classic }
 
-enum NowPlayingColorStyle { degrade, gradient }
+enum NowPlayingColorStyle { degrade, gradient, artwork }
+
+enum CarModeView { player, lyrics }
 
 class ThemeState {
   const ThemeState({
@@ -50,6 +52,7 @@ class ThemeState {
     this.npCustomColor3,
 
     this.autoCarMode = false,
+    this.carModeView = CarModeView.player,
     this.languageCode,
   });
 
@@ -74,6 +77,7 @@ class ThemeState {
   final Color? npCustomColor3;
 
   final bool autoCarMode;
+  final CarModeView carModeView;
 
   /// Idioma escolhido pelo usuário ('en', 'pt') ou null para seguir o sistema.
   final String? languageCode;
@@ -145,6 +149,7 @@ class ThemeState {
       switch (nowPlayingColorStyle) {
         NowPlayingColorStyle.degrade => l10n.npColorStyleDegrade,
         NowPlayingColorStyle.gradient => l10n.npColorStyleGradient,
+        NowPlayingColorStyle.artwork => l10n.npColorStyleArtwork,
       };
 
   /// Serializa para JSON-safe map.
@@ -169,6 +174,7 @@ class ThemeState {
     'npCustomColor2': SettingsStorageService.colorToInt(npCustomColor2),
     'npCustomColor3': SettingsStorageService.colorToInt(npCustomColor3),
     'autoCarMode': autoCarMode,
+    'carModeView': carModeView.index,
     if (languageCode != null) 'languageCode': languageCode,
   };
 
@@ -225,6 +231,10 @@ class ThemeState {
         json['npCustomColor3'] as int?,
       ),
       autoCarMode: json['autoCarMode'] as bool? ?? false,
+      carModeView: CarModeView.values[(json['carModeView'] as int? ?? 0).clamp(
+        0,
+        CarModeView.values.length - 1,
+      )],
       languageCode: json['languageCode'] as String?,
     );
   }
@@ -256,6 +266,7 @@ class ThemeState {
     Color? npCustomColor3,
     bool clearNpColor3 = false,
     bool? autoCarMode,
+    CarModeView? carModeView,
     String? languageCode,
     bool clearLanguageCode = false,
   }) {
@@ -290,6 +301,7 @@ class ThemeState {
           ? null
           : (npCustomColor3 ?? this.npCustomColor3),
       autoCarMode: autoCarMode ?? this.autoCarMode,
+      carModeView: carModeView ?? this.carModeView,
       languageCode: clearLanguageCode
           ? null
           : (languageCode ?? this.languageCode),
@@ -454,6 +466,11 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
 
   void toggleAutoCarMode() {
     state = state.copyWith(autoCarMode: !state.autoCarMode);
+    _save();
+  }
+
+  void setCarModeView(CarModeView view) {
+    state = state.copyWith(carModeView: view);
     _save();
   }
 }

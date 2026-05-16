@@ -421,6 +421,7 @@
 
   "npColorStyleDegrade": "Fade",
   "npColorStyleGradient": "Gradient",
+  "npColorStyleArtwork": "Cover art",
 
   "albumsTitle": "Albums",
   "albumsCount": "{count, plural, =1{1 album} other{{count} albums}}",
@@ -465,6 +466,7 @@
   "npColorSheetSubtitle": "Pick a background color style",
   "npColorOptionDegradeDesc": "Smooth fade from a dominant color to black",
   "npColorOptionGradientDesc": "Multiple cover colors in a fluid radial gradient",
+  "npColorOptionArtworkDesc": "Cover art blurred fullscreen, like Car Mode",
 
   "customNpTitle": "Now Playing colors",
   "customNpSubtitle": "Customize player background colors",
@@ -599,6 +601,22 @@
   "lyricsCopy2": "Copy",
   "lyricsEditEmptyHint": "Tap + to add the first line",
   "lyricsEditTip": "Tap timestamp to sync · Long press to clear",
+  "lyricsSearchingOnline": "Searching lyrics online…",
+  "lyricsNotFoundTitle": "No lyrics found",
+  "lyricsNotFoundSubtitle": "We couldn't find lyrics for this song.",
+  "lyricsRetry": "Try again",
+  "lyricsManualSearch": "Search manually",
+  "lyricsManualSearchTitle": "Search lyrics online",
+  "lyricsManualSearchHint": "Adjust the title and artist to refine the search.",
+  "lyricsFieldTitle": "Title",
+  "lyricsFieldArtist": "Artist",
+  "lyricsSearchAction": "Search",
+  "lyricsNoResults": "No results found",
+  "lyricsSyncedBadge": "Synced",
+  "lyricsResultsCount": "{count} results",
+  "@lyricsResultsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
 
   "songOptionsPlayNow": "Play",
   "songOptionsAddedToQueue": "Added to queue",
@@ -739,5 +757,169 @@
   "playlistsEmptyCreated": "No playlists created",
   "playlistsEmptyCreateFirst": "Create your first playlist",
   "playlistsEmptyNewAction": "+ New Playlist",
-  "homeSeeAllAction": "See all"
+  "homeSeeAllAction": "See all",
+
+  "foldersLibraryUpdated": "Library updated",
+  "foldersInfoBanner": "Select folders and, optionally, enter each folder to choose specific songs. Tap \"Apply\" to update the library.",
+  "foldersDiscovering": "Discovering folders…",
+  "foldersNoneFound": "No folders found",
+  "foldersSearch": "Search folders",
+  "foldersApplyChanges": "Apply changes",
+  "foldersDiscardTitle": "Discard changes?",
+  "foldersDiscardBody": "You have unsaved changes. Exit without applying?",
+  "foldersDiscardAction": "Discard",
+  "foldersFolderSummary": "{folders} folder(s) · {selected} selected",
+  "@foldersFolderSummary": {
+    "placeholders": {
+      "folders": { "type": "int" },
+      "selected": { "type": "int" }
+    }
+  },
+  "foldersSongsTotal": "{count} song(s)",
+  "@foldersSongsTotal": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "foldersIncludeFolder": "Include folder in scan",
+  "foldersSongsPartial": "{included} / {total} song(s)",
+  "@foldersSongsPartial": {
+    "placeholders": {
+      "included": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "historyClearTooltip": "Clear history",
+  "historyClearTitle": "Clear History",
+  "historyClearBody": "Delete all playback history?",
+  "historyClearAction": "Clear",
+  "historyDateToday": "TODAY",
+  "historyDateYesterday": "YESTERDAY",
+
+  "duplicatesRemoveTitle": "Remove duplicates",
+  "duplicatesRemoveConfirm": "This will permanently delete {count} song(s) from your device.\n\nSongs selected to keep will be preserved.",
+  "@duplicatesRemoveConfirm": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "duplicatesKeep": "Keep",
+  "duplicatesRemoveLabel": "Remove",
+  "duplicatesRemoving": "Removing...",
+  "duplicatesRemoveCount": "Remove {count} duplicate(s)",
+  "@duplicatesRemoveCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "duplicatesRemovedOk": "{count} song(s) removed",
+  "@duplicatesRemovedOk": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "duplicatesRemovedPartial": "{success} removed, {fail} failed (permission denied)",
+  "@duplicatesRemovedPartial": {
+    "placeholders": {
+      "success": { "type": "int" },
+      "fail": { "type": "int" }
+    }
+  },
+  "duplicatesLibraryOrganized": "Your library is organized.",
+
+  "lyricsSharePoster": "Share as poster",
+  "lyricsSharePosterDesc": "Cover + lyrics with dynamic colors",
+
+  "artistsSearchHint": "Search artist",
+  "artistsAllGenres": "All genres",
+  "artistsFilterAll": "All",
+  "artistsFilterPopular": "Popular",
+  "artistsFilterFavorites": "Favorites",
+  "artistsShapeCircle": "Circle",
+  "artistsShapeSquare": "Square",
+  "artistsShapeRounded": "Rounded",
+  "artistsNoneFound": "No artists found",
+
+  "albumsSearchHint": "Search album or artist",
+  "albumsAllGenres": "All genres",
+  "albumsFilterAll": "All",
+  "albumsFilterPopular": "Popular",
+  "albumsFilterFavorites": "Favorites",
+  "albumsShapeSquare": "Square",
+  "albumsShapeRounded": "Rounded",
+  "albumsShapeVinyl": "Vinyl",
+  "albumsNoneFound": "No albums found",
+
+  "profileGreetingLateNight": "Good late night",
+  "profileGreetingMorning": "Good morning",
+  "profileGreetingAfternoon": "Good afternoon",
+  "profileGreetingNight": "Good night",
+  "profileTapToCreate": "Tap to create profile",
+  "profileTitle": "Your Profile",
+  "profileNameLabel": "Your name",
+  "profileNameHint": "What should we call you?",
+  "profileTakePhoto": "Take photo",
+  "profileRemovePhoto": "Remove photo",
+
+  "playlistsRemovedFrom": "Removed from \"{name}\"",
+  "@playlistsRemovedFrom": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "playlistsExportM3U": "Export Playlist (M3U)",
+  "playlistsM3UCopied": "Playlist copied to clipboard",
+  "playlistsPlayNext": "Play next",
+
+  "npNoSongSelected": "No song selected",
+  "npTabQueue": "Queue",
+  "npTabLyrics": "Lyrics",
+  "npTabSpeed": "Speed",
+  "commonMore": "More",
+  "npMoreSheetTitle": "More options",
+  "npSpeedReset": "Reset to 1x",
+  "npAnalyzeLoading": "Analyzing BPM and key...",
+
+  "backupFileEmptyOrUnreadable": "Empty or unreadable file",
+  "backupImportFile": "Import backup",
+  "backupRestoredOk": "Backup restored ({count} item(s)). Library is updating…",
+  "@backupRestoredOk": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "backupFileOpenError": "Error opening file: {error}",
+  "@backupFileOpenError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "diagnosticsLogsTitle": "Diagnostic logs — {appName} v{version}",
+  "@diagnosticsLogsTitle": {
+    "placeholders": {
+      "appName": { "type": "String" },
+      "version": { "type": "String" }
+    }
+  },
+
+  "carModeTitle": "Car Mode",
+  "carModeExit": "Exit",
+  "carModeDim": "Dim screen",
+  "carModeQueue": "Queue",
+  "carModeQueueTitle": "Playing next",
+  "carModeQueueEmpty": "Queue is empty",
+  "carModeSafetyNotice": "Keep your eyes on the road",
+  "carModeVolume": "Volume",
+  "carModeViewPlayer": "Player",
+  "carModeViewLyrics": "Lyrics",
+  "carModeSwitchView": "Switch view",
+  "carModeNoLyrics": "No lyrics for this song",
+  "carModeLyricsLoading": "Loading lyrics…",
+
+  "sleepTimer": "Sleep timer",
+  "sleepTimerTitle": "Sleep timer",
+  "sleepTimerSubtitle": "Pause playback after a while",
+  "sleepTimerOff": "Off",
+  "sleepTimerEndOfTrack": "End of current track",
+  "sleepTimerEndOfTrackShort": "End of track",
+  "sleepTimerCustom": "Custom",
+  "sleepTimerFadeOut": "Fade out volume",
+  "sleepTimerFadeOutDesc": "Smoothly lower volume in the last 10s",
+  "sleepTimerCancel": "Cancel timer",
+  "sleepTimerMinutesShort": "{n} min",
+  "@sleepTimerMinutesShort": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "sleepTimerRemaining": "{time} left",
+  "@sleepTimerRemaining": {
+    "placeholders": { "time": { "type": "String" } }
+  }
 }

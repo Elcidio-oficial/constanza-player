@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,9 +42,19 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
     final lib = ref.read(libraryProvider);
     _selectedFolders = Set<String>.from(lib.selectedFolders);
     _excludedSongIds = Set<String>.from(lib.excludedSongIds);
+    // Desktop: pré-popula _folderSongs com as pastas já selecionadas
+    // (mesmo sem ter scaneado), para o usuário ver/remover antes de salvar.
+    if (_isDesktop) {
+      for (final f in _selectedFolders) {
+        _folderSongs.putIfAbsent(f, () => []);
+      }
+    }
     _buildFolderMap();
-    // Se _allScannedSongs estiver vazio (carregou do cache), descobre as pastas
-    if (ref.read(libraryProvider.notifier).allScannedSongs.isEmpty) {
+    // Android: se _allScannedSongs estiver vazio (carregou do cache), descobre.
+    // Desktop: discover precisa de pastas já configuradas — sem isso vira no-op,
+    // então só pulamos o auto-discover.
+    if (!_isDesktop &&
+        ref.read(libraryProvider.notifier).allScannedSongs.isEmpty) {
       _discoverFolders();
     }
   }
@@ -62,6 +75,26 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
     _buildFolderMap();
     setState(() => _loading = false);
   }
+
+  /// Desktop: abre seletor de pasta nativo do OS. Adiciona à lista de
+  /// pastas selecionadas e marca como dirty para o usuário aplicar.
+  /// No Android este botão não aparece — MediaStore descobre pastas
+  /// automaticamente via [_discoverFolders].
+  Future<void> _pickDesktopFolder() async {
+    final path = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Selecionar pasta de música',
+    );
+    if (path == null || path.isEmpty) return;
+    if (!mounted) return;
+    setState(() {
+      _selectedFolders.add(path);
+      _folderSongs.putIfAbsent(path, () => []);
+      _dirty = true;
+    });
+  }
+
+  bool get _isDesktop =>
+      !Platform.isAndroid && !Platform.isIOS;
 
   /// Número de músicas incluídas em [folder] (não excluídas).
   int _includedCount(String folder) {
@@ -112,9 +145,9 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
     if (mounted) {
       setState(() => _loading = false);
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Biblioteca atualizada'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).foldersLibraryUpdated),
+          duration: const Duration(seconds: 2),
         ),
       );
       Navigator.of(context).pop();
@@ -159,6 +192,12 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                 },
               ),
               actions: [
+                if (_isDesktop && !_loading)
+                  IconButton(
+                    icon: const Icon(Icons.create_new_folder_outlined),
+                    tooltip: 'Adicionar pasta',
+                    onPressed: _pickDesktopFolder,
+                  ),
                 if (_loading)
                   const Padding(
                     padding: EdgeInsets.all(16),
@@ -247,7 +286,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                       const SizedBox(width: AppSpacing.xs),
                       Expanded(
                         child: Text(
-                          'Selecione as pastas e, opcionalmente, entre em cada pasta para escolher músicas específicas. Toque em "Aplicar" para atualizar a biblioteca.',
+                          AppLocalizations.of(context).foldersInfoBanner,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colors.onSurface.withValues(alpha: 0.6),
                             fontSize: 11,
@@ -271,7 +310,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                       const CircularProgressIndicator(),
                       const SizedBox(height: AppSpacing.md),
                       Text(
-                        'A descobrir pastas…',
+                        AppLocalizations.of(context).foldersDiscovering,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colors.onSurface.withValues(alpha: 0.4),
                         ),
@@ -294,15 +333,21 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        'Nenhuma pasta encontrada',
+                        AppLocalizations.of(context).foldersNoneFound,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: colors.onSurface.withValues(alpha: 0.35),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       FilledButton.tonal(
-                        onPressed: _discoverFolders,
-                        child: const Text('Procurar pastas'),
+                        onPressed: _isDesktop
+                            ? _pickDesktopFolder
+                            : _discoverFolders,
+                        child: Text(
+                          _isDesktop
+                              ? 'Adicionar pasta'
+                              : AppLocalizations.of(context).foldersSearch,
+                        ),
                       ),
                     ],
                   ),
@@ -318,7 +363,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                     AppSpacing.xs,
                   ),
                   child: Text(
-                    '${folders.length} pasta${folders.length != 1 ? 's' : ''} · ${_selectedFolders.length} selecionada${_selectedFolders.length != 1 ? 's' : ''}',
+                    AppLocalizations.of(context).foldersFolderSummary(folders.length, _selectedFolders.length),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.4),
                     ),
@@ -362,7 +407,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
             ? FloatingActionButton.extended(
                 onPressed: _applyChanges,
                 icon: const Icon(Icons.check_rounded),
-                label: const Text('Aplicar alterações'),
+                label: Text(AppLocalizations.of(context).foldersApplyChanges),
                 backgroundColor: colors.primary,
                 foregroundColor: colors.onPrimary,
               )
@@ -404,17 +449,17 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
     final discard = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Descartar alterações?'),
-        content: const Text('Tens alterações não guardadas. Sair sem aplicar?'),
+        title: Text(AppLocalizations.of(ctx).foldersDiscardTitle),
+        content: Text(AppLocalizations.of(ctx).foldersDiscardBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(AppLocalizations.of(ctx).commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Descartar'),
+            child: Text(AppLocalizations.of(ctx).foldersDiscardAction),
           ),
         ],
       ),
@@ -547,8 +592,8 @@ class _FolderTile extends StatelessWidget {
                       const SizedBox(width: 3),
                       Text(
                         includedCount == totalCount
-                            ? '$totalCount música${totalCount != 1 ? 's' : ''}'
-                            : '$includedCount / $totalCount música${totalCount != 1 ? 's' : ''}',
+                            ? AppLocalizations.of(context).foldersSongsTotal(totalCount)
+                            : AppLocalizations.of(context).foldersSongsPartial(includedCount, totalCount),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: isSelected
                               ? colors.primary.withValues(alpha: 0.7)
@@ -792,7 +837,7 @@ class _FolderSongsSelectionPageState extends State<_FolderSongsSelectionPage> {
           TextButton(
             onPressed: allIncluded ? _deselectAll : _selectAll,
             child: Text(
-              allIncluded ? 'Desmarcar tudo' : 'Selecionar tudo',
+              allIncluded ? AppLocalizations.of(context).commonDeselectAll : AppLocalizations.of(context).commonSelectAll,
               style: TextStyle(color: colors.primary, fontSize: 12),
             ),
           ),
@@ -844,7 +889,7 @@ class _FolderSongsSelectionPageState extends State<_FolderSongsSelectionPage> {
                     : null,
               ),
               title: Text(
-                'Incluir pasta no scan',
+                AppLocalizations.of(context).foldersIncludeFolder,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: _folderSelected
