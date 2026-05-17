@@ -90,6 +90,17 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
       _selectedFolders.add(path);
       _folderSongs.putIfAbsent(path, () => []);
       _dirty = true;
+      _loading = true;
+    });
+    // Escaneia a pasta imediatamente para mostrar a contagem de músicas
+    // (sem isto, o tile aparece com "0 song(s)" até dar Aplicar).
+    final songs = await ref
+        .read(libraryProvider.notifier)
+        .scanFolderPreview(path);
+    if (!mounted) return;
+    setState(() {
+      _folderSongs[path] = songs;
+      _loading = false;
     });
   }
 
@@ -161,9 +172,12 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
     final themeState = ref.watch(themeProvider);
     final allFolders = ref.watch(libraryProvider.select((s) => s.allFolders));
 
-    // Se ainda não descobriu as pastas, usa as que já conhece
+    // Mescla pastas já escaneadas (provider) com as adicionadas localmente
+    // (_folderSongs / _selectedFolders) — sem isto, uma pasta recém-adicionada
+    // não aparece até dar Aplicar e voltar à tela.
     final folders =
-        allFolders.isNotEmpty ? allFolders : _folderSongs.keys.toList()
+        <String>{...allFolders, ..._folderSongs.keys, ..._selectedFolders}
+            .toList()
           ..sort();
 
     return PopScope(

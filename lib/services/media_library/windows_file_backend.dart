@@ -177,6 +177,19 @@ class WindowsFileBackend implements MediaLibraryBackend {
   }
 
   @override
+  Future<List<Song>> scanFolder(String folder) async {
+    // Scan isolado de uma única pasta — não toca em _songsCache nem
+    // _scanFolders. Popula _idToPath/_albumIdToPath para que o mosaico
+    // de capas funcione de imediato no preview da FoldersPage.
+    final result = <Song>[];
+    await _scanFolder(folder, result);
+    result.sort(
+      (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+    );
+    return result;
+  }
+
+  @override
   Future<List<Song>> scanSongs() => _scanAll();
 
   @override
