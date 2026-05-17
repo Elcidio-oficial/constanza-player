@@ -381,6 +381,18 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     }
   }
 
+  /// Escaneia uma única pasta para preview (FoldersPage), sem alterar o
+  /// estado/cache da biblioteca. Permite mostrar a contagem de músicas
+  /// imediatamente ao adicionar uma pasta no desktop.
+  Future<List<Song>> scanFolderPreview(String folder) async {
+    try {
+      return await MediaLibrary.instance.scanFolder(folder);
+    } catch (e) {
+      debugPrint('Folder preview scan failed: $e');
+      return [];
+    }
+  }
+
   /// Toggle favorito de uma música (persiste automaticamente).
   void toggleFavorite(String songId) {
     state = state.copyWith(
