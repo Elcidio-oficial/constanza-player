@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
@@ -156,6 +157,17 @@ class ConstanzaAudioHandler extends BaseAudioHandler
       }
       if (song.uri.startsWith('content://') || song.uri.startsWith('http')) {
         await _player.setUrl(song.uri);
+      } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        // Desktop usa just_audio_media_kit (libmpv). `setFilePath` repassa o
+        // caminho cru: caminhos com espaço, acento (ç/ã/é), `#`, `&`, `'`
+        // chegam mal-formados ao libmpv e falham EM SILÊNCIO (sem som, sem
+        // erro). Construímos uma file:// URI com barras normais e
+        // percent-encoding correto via Uri.file(), que o media_kit decodifica
+        // de forma confiável. Corrige "algumas músicas não tocam" e o
+        // recarregar da faixa anterior ficar mudo.
+        await _player.setAudioSource(
+          AudioSource.uri(Uri.file(song.uri, windows: Platform.isWindows)),
+        );
       } else {
         await _player.setFilePath(song.uri);
       }
