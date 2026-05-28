@@ -247,6 +247,39 @@ class SettingsStorageService {
     }
   }
 
+  // ─── GRID LAYOUT PREFERENCES (Albums / Artists) ───
+
+  static const _keyAlbumShape = 'constanza_album_shape';
+  static const _keyAlbumColumns = 'constanza_album_columns';
+  static const _keyArtistShape = 'constanza_artist_shape';
+  static const _keyArtistColumns = 'constanza_artist_columns';
+
+  static int? loadAlbumShape() => _safePrefs.getInt(_keyAlbumShape);
+  static Future<void> saveAlbumShape(int index) =>
+      _safePrefs.setInt(_keyAlbumShape, index);
+
+  static int? loadAlbumColumns() => _safePrefs.getInt(_keyAlbumColumns);
+  static Future<void> saveAlbumColumns(int? columns) async {
+    if (columns == null) {
+      await _safePrefs.remove(_keyAlbumColumns);
+    } else {
+      await _safePrefs.setInt(_keyAlbumColumns, columns);
+    }
+  }
+
+  static int? loadArtistShape() => _safePrefs.getInt(_keyArtistShape);
+  static Future<void> saveArtistShape(int index) =>
+      _safePrefs.setInt(_keyArtistShape, index);
+
+  static int? loadArtistColumns() => _safePrefs.getInt(_keyArtistColumns);
+  static Future<void> saveArtistColumns(int? columns) async {
+    if (columns == null) {
+      await _safePrefs.remove(_keyArtistColumns);
+    } else {
+      await _safePrefs.setInt(_keyArtistColumns, columns);
+    }
+  }
+
   // ─── HELPERS ───
 
   // ignore: deprecated_member_use

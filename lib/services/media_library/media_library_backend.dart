@@ -36,6 +36,12 @@ abstract class MediaLibraryBackend {
   /// Atualiza pastas e força rescan. No-op em backends que não suportam.
   Future<void> setScanFolders(List<String> folders) async {}
 
+  /// Escaneia uma única pasta (recursivo) sem alterar o cache/pastas globais.
+  /// Usado pela FoldersPage para mostrar a contagem de músicas imediatamente
+  /// ao adicionar uma pasta no desktop, antes de "Aplicar".
+  /// Retorna lista vazia em backends que não suportam (Android usa MediaStore).
+  Future<List<Song>> scanFolder(String folder) async => const [];
+
   /// Reindexa os mapas internos (id → path) a partir de músicas já conhecidas.
   /// Chamado pela [LibraryProvider] após carregar do cache em disco — sem isto,
   /// no Windows queries de artwork retornam null porque os mapas só são

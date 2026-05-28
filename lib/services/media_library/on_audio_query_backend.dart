@@ -132,6 +132,12 @@ class OnAudioQueryBackend implements MediaLibraryBackend {
   }
 
   @override
+  Future<List<Song>> scanFolder(String folder) async {
+    // No-op no Android — seleção de pastas usa o discover do MediaStore.
+    return const [];
+  }
+
+  @override
   void indexFromSongs(List<Song> songs) {
     // No-op no Android — IDs do MediaStore são estáveis entre execuções,
     // queryArtwork não depende de mapa local.

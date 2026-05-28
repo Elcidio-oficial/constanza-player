@@ -13,6 +13,8 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
   final ScrollController _scroll = ScrollController();
   final Map<int, GlobalKey> _lineKeys = {};
   int _lastScrolledIndex = -1;
+  int _scrollAttempt = 0;
+  bool _scrollScheduled = false;
   bool _userIsScrolling = false;
   Timer? _userScrollTimer;
   static const _scrollCooldown = Duration(seconds: 5);
@@ -81,22 +83,71 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
     });
   }
 
+  /// Agenda uma centralização da linha [idx] para depois do frame atual.
+  /// Garante uma única cadeia de scroll ativa — evita "tempestade" de
+  /// callbacks, já que o build dispara a cada tick de posição da música.
+  void _scheduleScroll(int idx) {
+    if (idx < 0 ||
+        _userIsScrolling ||
+        idx == _lastScrolledIndex ||
+        _scrollScheduled) {
+      return;
+    }
+    _armScroll(idx);
+  }
+
+  void _armScroll(int idx) {
+    _scrollScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollScheduled = false;
+      if (mounted) _scrollToLine(idx);
+    });
+  }
+
   void _scrollToLine(int idx) {
-    if (idx < 0 || _userIsScrolling) return;
+    if (idx < 0 || _userIsScrolling || !mounted) return;
     if (idx == _lastScrolledIndex) return;
-    _lastScrolledIndex = idx;
 
     final ctx = _lineKeys[idx]?.currentContext;
-    if (ctx == null || !mounted) return;
+    if (ctx != null) {
+      // Linha já renderizada — centra com precisão. alignment 0.5 ignora a
+      // altura variável da linha (fontes maiores ou texto que quebra).
+      _lastScrolledIndex = idx;
+      _scrollAttempt = 0;
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeOutCubic,
+        alignment: 0.5,
+      );
+      return;
+    }
 
-    // alignment: 0.5 → centraliza o widget no viewport, independente da
-    // altura variável da linha (fontes maiores ou texto que quebra).
-    Scrollable.ensureVisible(
-      ctx,
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.easeOutCubic,
-      alignment: 0.5,
-    );
+    // Linha-alvo fora da área renderizada — acontece ao abrir/reabrir a tela
+    // com a música já a meio: o ListView só constrói os itens visíveis, então
+    // a GlobalKey ainda não tem context. Aproximamo-nos com saltos instantâneos
+    // até a linha existir e, no frame seguinte, centramos suavemente.
+    if (!_scroll.hasClients || _scrollAttempt >= 40) {
+      _scrollAttempt = 0;
+      return;
+    }
+    _scrollAttempt++;
+    final pos = _scroll.position;
+    final vp = pos.viewportDimension;
+    final built = _lineKeys.entries
+        .where((e) => e.value.currentContext != null)
+        .map((e) => e.key)
+        .toList();
+    double target;
+    if (built.isNotEmpty && built.every((i) => i < idx)) {
+      target = pos.pixels + vp * 0.85; // alvo está abaixo
+    } else if (built.isNotEmpty && built.every((i) => i > idx)) {
+      target = pos.pixels - vp * 0.85; // alvo está acima
+    } else {
+      target = idx * 64.0; // direção indefinida — estimativa por índice
+    }
+    _scroll.jumpTo(target.clamp(pos.minScrollExtent, pos.maxScrollExtent));
+    _armScroll(idx);
   }
 
   void _cycleFontSize() {
@@ -246,6 +297,8 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
       if (next != null && next != prev) {
         _lineKeys.clear();
         _lastScrolledIndex = -1;
+        _scrollAttempt = 0;
+        _scrollScheduled = false;
         _userScrollTimer?.cancel();
         _userIsScrolling = false;
         _autoSearchedSongId = null;
@@ -268,11 +321,10 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
       });
     }
 
-    // Auto-scroll no view mode
+    // Auto-scroll no view mode — centraliza a linha cantada em tempo real,
+    // inclusive ao abrir/reabrir a tela com a música já em andamento.
     if (!lyrics.isEditing && curIdx >= 0) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _scrollToLine(curIdx),
-      );
+      _scheduleScroll(curIdx);
     }
 
     final Widget bodyContent = !lyrics.isLoaded
