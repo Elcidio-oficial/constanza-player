@@ -108,8 +108,13 @@ msix_config:
   # versão do app (1.3.4) + revisão 0.
   msix_version: 1.3.4.0
   logo_path: assets/icon/icon.png
-  # Acesso à internet — necessário para busca de letras (lrclib) e capas.
-  capabilities: "internetClient"
+  # internetClient: busca de letras (lrclib) e capas.
+  # broadFileSystemAccess: sem isto o AppContainer do MSIX bloqueia a
+  # leitura por caminho cru — Directory.list e o libmpv falham EM SILÊNCIO
+  # em pastas escolhidas pelo usuário (umas músicas tocam, outras não;
+  # pasta aparece vazia). Capability restrita: o msix package injeta o
+  # namespace rescap automaticamente.
+  capabilities: "internetClient, broadFileSystemAccess"
   # Arquitetura do build atual.
   architecture: x64
   store: false

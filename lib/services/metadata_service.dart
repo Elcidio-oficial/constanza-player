@@ -178,7 +178,11 @@ class MetadataService {
 
       String? coverUrl;
       if (releaseMbid != null) {
-        coverUrl = '$_coverArtBase/release/$releaseMbid/front-250';
+        // Cover Art Archive serve front-250 / front-500 / front-1200 e o
+        // original sem sufixo. front-250 (padrão antigo) fica borrado em
+        // telas grandes/desktop — front-1200 entrega ótima resolução com
+        // tamanho ainda razoável.
+        coverUrl = '$_coverArtBase/release/$releaseMbid/front-1200';
       }
 
       results.add(
@@ -236,8 +240,10 @@ class MetadataService {
     final results = <MetadataResult>[];
     for (final track in tracks) {
       final coverSmall = track['artworkUrl100'] as String?;
-      // Upgrade to 600px artwork
-      final coverUrl = coverSmall?.replaceAll('100x100bb', '600x600bb');
+      // O iTunes devolve sempre 100x100; o tamanho real é trocável na URL.
+      // 600x600 ficava sem nitidez em capas grandes — 1200x1200 dá ótima
+      // resolução e o iTunes serve esse tamanho de forma confiável.
+      final coverUrl = coverSmall?.replaceAll('100x100bb', '1200x1200bb');
 
       results.add(
         MetadataResult(

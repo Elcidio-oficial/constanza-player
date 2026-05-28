@@ -81,13 +81,36 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
   /// No Android este botão não aparece — MediaStore descobre pastas
   /// automaticamente via [_discoverFolders].
   Future<void> _pickDesktopFolder() async {
-    final path = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: 'Selecionar pasta de música',
-    );
+    String? path;
+    try {
+      path = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Selecionar pasta de música',
+      );
+    } catch (e) {
+      debugPrint('[FoldersPage] getDirectoryPath failed: $e');
+      return;
+    }
     if (path == null || path.isEmpty) return;
     if (!mounted) return;
+
+    // Windows 11: o embedder do Flutter fica num estado frágil logo após o
+    // diálogo modal IFileOpenDialog fechar — o message pump do Win32 ainda
+    // está limpando referências COM. Disparar leitura de tags via FFI
+    // (`audiotags`) nessa janela mata o processo silenciosamente em alguns
+    // arquivos malformados. NÃO chamamos mais `scanFolderPreview` aqui:
+    // apenas registramos a pasta visualmente. O scan completo (com tags +
+    // capas) acontece em [_applyChanges] → setSelectedFolders, depois que
+    // o usuário confirma e o estado de loading explícito está montado.
+    //
+    // Aguardamos um frame inteiro antes de mexer no estado, para o pump
+    // do Windows estabilizar.
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    if (!mounted) return;
+
     setState(() {
-      _selectedFolders.add(path);
+      _selectedFolders.add(path!);
+      // Marca a pasta com lista vazia — o tile mostra ícone de pasta e
+      // contador "0 musics". A contagem real aparece após Aplicar.
       _folderSongs.putIfAbsent(path, () => []);
       _dirty = true;
     });
@@ -161,9 +184,12 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
     final themeState = ref.watch(themeProvider);
     final allFolders = ref.watch(libraryProvider.select((s) => s.allFolders));
 
-    // Se ainda não descobriu as pastas, usa as que já conhece
+    // Mescla pastas já escaneadas (provider) com as adicionadas localmente
+    // (_folderSongs / _selectedFolders) — sem isto, uma pasta recém-adicionada
+    // não aparece até dar Aplicar e voltar à tela.
     final folders =
-        allFolders.isNotEmpty ? allFolders : _folderSongs.keys.toList()
+        <String>{...allFolders, ..._folderSongs.keys, ..._selectedFolders}
+            .toList()
           ..sort();
 
     return PopScope(

@@ -11,6 +11,7 @@ import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:constanza_player/presentation/widgets/artist_image.dart';
 import 'package:constanza_player/presentation/widgets/columns_picker.dart';
 import 'package:constanza_player/presentation/pages/library/artist_detail_page.dart';
+import 'package:constanza_player/services/settings_storage_service.dart';
 
 enum ArtistCardShape { circle, square, rounded }
 
@@ -30,6 +31,18 @@ class _ArtistsPageState extends ConsumerState<ArtistsPage> {
   ArtistFilter _filter = ArtistFilter.all;
   String? _genre;
   int? _columns;
+
+  @override
+  void initState() {
+    super.initState();
+    final savedShape = SettingsStorageService.loadArtistShape();
+    if (savedShape != null &&
+        savedShape >= 0 &&
+        savedShape < ArtistCardShape.values.length) {
+      _shape = ArtistCardShape.values[savedShape];
+    }
+    _columns = SettingsStorageService.loadArtistColumns();
+  }
 
   @override
   void dispose() {
@@ -70,15 +83,19 @@ class _ArtistsPageState extends ConsumerState<ArtistsPage> {
                 );
                 if (!mounted) return;
                 setState(() => _columns = picked);
+                SettingsStorageService.saveArtistColumns(picked);
               },
             ),
             IconButton(
               tooltip: _shapeTooltip(_shape, context),
               icon: Icon(_shapeIcon(_shape)),
-              onPressed: () => setState(() {
-                _shape = ArtistCardShape
-                    .values[(_shape.index + 1) % ArtistCardShape.values.length];
-              }),
+              onPressed: () {
+                setState(() {
+                  _shape = ArtistCardShape.values[(_shape.index + 1) %
+                      ArtistCardShape.values.length];
+                });
+                SettingsStorageService.saveArtistShape(_shape.index);
+              },
             ),
           ],
         ),
