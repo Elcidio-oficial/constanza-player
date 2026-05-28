@@ -11,6 +11,7 @@ import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/presentation/widgets/columns_picker.dart';
 import 'package:constanza_player/presentation/pages/library/album_detail_page.dart';
+import 'package:constanza_player/services/settings_storage_service.dart';
 
 enum AlbumCardShape { square, rounded, circle }
 
@@ -30,6 +31,18 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
   AlbumFilter _filter = AlbumFilter.all;
   String? _genre;
   int? _columns;
+
+  @override
+  void initState() {
+    super.initState();
+    final savedShape = SettingsStorageService.loadAlbumShape();
+    if (savedShape != null &&
+        savedShape >= 0 &&
+        savedShape < AlbumCardShape.values.length) {
+      _shape = AlbumCardShape.values[savedShape];
+    }
+    _columns = SettingsStorageService.loadAlbumColumns();
+  }
 
   @override
   void dispose() {
@@ -70,15 +83,19 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
                 );
                 if (!mounted) return;
                 setState(() => _columns = picked);
+                SettingsStorageService.saveAlbumColumns(picked);
               },
             ),
             IconButton(
               tooltip: _shapeTooltip(_shape, context),
               icon: Icon(_shapeIcon(_shape)),
-              onPressed: () => setState(() {
-                _shape = AlbumCardShape
-                    .values[(_shape.index + 1) % AlbumCardShape.values.length];
-              }),
+              onPressed: () {
+                setState(() {
+                  _shape = AlbumCardShape.values[(_shape.index + 1) %
+                      AlbumCardShape.values.length];
+                });
+                SettingsStorageService.saveAlbumShape(_shape.index);
+              },
             ),
           ],
         ),
