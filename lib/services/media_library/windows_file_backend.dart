@@ -9,6 +9,7 @@ import 'package:constanza_player/domain/entities/album.dart';
 import 'package:constanza_player/domain/entities/artist.dart';
 
 import 'media_library_backend.dart';
+import 'scan_crash_guard.dart';
 
 /// Implementação Windows/Linux/macOS — varre filesystem e lê tags via audiotags.
 ///
@@ -104,6 +105,13 @@ class WindowsFileBackend implements MediaLibraryBackend {
       final ext = p.extension(entity.path).toLowerCase();
       if (!_audioExtensions.contains(ext)) continue;
 
+      // Pula arquivos que crasharam o FFI em runs anteriores — adicionados
+      // automaticamente à blacklist pelo [ScanCrashGuard.init] no boot.
+      if (ScanCrashGuard.isBlocked(entity.path)) {
+        debugPrint('[WindowsFileBackend] skip blacklisted: ${entity.path}');
+        continue;
+      }
+
       try {
         final song = await _readSong(entity);
         if (song != null) {
@@ -121,11 +129,16 @@ class WindowsFileBackend implements MediaLibraryBackend {
 
   Future<Song?> _readSong(File file) async {
     Tag? tag;
+    // Marca path no arquivo de progresso ANTES da chamada FFI. Se audiotags
+    // segfaultar (crash nativo, não Exception), o próximo boot lê este path
+    // e blacklista o arquivo. markEnd() limpa após sucesso.
+    ScanCrashGuard.markBegin(file.path);
     try {
       tag = await AudioTags.read(file.path);
     } catch (_) {
       tag = null;
     }
+    ScanCrashGuard.markEnd();
 
     final stat = await file.stat();
     final filename = p.basenameWithoutExtension(file.path);
@@ -275,15 +288,22 @@ class WindowsFileBackend implements MediaLibraryBackend {
         : _idToPath[id];
     if (path == null) return null;
 
-    // 1) tenta artwork embedded
-    try {
-      final tag = await AudioTags.read(path);
-      final pictures = tag?.pictures;
-      if (pictures != null && pictures.isNotEmpty) {
-        return Uint8List.fromList(pictures.first.bytes);
+    // 1) tenta artwork embedded — protegido pelo crash guard (mesma libtag
+    // que pode segfaultar). Se arquivo está blacklisted, pula direto pro
+    // fallback de capa em pasta.
+    if (!ScanCrashGuard.isBlocked(path)) {
+      ScanCrashGuard.markBegin(path);
+      try {
+        final tag = await AudioTags.read(path);
+        ScanCrashGuard.markEnd();
+        final pictures = tag?.pictures;
+        if (pictures != null && pictures.isNotEmpty) {
+          return Uint8List.fromList(pictures.first.bytes);
+        }
+      } catch (e) {
+        ScanCrashGuard.markEnd();
+        debugPrint('[WindowsFileBackend] tag artwork read failed: $e');
       }
-    } catch (e) {
-      debugPrint('[WindowsFileBackend] tag artwork read failed: $e');
     }
 
     // 2) fallback: folder.jpg / cover.png / album.jpg na mesma pasta

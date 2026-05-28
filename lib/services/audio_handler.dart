@@ -163,10 +163,18 @@ class ConstanzaAudioHandler extends BaseAudioHandler
         // chegam mal-formados ao libmpv e falham EM SILÊNCIO (sem som, sem
         // erro). Construímos uma file:// URI com barras normais e
         // percent-encoding correto via Uri.file(), que o media_kit decodifica
-        // de forma confiável. Corrige "algumas músicas não tocam" e o
-        // recarregar da faixa anterior ficar mudo.
+        // de forma confiável. Corrige "algumas músicas não tocam".
+        //
+        // `stop()` antes do setAudioSource: recarregar a MESMA fonte (next →
+        // previous) com o libmpv ainda em `completed`/`idle` deixava o player
+        // num estado onde o `play()` fire-and-forget virava no-op — a faixa
+        // voltava muda. stop() força um reset limpo do pipeline do mpv.
+        try {
+          await _player.stop();
+        } catch (_) {}
         await _player.setAudioSource(
           AudioSource.uri(Uri.file(song.uri, windows: Platform.isWindows)),
+          initialPosition: Duration.zero,
         );
       } else {
         await _player.setFilePath(song.uri);
