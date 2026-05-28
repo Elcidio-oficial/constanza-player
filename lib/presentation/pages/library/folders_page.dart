@@ -81,26 +81,38 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
   /// No Android este botão não aparece — MediaStore descobre pastas
   /// automaticamente via [_discoverFolders].
   Future<void> _pickDesktopFolder() async {
-    final path = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: 'Selecionar pasta de música',
-    );
+    String? path;
+    try {
+      path = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Selecionar pasta de música',
+      );
+    } catch (e) {
+      debugPrint('[FoldersPage] getDirectoryPath failed: $e');
+      return;
+    }
     if (path == null || path.isEmpty) return;
     if (!mounted) return;
+
+    // Windows 11: o embedder do Flutter fica num estado frágil logo após o
+    // diálogo modal IFileOpenDialog fechar — o message pump do Win32 ainda
+    // está limpando referências COM. Disparar leitura de tags via FFI
+    // (`audiotags`) nessa janela mata o processo silenciosamente em alguns
+    // arquivos malformados. NÃO chamamos mais `scanFolderPreview` aqui:
+    // apenas registramos a pasta visualmente. O scan completo (com tags +
+    // capas) acontece em [_applyChanges] → setSelectedFolders, depois que
+    // o usuário confirma e o estado de loading explícito está montado.
+    //
+    // Aguardamos um frame inteiro antes de mexer no estado, para o pump
+    // do Windows estabilizar.
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    if (!mounted) return;
+
     setState(() {
-      _selectedFolders.add(path);
+      _selectedFolders.add(path!);
+      // Marca a pasta com lista vazia — o tile mostra ícone de pasta e
+      // contador "0 musics". A contagem real aparece após Aplicar.
       _folderSongs.putIfAbsent(path, () => []);
       _dirty = true;
-      _loading = true;
-    });
-    // Escaneia a pasta imediatamente para mostrar a contagem de músicas
-    // (sem isto, o tile aparece com "0 song(s)" até dar Aplicar).
-    final songs = await ref
-        .read(libraryProvider.notifier)
-        .scanFolderPreview(path);
-    if (!mounted) return;
-    setState(() {
-      _folderSongs[path] = songs;
-      _loading = false;
     });
   }
 

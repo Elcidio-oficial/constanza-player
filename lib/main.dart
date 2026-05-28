@@ -20,6 +20,7 @@ import 'package:constanza_player/presentation/widgets/windows_title_bar.dart';
 import 'package:constanza_player/services/audio_handler.dart';
 import 'package:constanza_player/services/window_mode_service.dart';
 import 'package:constanza_player/services/media_library/media_library_backend.dart';
+import 'package:constanza_player/services/media_library/scan_crash_guard.dart';
 import 'package:constanza_player/services/windows_smtc_service.dart';
 import 'package:constanza_player/services/settings_storage_service.dart';
 import 'package:constanza_player/services/lyrics_service.dart';
@@ -75,6 +76,15 @@ void main() async {
 
       // Inicializa SharedPreferences antes de qualquer coisa
       await SettingsStorageService.init();
+
+      // Auto-cura de crashes nativos do `audiotags` no Windows: se o run
+      // anterior morreu lendo um arquivo (segfault FFI, não capturável em
+      // Dart), o path fica em scan_inprogress.txt e é blacklistado agora.
+      // Em Android/iOS é inócuo (não usa audiotags).
+      final crashedFile = await ScanCrashGuard.init();
+      if (crashedFile != null) {
+        debugPrint('[Main] previous scan crashed on: $crashedFile — skipping');
+      }
 
       // Seleciona o backend de biblioteca de mídia para a plataforma atual.
       // Android/iOS: on_audio_query (MediaStore).
