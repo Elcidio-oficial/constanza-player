@@ -10,6 +10,7 @@ import 'package:constanza_player/presentation/providers/lyrics_provider.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
+import 'package:constanza_player/services/lyrics_fetch_service.dart';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Car Mode Page
@@ -463,6 +464,12 @@ class _LyricsLayoutState extends ConsumerState<_LyricsLayout> {
   final ScrollController _scroll = ScrollController();
   final Map<int, GlobalKey> _keys = {};
   int _lastIdx = -1;
+  int _scrollAttempt = 0;
+  bool _scrollScheduled = false;
+
+  /// Busca automática de letra — espelha o comportamento da tela de Letras.
+  bool _isSearching = false;
+  String? _autoSearchedSongId;
 
   GlobalKey _keyFor(int i) => _keys.putIfAbsent(i, () => GlobalKey());
 
@@ -483,17 +490,110 @@ class _LyricsLayoutState extends ConsumerState<_LyricsLayout> {
     super.dispose();
   }
 
+  // ── Scroll sincronizado ─────────────────────────────────────
+
+  /// Agenda uma centralização para depois do frame — uma única cadeia ativa.
+  void _scheduleScroll(int idx) {
+    if (idx < 0 || idx == _lastIdx || _scrollScheduled) return;
+    _armScroll(idx);
+  }
+
+  void _armScroll(int idx) {
+    _scrollScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollScheduled = false;
+      if (mounted) _scrollTo(idx);
+    });
+  }
+
   void _scrollTo(int idx) {
-    if (idx < 0 || idx == _lastIdx) return;
-    _lastIdx = idx;
+    if (idx < 0 || !mounted || idx == _lastIdx) return;
+
     final ctx = _keys[idx]?.currentContext;
-    if (ctx == null || !mounted) return;
-    Scrollable.ensureVisible(
-      ctx,
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.easeOutCubic,
-      alignment: 0.4,
-    );
+    if (ctx != null) {
+      // Linha já renderizada — centra com precisão.
+      _lastIdx = idx;
+      _scrollAttempt = 0;
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeOutCubic,
+        alignment: 0.45,
+      );
+      return;
+    }
+
+    // Linha-alvo fora da área renderizada — ao abrir/reabrir o Modo Carro com
+    // a música já a meio. Aproxima com saltos instantâneos até a linha existir
+    // e então centra suavemente.
+    if (!_scroll.hasClients || _scrollAttempt >= 40) {
+      _scrollAttempt = 0;
+      return;
+    }
+    _scrollAttempt++;
+    final pos = _scroll.position;
+    final vp = pos.viewportDimension;
+    final built = _keys.entries
+        .where((e) => e.value.currentContext != null)
+        .map((e) => e.key)
+        .toList();
+    double target;
+    if (built.isNotEmpty && built.every((i) => i < idx)) {
+      target = pos.pixels + vp * 0.85;
+    } else if (built.isNotEmpty && built.every((i) => i > idx)) {
+      target = pos.pixels - vp * 0.85;
+    } else {
+      target = idx * 64.0;
+    }
+    _scroll.jumpTo(target.clamp(pos.minScrollExtent, pos.maxScrollExtent));
+    _armScroll(idx);
+  }
+
+  // ── Busca automática de letra ───────────────────────────────
+
+  Future<void> _searchOnline() async {
+    if (_isSearching) return;
+    setState(() => _isSearching = true);
+    try {
+      final song = ref.read(playerProvider).currentSong ?? widget.song;
+      if (song == null) return;
+      // Vincula o provider a esta música antes de importar.
+      await ref.read(lyricsProvider.notifier).loadForSong(song.id);
+      final lines = await LyricsFetchService.fetch(
+        title: song.title,
+        artist: song.artist,
+        album: song.album,
+        duration: song.duration,
+      );
+      if (!mounted) return;
+      final notifier = ref.read(lyricsProvider.notifier);
+      if (lines != null && lines.isNotEmpty) {
+        final synced = lines.where((l) => l.isSynced).toList();
+        if (synced.isNotEmpty) {
+          final lrc = synced
+              .map((l) {
+                final ts = l.timestamp!;
+                final m = ts.inMinutes.remainder(60).toString().padLeft(2, '0');
+                final s = ts.inSeconds.remainder(60).toString().padLeft(2, '0');
+                final ms = (ts.inMilliseconds.remainder(1000) ~/ 10)
+                    .toString()
+                    .padLeft(2, '0');
+                return '[$m:$s.$ms]${l.text}';
+              })
+              .join('\n');
+          await notifier.importLrc(lrc);
+        } else {
+          await notifier.importPlainText(lines.map((l) => l.text).join('\n'));
+        }
+      } else {
+        // Nada encontrado — marca para não repetir a busca automática.
+        await notifier.markOnlineMiss();
+      }
+    } catch (_) {
+      // Silencioso no Modo Carro — sem distrair o motorista.
+    } finally {
+      if (mounted) setState(() => _isSearching = false);
+    }
   }
 
   @override
@@ -509,19 +609,40 @@ class _LyricsLayoutState extends ConsumerState<_LyricsLayout> {
     ) {
       if (next != null && next != prev) {
         _lastIdx = -1;
+        _scrollAttempt = 0;
+        _scrollScheduled = false;
+        _autoSearchedSongId = null;
         ref.read(lyricsProvider.notifier).loadForSong(next);
       }
     });
 
+    // Busca automática de letra também no Modo Carro — evita que o usuário
+    // precise sair para a tela de Letras e voltar. Dispara quando não há
+    // letra local e ainda não se confirmou que não existe online.
+    final searchSong = widget.song;
+    if (searchSong != null &&
+        lyrics.isLoaded &&
+        lyrics.isEmpty &&
+        !lyrics.onlineMiss &&
+        !_isSearching &&
+        _autoSearchedSongId != searchSong.id) {
+      _autoSearchedSongId = searchSong.id;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _searchOnline();
+      });
+    }
+
+    // Auto-scroll — centraliza a linha cantada em tempo real, inclusive ao
+    // abrir/reabrir a tela com a música já em andamento.
     final curIdx = lyrics.currentLineIndex(position);
     if (curIdx >= 0 && lyrics.lines.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollTo(curIdx));
+      _scheduleScroll(curIdx);
     }
 
     final isLandscape =
         MediaQuery.orientationOf(context) == Orientation.landscape;
 
-    final lyricsBody = !lyrics.isLoaded
+    final lyricsBody = (!lyrics.isLoaded || _isSearching)
         ? Center(
             child: Text(
               l10n.carModeLyricsLoading,
