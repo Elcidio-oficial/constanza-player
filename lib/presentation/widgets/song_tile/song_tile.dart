@@ -124,7 +124,9 @@ class _SongTileState extends ConsumerState<SongTile> {
                       child: Center(
                         child: isPlaying && playingState
                             ? Semantics(
-                                label: AppLocalizations.of(context).homeListeningNow,
+                                label: AppLocalizations.of(
+                                  context,
+                                ).homeListeningNow,
                                 child: Icon(
                                   Icons.equalizer_rounded,
                                   color: colors.tertiary,

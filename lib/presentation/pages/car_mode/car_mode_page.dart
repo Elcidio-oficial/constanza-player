@@ -165,32 +165,32 @@ class _CarModePageState extends ConsumerState<CarModePage>
                         onQueue: () => _showQueue(context, player, accent),
                       )
                     : isLandscape
-                        ? _LandscapeLayout(
-                            player: player,
-                            song: song,
-                            accent: softAccent,
-                            volume: _volume,
-                            dimmed: _dimmed,
-                            artworkFade: _artworkFade,
-                            bannerCtrl: _bannerCtrl,
-                            currentView: view,
-                            onDim: () => setState(() => _dimmed = !_dimmed),
-                            onVolume: _adjustVolume,
-                            onQueue: () => _showQueue(context, player, accent),
-                          )
-                        : _PortraitLayout(
-                            player: player,
-                            song: song,
-                            accent: softAccent,
-                            volume: _volume,
-                            dimmed: _dimmed,
-                            artworkFade: _artworkFade,
-                            bannerCtrl: _bannerCtrl,
-                            currentView: view,
-                            onDim: () => setState(() => _dimmed = !_dimmed),
-                            onVolume: _adjustVolume,
-                            onQueue: () => _showQueue(context, player, accent),
-                          ),
+                    ? _LandscapeLayout(
+                        player: player,
+                        song: song,
+                        accent: softAccent,
+                        volume: _volume,
+                        dimmed: _dimmed,
+                        artworkFade: _artworkFade,
+                        bannerCtrl: _bannerCtrl,
+                        currentView: view,
+                        onDim: () => setState(() => _dimmed = !_dimmed),
+                        onVolume: _adjustVolume,
+                        onQueue: () => _showQueue(context, player, accent),
+                      )
+                    : _PortraitLayout(
+                        player: player,
+                        song: song,
+                        accent: softAccent,
+                        volume: _volume,
+                        dimmed: _dimmed,
+                        artworkFade: _artworkFade,
+                        bannerCtrl: _bannerCtrl,
+                        currentView: view,
+                        onDim: () => setState(() => _dimmed = !_dimmed),
+                        onVolume: _adjustVolume,
+                        onQueue: () => _showQueue(context, player, accent),
+                      ),
               ),
             ),
           ],
@@ -205,11 +205,7 @@ class _CarModePageState extends ConsumerState<CarModePage>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => _QueueSheet(
-        player: player,
-        accent: accent,
-        l10n: l10n,
-      ),
+      builder: (_) => _QueueSheet(player: player, accent: accent, l10n: l10n),
     );
   }
 }
@@ -320,7 +316,12 @@ class _PortraitLayout extends ConsumerWidget {
         const SizedBox(height: 16),
 
         // ── Volume ───────────────────────────────────────────────
-        _VolumeRow(volume: volume, accent: accent, onVolume: onVolume, l10n: l10n),
+        _VolumeRow(
+          volume: volume,
+          accent: accent,
+          onVolume: onVolume,
+          l10n: l10n,
+        ),
 
         const SizedBox(height: 20),
       ],
@@ -404,7 +405,11 @@ class _LandscapeLayout extends ConsumerWidget {
                       const SizedBox(height: 12),
                       _ProgressSection(player: player, accent: accent),
                       const SizedBox(height: 12),
-                      _MainControls(player: player, accent: accent, compact: true),
+                      _MainControls(
+                        player: player,
+                        accent: accent,
+                        compact: true,
+                      ),
                       const SizedBox(height: 10),
                       _SecondaryControls(player: player, accent: accent),
                       const SizedBox(height: 10),
@@ -653,28 +658,28 @@ class _LyricsLayoutState extends ConsumerState<_LyricsLayout> {
             ),
           )
         : lyrics.isEmpty
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
-                    l10n.carModeNoLyrics,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+        ? Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                l10n.carModeNoLyrics,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
                 ),
-              )
-            : _CarLyricsList(
-                lines: lyrics.lines,
-                currentIndex: curIdx,
-                scroll: _scroll,
-                keyFor: _keyFor,
-                accent: widget.accent,
-                compact: isLandscape,
-              );
+              ),
+            ),
+          )
+        : _CarLyricsList(
+            lines: lyrics.lines,
+            currentIndex: curIdx,
+            scroll: _scroll,
+            keyFor: _keyFor,
+            accent: widget.accent,
+            compact: isLandscape,
+          );
 
     if (isLandscape) {
       return Column(
@@ -750,7 +755,11 @@ class _LyricsLayoutState extends ConsumerState<_LyricsLayout> {
         const SizedBox(height: 6),
         _ProgressSection(player: widget.player, accent: widget.accent),
         const SizedBox(height: 6),
-        _MainControls(player: widget.player, accent: widget.accent, compact: true),
+        _MainControls(
+          player: widget.player,
+          accent: widget.accent,
+          compact: true,
+        ),
         const SizedBox(height: 8),
         _VolumeRow(
           volume: widget.volume,
@@ -822,12 +831,13 @@ class _CarLyricsList extends StatelessWidget {
                       color: i == currentIndex
                           ? Colors.white
                           : Colors.white.withValues(
-                              alpha: (0.55 -
-                                      (currentIndex >= 0
-                                              ? (i - currentIndex).abs()
-                                              : 0) *
-                                          0.08)
-                                  .clamp(0.15, 0.55),
+                              alpha:
+                                  (0.55 -
+                                          (currentIndex >= 0
+                                                  ? (i - currentIndex).abs()
+                                                  : 0) *
+                                              0.08)
+                                      .clamp(0.15, 0.55),
                             ),
                       fontWeight: i == currentIndex
                           ? FontWeight.w800
@@ -845,10 +855,7 @@ class _CarLyricsList extends StatelessWidget {
                             ]
                           : null,
                     ),
-                    child: Text(
-                      lines[i].text,
-                      textAlign: TextAlign.center,
-                    ),
+                    child: Text(lines[i].text, textAlign: TextAlign.center),
                   ),
                 ),
             ],
@@ -916,9 +923,7 @@ class _TopBar extends ConsumerWidget {
           ),
           const Spacer(),
           _GlassButton(
-            icon: isLyrics
-                ? Icons.music_note_rounded
-                : Icons.lyrics_rounded,
+            icon: isLyrics ? Icons.music_note_rounded : Icons.lyrics_rounded,
             size: 44,
             iconSize: 20,
             active: isLyrics,
@@ -971,9 +976,7 @@ class _SafetyBanner extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(30),
             color: Colors.white.withValues(alpha: 0.08),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1096,14 +1099,12 @@ class _ProgressSection extends ConsumerWidget {
           SliderTheme(
             data: SliderThemeData(
               trackHeight: 5,
-              thumbShape:
-                  const RoundSliderThumbShape(enabledThumbRadius: 7),
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
               activeTrackColor: accent,
               inactiveTrackColor: Colors.white.withValues(alpha: 0.15),
               thumbColor: Colors.white,
               overlayColor: accent.withValues(alpha: 0.15),
-              overlayShape:
-                  const RoundSliderOverlayShape(overlayRadius: 20),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
             ),
             child: Slider(
               value: player.progress,
@@ -1170,7 +1171,8 @@ class _MainControls extends ConsumerWidget {
           size: btnSize,
           iconSize: compact ? 32 : 36,
           color: Colors.white.withValues(
-              alpha: player.hasPrevious ? 0.85 : 0.3),
+            alpha: player.hasPrevious ? 0.85 : 0.3,
+          ),
           onTap: player.hasPrevious ? () => notifier.previous() : null,
         ),
         const SizedBox(width: 16),
@@ -1178,8 +1180,8 @@ class _MainControls extends ConsumerWidget {
           icon: player.isLoading
               ? Icons.hourglass_top_rounded
               : player.isPlaying
-                  ? Icons.pause_rounded
-                  : Icons.play_arrow_rounded,
+              ? Icons.pause_rounded
+              : Icons.play_arrow_rounded,
           size: playSize,
           iconSize: compact ? 42 : 48,
           color: Colors.white,
@@ -1192,8 +1194,7 @@ class _MainControls extends ConsumerWidget {
           icon: Icons.skip_next_rounded,
           size: btnSize,
           iconSize: compact ? 32 : 36,
-          color:
-              Colors.white.withValues(alpha: player.hasNext ? 0.85 : 0.3),
+          color: Colors.white.withValues(alpha: player.hasNext ? 0.85 : 0.3),
           onTap: player.hasNext ? () => notifier.next() : null,
         ),
       ],
@@ -1362,9 +1363,7 @@ class _QueueSheet extends ConsumerWidget {
             color: Colors.black.withValues(alpha: 0.75),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             border: Border(
-              top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
             ),
           ),
           child: Column(
@@ -1384,11 +1383,7 @@ class _QueueSheet extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.queue_music_rounded,
-                      color: accent,
-                      size: 20,
-                    ),
+                    Icon(Icons.queue_music_rounded, color: accent, size: 20),
                     const SizedBox(width: 10),
                     Text(
                       l10n.carModeQueueTitle,
@@ -1524,7 +1519,9 @@ class _CarBtn extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: bgColor ?? Colors.white.withValues(alpha: onTap != null ? 0.1 : 0.04),
+          color:
+              bgColor ??
+              Colors.white.withValues(alpha: onTap != null ? 0.1 : 0.04),
           boxShadow: shadow && onTap != null
               ? [
                   BoxShadow(

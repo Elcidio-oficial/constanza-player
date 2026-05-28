@@ -284,7 +284,7 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
   /// faz um rescan completo com os novos dados.
   Future<void> reloadFromBackup() async {
     _loadSettings(); // atualiza _savedFavoriteIds, _savedExcludedIds, selectedFolders
-    await rescan();  // reconstrói a biblioteca com as novas configurações
+    await rescan(); // reconstrói a biblioteca com as novas configurações
   }
 
   /// Solicita permissão novamente.

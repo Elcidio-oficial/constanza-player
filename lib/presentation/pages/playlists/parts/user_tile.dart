@@ -184,7 +184,10 @@ class _UserPlaylistTile extends ConsumerWidget {
                   ),
                 ListTile(
                   leading: Icon(Icons.delete_outline, color: colors.error),
-                  title: Text(l10n.playlistsExclude, style: TextStyle(color: colors.error)),
+                  title: Text(
+                    l10n.playlistsExclude,
+                    style: TextStyle(color: colors.error),
+                  ),
                   onTap: () {
                     ctx.pop();
                     _showDeleteConfirmation(context, ref);
@@ -247,7 +250,10 @@ class _UserPlaylistTile extends ConsumerWidget {
               ctx.pop();
               ref.read(playlistProvider.notifier).deletePlaylist(playlist.id);
             },
-            child: Text(l10n.playlistsExclude, style: TextStyle(color: colors.error)),
+            child: Text(
+              l10n.playlistsExclude,
+              style: TextStyle(color: colors.error),
+            ),
           ),
         ],
       ),
@@ -333,7 +339,10 @@ class _UserPlaylistTile extends ConsumerWidget {
                 ctx.pop();
               }
             },
-            child: Text(l10n.commonSave, style: TextStyle(color: colors.onSurface)),
+            child: Text(
+              l10n.commonSave,
+              style: TextStyle(color: colors.onSurface),
+            ),
           ),
         ],
       ),

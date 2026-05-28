@@ -92,98 +92,96 @@ class _WindowsTitleBarState extends ConsumerState<WindowsTitleBar>
             // sobre essa fatia de cima para manter texto/botões legíveis.
             if (hasBackground)
               Positioned.fill(
-                child: Container(
-                  color: colors.surface.withValues(alpha: 0.32),
-                ),
+                child: Container(color: colors.surface.withValues(alpha: 0.32)),
               ),
             Row(
               children: [
-          // Drag region — duplo-clique alterna maximizar; arrastar move.
-          Expanded(
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onPanStart: (_) => windowManager.startDragging(),
-              onDoubleTap: () async {
-                if (await windowManager.isMaximized()) {
-                  await windowManager.unmaximize();
-                } else {
-                  await windowManager.maximize();
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    widget.title ?? 'Constanza Músicas',
-                    style: TextStyle(
-                      fontSize: 12,
-                      letterSpacing: 0.3,
-                      color: onSurface.withValues(alpha: 0.6),
+                // Drag region — duplo-clique alterna maximizar; arrastar move.
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onPanStart: (_) => windowManager.startDragging(),
+                    onDoubleTap: () async {
+                      if (await windowManager.isMaximized()) {
+                        await windowManager.unmaximize();
+                      } else {
+                        await windowManager.maximize();
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          widget.title ?? 'Constanza Músicas',
+                          style: TextStyle(
+                            fontSize: 12,
+                            letterSpacing: 0.3,
+                            color: onSurface.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ),
-          // Toggle do mini-leitor (estilo Windows Media Player 10).
-          // Aparece antes do botão de minimizar — encolhe a janela e
-          // empurra a rota /mini-player. Clicar de novo restaura.
-          _TitleBarButton(
-            icon: WindowModeService.isMini
-                ? Icons.open_in_full_rounded
-                : Icons.picture_in_picture_alt_outlined,
-            tooltip: WindowModeService.isMini
-                ? 'Restaurar'
-                : 'Mini-leitor',
-            onTap: () async {
-              // Lê o router via Riverpod — context.go() falharia aqui porque
-              // a WindowsTitleBar é montada no MaterialApp.builder, ACIMA do
-              // Router no widget tree, sem InheritedNotifier do GoRouter
-              // acessível por contexto.
-              final router = ref.read(appRouterProvider);
-              final wasMini = WindowModeService.isMini;
-              debugPrint(
-                '[TitleBar] pip tap — wasMini=$wasMini → '
-                '${wasMini ? "/home" : "/mini-player"}',
-              );
-              if (wasMini) {
-                router.go('/home');
-              } else {
-                router.go('/mini-player');
-              }
-              await WindowModeService.toggle();
-            },
-            color: onSurface,
-          ),
-          _TitleBarButton(
-            icon: Icons.remove,
-            tooltip: 'Minimizar',
-            onTap: () => windowManager.minimize(),
-            color: onSurface,
-          ),
-          _TitleBarButton(
-            icon: _maximized
-                ? Icons.filter_none_outlined
-                : Icons.crop_square_outlined,
-            tooltip: _maximized ? 'Restaurar' : 'Maximizar',
-            onTap: () async {
-              if (await windowManager.isMaximized()) {
-                await windowManager.unmaximize();
-              } else {
-                await windowManager.maximize();
-              }
-            },
-            color: onSurface,
-          ),
-          _TitleBarButton(
-            icon: Icons.close,
-            tooltip: 'Fechar',
-            onTap: () => windowManager.close(),
-            color: onSurface,
-            hoverColor: Colors.red,
-            hoverIconColor: Colors.white,
-          ),
+                // Toggle do mini-leitor (estilo Windows Media Player 10).
+                // Aparece antes do botão de minimizar — encolhe a janela e
+                // empurra a rota /mini-player. Clicar de novo restaura.
+                _TitleBarButton(
+                  icon: WindowModeService.isMini
+                      ? Icons.open_in_full_rounded
+                      : Icons.picture_in_picture_alt_outlined,
+                  tooltip: WindowModeService.isMini
+                      ? 'Restaurar'
+                      : 'Mini-leitor',
+                  onTap: () async {
+                    // Lê o router via Riverpod — context.go() falharia aqui porque
+                    // a WindowsTitleBar é montada no MaterialApp.builder, ACIMA do
+                    // Router no widget tree, sem InheritedNotifier do GoRouter
+                    // acessível por contexto.
+                    final router = ref.read(appRouterProvider);
+                    final wasMini = WindowModeService.isMini;
+                    debugPrint(
+                      '[TitleBar] pip tap — wasMini=$wasMini → '
+                      '${wasMini ? "/home" : "/mini-player"}',
+                    );
+                    if (wasMini) {
+                      router.go('/home');
+                    } else {
+                      router.go('/mini-player');
+                    }
+                    await WindowModeService.toggle();
+                  },
+                  color: onSurface,
+                ),
+                _TitleBarButton(
+                  icon: Icons.remove,
+                  tooltip: 'Minimizar',
+                  onTap: () => windowManager.minimize(),
+                  color: onSurface,
+                ),
+                _TitleBarButton(
+                  icon: _maximized
+                      ? Icons.filter_none_outlined
+                      : Icons.crop_square_outlined,
+                  tooltip: _maximized ? 'Restaurar' : 'Maximizar',
+                  onTap: () async {
+                    if (await windowManager.isMaximized()) {
+                      await windowManager.unmaximize();
+                    } else {
+                      await windowManager.maximize();
+                    }
+                  },
+                  color: onSurface,
+                ),
+                _TitleBarButton(
+                  icon: Icons.close,
+                  tooltip: 'Fechar',
+                  onTap: () => windowManager.close(),
+                  color: onSurface,
+                  hoverColor: Colors.red,
+                  hoverIconColor: Colors.white,
+                ),
               ],
             ),
           ],
@@ -222,10 +220,9 @@ class _TitleBarButtonState extends State<_TitleBarButton> {
     final colors = Theme.of(context).colorScheme;
     final bgHover =
         widget.hoverColor ?? colors.onSurface.withValues(alpha: 0.08);
-    final iconColor =
-        _hover && widget.hoverIconColor != null
-            ? widget.hoverIconColor!
-            : widget.color.withValues(alpha: 0.8);
+    final iconColor = _hover && widget.hoverIconColor != null
+        ? widget.hoverIconColor!
+        : widget.color.withValues(alpha: 0.8);
 
     // IMPORTANTE: não usamos [Tooltip] aqui porque a [WindowsTitleBar] é
     // injetada via MaterialApp.builder ACIMA do Navigator — não há Overlay

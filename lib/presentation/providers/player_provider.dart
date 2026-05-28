@@ -600,8 +600,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       // posição real, fazendo a faixa "voltar ao início").
       final liveItem = _handler.mediaItem.valueOrNull;
       final handlerActive =
-          liveItem != null &&
-          _handler.processingState != ProcessingState.idle;
+          liveItem != null && _handler.processingState != ProcessingState.idle;
       if (handlerActive) {
         final liveId = liveItem.id;
         final liveSong = queue.firstWhere(

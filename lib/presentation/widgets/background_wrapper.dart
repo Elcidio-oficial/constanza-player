@@ -33,10 +33,7 @@ class BackgroundWrapper extends ConsumerWidget {
 
     return Stack(
       fit: StackFit.expand,
-      children: [
-        const AppBackgroundLayer(),
-        child,
-      ],
+      children: [const AppBackgroundLayer(), child],
     );
   }
 }

@@ -586,7 +586,10 @@ class _LyricsPoster extends StatelessWidget {
                 ),
                 const SizedBox(height: 52),
 
-                Container(height: 1.0, color: Colors.white.withValues(alpha: 0.12)),
+                Container(
+                  height: 1.0,
+                  color: Colors.white.withValues(alpha: 0.12),
+                ),
                 const SizedBox(height: 36),
 
                 // Lyrics — hero of the poster
@@ -678,10 +681,10 @@ class _LyricLineRow extends StatelessWidget {
     final alpha = isCurrent
         ? 1.0
         : !hasActive
-            ? 0.45
-            : isPast
-                ? (0.35 - distance * 0.05).clamp(0.08, 0.35)
-                : (0.45 - distance * 0.06).clamp(0.10, 0.45);
+        ? 0.45
+        : isPast
+        ? (0.35 - distance * 0.05).clamp(0.08, 0.35)
+        : (0.45 - distance * 0.06).clamp(0.10, 0.45);
 
     final fontSize = isCurrent ? baseFontSize * 1.18 : baseFontSize;
 
@@ -698,10 +701,7 @@ class _LyricLineRow extends StatelessWidget {
         letterSpacing: -0.3,
         shadows: isCurrent
             ? [
-                Shadow(
-                  color: accent.withValues(alpha: 0.55),
-                  blurRadius: 28,
-                ),
+                Shadow(color: accent.withValues(alpha: 0.55), blurRadius: 28),
                 Shadow(
                   color: Colors.black.withValues(alpha: 0.45),
                   blurRadius: 14,
@@ -1142,9 +1142,36 @@ class _Waveform extends StatelessWidget {
   final Color color;
 
   static const _heights = <double>[
-    8, 14, 22, 16, 28, 18, 36, 22, 44, 30,
-    52, 38, 62, 42, 72, 48, 64, 40, 54, 32,
-    44, 26, 38, 20, 30, 16, 22, 12, 16, 8,
+    8,
+    14,
+    22,
+    16,
+    28,
+    18,
+    36,
+    22,
+    44,
+    30,
+    52,
+    38,
+    62,
+    42,
+    72,
+    48,
+    64,
+    40,
+    54,
+    32,
+    44,
+    26,
+    38,
+    20,
+    30,
+    16,
+    22,
+    12,
+    16,
+    8,
   ];
 
   @override
@@ -1170,10 +1197,7 @@ class _Waveform extends StatelessWidget {
                   ],
                 ),
                 boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.4),
-                    blurRadius: 8,
-                  ),
+                  BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 8),
                 ],
               ),
             ),

@@ -96,7 +96,11 @@ class _NowPlayingHero extends StatelessWidget {
                                 ),
                               Expanded(
                                 child: Text(
-                                  isPlaying ? AppLocalizations.of(context).homeListeningNow : AppLocalizations.of(context).homePaused,
+                                  isPlaying
+                                      ? AppLocalizations.of(
+                                          context,
+                                        ).homeListeningNow
+                                      : AppLocalizations.of(context).homePaused,
                                   style: theme.textTheme.labelSmall?.copyWith(
                                     color: colors.primary.withValues(
                                       alpha: 0.7,

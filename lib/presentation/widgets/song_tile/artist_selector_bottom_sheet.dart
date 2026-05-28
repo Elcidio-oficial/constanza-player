@@ -58,41 +58,41 @@ class ArtistSelectorBottomSheet extends StatelessWidget {
 
     return SafeArea(
       child: SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: AppSpacing.xs),
-          Container(
-            width: 32,
-            height: 4,
-            decoration: BoxDecoration(
-              color: colors.outline.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppSpacing.xs),
+            Container(
+              width: 32,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colors.outline.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            AppLocalizations.of(context).songOptionsChooseArtist,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.7),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              AppLocalizations.of(context).songOptionsChooseArtist,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.7),
+              ),
             ),
-          ),
-          Divider(color: colors.outline.withValues(alpha: 0.15)),
-          for (final a in artistsList)
-            ListTile(
-              leading: const Icon(Icons.person_outline_rounded),
-              title: Text(a.name),
-              onTap: () {
-                HapticFeedback.lightImpact();
-                context.pop();
-                Navigator.of(
-                  context,
-                ).push(AppPageRoute(page: ArtistDetailPage(artist: a)));
-              },
-            ),
-          const SizedBox(height: AppSpacing.md),
-        ],
-      ),
+            Divider(color: colors.outline.withValues(alpha: 0.15)),
+            for (final a in artistsList)
+              ListTile(
+                leading: const Icon(Icons.person_outline_rounded),
+                title: Text(a.name),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  context.pop();
+                  Navigator.of(
+                    context,
+                  ).push(AppPageRoute(page: ArtistDetailPage(artist: a)));
+                },
+              ),
+            const SizedBox(height: AppSpacing.md),
+          ],
+        ),
       ),
     );
   }

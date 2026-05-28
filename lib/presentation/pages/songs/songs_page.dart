@@ -531,7 +531,9 @@ class _SelectionActionBar extends ConsumerWidget {
                   }
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(l10n.songsAddedToQueueOk(selectedSongs.length)),
+                      content: Text(
+                        l10n.songsAddedToQueueOk(selectedSongs.length),
+                      ),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -693,7 +695,11 @@ class _MultiAddToPlaylistSheet extends ConsumerWidget {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(AppLocalizations.of(context).songsAddedToOk(songs.length, pl.name)),
+                      content: Text(
+                        AppLocalizations.of(
+                          context,
+                        ).songsAddedToOk(songs.length, pl.name),
+                      ),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -766,7 +772,11 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              _SectionLabel(AppLocalizations.of(context).libraryDensity, theme, colors),
+              _SectionLabel(
+                AppLocalizations.of(context).libraryDensity,
+                theme,
+                colors,
+              ),
               const SizedBox(height: AppSpacing.xs),
               Row(
                 children: [
@@ -791,7 +801,10 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
               Divider(color: colors.outline.withValues(alpha: 0.12)),
               SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
-                title: Text(AppLocalizations.of(context).libraryAlbumArt, style: theme.textTheme.bodyMedium),
+                title: Text(
+                  AppLocalizations.of(context).libraryAlbumArt,
+                  style: theme.textTheme.bodyMedium,
+                ),
                 subtitle: Text(
                   AppLocalizations.of(context).libraryAlbumArtDesc,
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -835,7 +848,9 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                   ),
                   subtitle: Text(
                     filterEnabled
-                        ? AppLocalizations.of(context).libraryFilterShortTracksHidden(minDur)
+                        ? AppLocalizations.of(
+                            context,
+                          ).libraryFilterShortTracksHidden(minDur)
                         : AppLocalizations.of(context).libraryFilterDisabled,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.4),
@@ -868,7 +883,11 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                               min: 0,
                               max: 120,
                               divisions: 24,
-                              label: minDur == 0 ? AppLocalizations.of(context).libraryFilterDisabled : '${minDur}s',
+                              label: minDur == 0
+                                  ? AppLocalizations.of(
+                                      context,
+                                    ).libraryFilterDisabled
+                                  : '${minDur}s',
                               onChanged: (v) => ref
                                   .read(libraryProvider.notifier)
                                   .setMinTrackDuration(v.round()),
@@ -891,7 +910,11 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                 ),
               ),
               Divider(color: colors.outline.withValues(alpha: 0.12)),
-              _SectionLabel(AppLocalizations.of(context).librarySorting, theme, colors),
+              _SectionLabel(
+                AppLocalizations.of(context).librarySorting,
+                theme,
+                colors,
+              ),
               const SizedBox(height: AppSpacing.xs),
               for (final order in SortOrder.values)
                 ListTile(

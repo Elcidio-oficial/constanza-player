@@ -1636,8 +1636,7 @@ class _SharpArtworkBg extends ConsumerWidget {
         );
       }),
     );
-    final data =
-        notifier.getArtwork(songId, ArtworkType.AUDIO, size: bgSize);
+    final data = notifier.getArtwork(songId, ArtworkType.AUDIO, size: bgSize);
     if (data == null || data.isEmpty) return const SizedBox.shrink();
     return RepaintBoundary(
       child: Image.memory(

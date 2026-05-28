@@ -628,7 +628,9 @@ class SettingsPage extends ConsumerWidget {
     if (already) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).settingsBackgroundExemptionAlready),
+          content: Text(
+            AppLocalizations.of(context).settingsBackgroundExemptionAlready,
+          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -989,69 +991,69 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.lg),
                 // Degradê option
                 _ColorStyleOption(
-                title: l10n.npColorStyleDegrade,
-                description: l10n.npColorOptionDegradeDesc,
-                icon: Icons.gradient_rounded,
-                isSelected: current == NowPlayingColorStyle.degrade,
-                colors: colors,
-                theme: theme,
-                previewColors: const [
-                  Color(0xFF6A3DE8),
-                  Color(0xFF3A1F8C),
-                  Color(0xFF1A1028),
-                ],
-                isLinear: true,
-                onTap: () {
-                  ref
-                      .read(themeProvider.notifier)
-                      .setNowPlayingColorStyle(NowPlayingColorStyle.degrade);
-                  ctx.pop();
-                },
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              // Gradient option
-              _ColorStyleOption(
-                title: l10n.npColorStyleGradient,
-                description: l10n.npColorOptionGradientDesc,
-                icon: Icons.blur_on_rounded,
-                isSelected: current == NowPlayingColorStyle.gradient,
-                colors: colors,
-                theme: theme,
-                previewColors: const [
-                  Color(0xFF00BCD4),
-                  Color(0xFFFF9800),
-                  Color(0xFFE91E63),
-                ],
-                isLinear: false,
-                onTap: () {
-                  ref
-                      .read(themeProvider.notifier)
-                      .setNowPlayingColorStyle(NowPlayingColorStyle.gradient);
-                  ctx.pop();
-                },
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              // Artwork fullscreen option — like Car Mode
-              _ColorStyleOption(
-                title: l10n.npColorStyleArtwork,
-                description: l10n.npColorOptionArtworkDesc,
-                icon: Icons.wallpaper_rounded,
-                isSelected: current == NowPlayingColorStyle.artwork,
-                colors: colors,
-                theme: theme,
-                previewColors: const [
-                  Color(0xFF2A2A2A),
-                  Color(0xFF4A4A4A),
-                  Color(0xFF1A1A1A),
-                ],
-                isLinear: false,
-                onTap: () {
-                  ref
-                      .read(themeProvider.notifier)
-                      .setNowPlayingColorStyle(NowPlayingColorStyle.artwork);
-                  ctx.pop();
-                },
-              ),
+                  title: l10n.npColorStyleDegrade,
+                  description: l10n.npColorOptionDegradeDesc,
+                  icon: Icons.gradient_rounded,
+                  isSelected: current == NowPlayingColorStyle.degrade,
+                  colors: colors,
+                  theme: theme,
+                  previewColors: const [
+                    Color(0xFF6A3DE8),
+                    Color(0xFF3A1F8C),
+                    Color(0xFF1A1028),
+                  ],
+                  isLinear: true,
+                  onTap: () {
+                    ref
+                        .read(themeProvider.notifier)
+                        .setNowPlayingColorStyle(NowPlayingColorStyle.degrade);
+                    ctx.pop();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                // Gradient option
+                _ColorStyleOption(
+                  title: l10n.npColorStyleGradient,
+                  description: l10n.npColorOptionGradientDesc,
+                  icon: Icons.blur_on_rounded,
+                  isSelected: current == NowPlayingColorStyle.gradient,
+                  colors: colors,
+                  theme: theme,
+                  previewColors: const [
+                    Color(0xFF00BCD4),
+                    Color(0xFFFF9800),
+                    Color(0xFFE91E63),
+                  ],
+                  isLinear: false,
+                  onTap: () {
+                    ref
+                        .read(themeProvider.notifier)
+                        .setNowPlayingColorStyle(NowPlayingColorStyle.gradient);
+                    ctx.pop();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                // Artwork fullscreen option — like Car Mode
+                _ColorStyleOption(
+                  title: l10n.npColorStyleArtwork,
+                  description: l10n.npColorOptionArtworkDesc,
+                  icon: Icons.wallpaper_rounded,
+                  isSelected: current == NowPlayingColorStyle.artwork,
+                  colors: colors,
+                  theme: theme,
+                  previewColors: const [
+                    Color(0xFF2A2A2A),
+                    Color(0xFF4A4A4A),
+                    Color(0xFF1A1A1A),
+                  ],
+                  isLinear: false,
+                  onTap: () {
+                    ref
+                        .read(themeProvider.notifier)
+                        .setNowPlayingColorStyle(NowPlayingColorStyle.artwork);
+                    ctx.pop();
+                  },
+                ),
               ],
             ),
           ),
@@ -1951,7 +1953,9 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).backupFileEmptyOrUnreadable),
+            content: Text(
+              AppLocalizations.of(context).backupFileEmptyOrUnreadable,
+            ),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -1985,7 +1989,9 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).backupRestoredOk(restored)),
+          content: Text(
+            AppLocalizations.of(context).backupRestoredOk(restored),
+          ),
           duration: const Duration(seconds: 4),
         ),
       );
@@ -1993,7 +1999,9 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).backupFileOpenError(e.toString())),
+          content: Text(
+            AppLocalizations.of(context).backupFileOpenError(e.toString()),
+          ),
           duration: const Duration(seconds: 3),
         ),
       );

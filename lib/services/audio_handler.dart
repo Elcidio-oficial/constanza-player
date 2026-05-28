@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -21,12 +22,15 @@ class ConstanzaAudioHandler extends BaseAudioHandler
   // CAMPOS
   // ──────────────────────────────────────────────────────────
 
-  // handleInterruptions:false → just_audio não pausa automaticamente quando
-  // outro app ganha audio focus (ex.: YouTube, WhatsApp). Permite reprodução
-  // simultânea/misturada com outras fontes de áudio do sistema.
+  // handleInterruptions:false → tratamos interrupções manualmente em
+  // _onInterruption (duck no volume em vez de pausar para SMS/alarme).
+  // handleAudioSessionActivation:true → just_audio chama session.setActive(true)
+  // no play(), o que é o que de fato registra o app no sistema de audio focus
+  // do Android. Sem isto o SO nunca envia eventos de interrupção (duck/pause),
+  // ou seja: o duck nunca seria acionado, por mais que a config peça 'gain'.
   final AudioPlayer _player = AudioPlayer(
     handleInterruptions: false,
-    handleAudioSessionActivation: false,
+    handleAudioSessionActivation: true,
   );
 
   int _eqSessionId = 0;
@@ -38,6 +42,20 @@ class ConstanzaAudioHandler extends BaseAudioHandler
 
   double _speed = 1.0;
   bool _disposed = false;
+
+  // ── Audio focus / interrupções ─────────────────────────────
+  // Volume "alvo" definido pelo usuário (slider de volume do app). O volume
+  // efetivo aplicado ao _player pode ser menor se estivermos em duck.
+  double _userVolume = 1.0;
+  // True enquanto outro app tem foco transiente (notificação, SMS, alarme).
+  bool _isDucked = false;
+  // Captura se estávamos tocando ao receber uma interrupção do tipo "pause"
+  // (chamada, outro player de música). Usado para retomar ao fim.
+  bool _wasPlayingBeforeInterruption = false;
+  // Fator aplicado durante duck. 0.3 = 30% do volume original — alto o
+  // suficiente para continuar audível, baixo para o som da notificação se
+  // sobrepor com clareza.
+  static const double _duckFactor = 0.3;
 
   // ──────────────────────────────────────────────────────────
   // CONSTRUTOR
@@ -73,6 +91,65 @@ class ConstanzaAudioHandler extends BaseAudioHandler
         if (sid != null) _reinitEq(sid);
       }),
     );
+
+    // Interrupções de áudio (SMS, chamadas, outros players, fones desconectados).
+    // Só faz sentido em mobile — desktop não emite estes eventos via audio_session.
+    if (Platform.isAndroid || Platform.isIOS) {
+      unawaited(_initInterruptionListener());
+    }
+  }
+
+  Future<void> _initInterruptionListener() async {
+    try {
+      final session = await AudioSession.instance;
+      _subs.add(session.interruptionEventStream.listen(_onInterruption));
+      // Fones de ouvido desconectados → pausar (comportamento esperado).
+      _subs.add(
+        session.becomingNoisyEventStream.listen((_) {
+          if (_disposed) return;
+          if (_player.playing) _player.pause();
+        }),
+      );
+    } catch (e) {
+      debugPrint('[AudioHandler] interruption listener init failed: $e');
+    }
+  }
+
+  void _onInterruption(AudioInterruptionEvent event) {
+    if (_disposed) return;
+    if (event.begin) {
+      switch (event.type) {
+        case AudioInterruptionType.duck:
+          // Outro app pediu foco transiente que permite duck (SMS, alarme,
+          // GPS). Apenas baixar o volume — não pausar.
+          if (!_isDucked) {
+            _isDucked = true;
+            _player.setVolume(_userVolume * _duckFactor);
+          }
+        case AudioInterruptionType.pause:
+        case AudioInterruptionType.unknown:
+          // Outro app pediu foco total (chamada, outro player de música).
+          // Pausamos e lembramos se devemos retomar ao fim.
+          _wasPlayingBeforeInterruption = _player.playing;
+          if (_player.playing) _player.pause();
+      }
+    } else {
+      switch (event.type) {
+        case AudioInterruptionType.duck:
+          if (_isDucked) {
+            _isDucked = false;
+            _player.setVolume(_userVolume);
+          }
+        case AudioInterruptionType.pause:
+          if (_wasPlayingBeforeInterruption) {
+            _wasPlayingBeforeInterruption = false;
+            _player.play();
+          }
+        case AudioInterruptionType.unknown:
+          // 'unknown' no fim: não retomar — sistema não garante que é seguro.
+          _wasPlayingBeforeInterruption = false;
+      }
+    }
   }
 
   // ──────────────────────────────────────────────────────────
@@ -181,7 +258,7 @@ class ConstanzaAudioHandler extends BaseAudioHandler
       }
       if (_speed != 1.0) await _player.setSpeed(_speed);
       _isCrossfading = false;
-      _player.setVolume(1.0);
+      _player.setVolume(_isDucked ? _userVolume * _duckFactor : _userVolume);
     } catch (e) {
       debugPrint('[AudioHandler] loadSong error: $e');
       rethrow;
@@ -208,7 +285,10 @@ class ConstanzaAudioHandler extends BaseAudioHandler
   Future<void> seek(Duration position) async => _player.seek(position);
 
   Future<void> setPlayerVolume(double volume) async {
-    await _player.setVolume(volume.clamp(0.0, 1.0));
+    _userVolume = volume.clamp(0.0, 1.0);
+    await _player.setVolume(
+      _isDucked ? _userVolume * _duckFactor : _userVolume,
+    );
   }
 
   @override
@@ -381,7 +461,7 @@ class ConstanzaAudioHandler extends BaseAudioHandler
   void resetVolume() {
     _crossfadeTimer?.cancel();
     _isCrossfading = false;
-    _player.setVolume(1.0);
+    _player.setVolume(_isDucked ? _userVolume * _duckFactor : _userVolume);
   }
 
   // ──────────────────────────────────────────────────────────

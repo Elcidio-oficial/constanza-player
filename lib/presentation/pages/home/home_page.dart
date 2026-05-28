@@ -323,7 +323,10 @@ class HomePage extends ConsumerWidget {
                       label: l10n.homeQuickFavorites,
                       onTap: () => context.push(
                         '/song-list',
-                        extra: {'title': l10n.homeQuickFavorites, 'songs': favSongs},
+                        extra: {
+                          'title': l10n.homeQuickFavorites,
+                          'songs': favSongs,
+                        },
                       ),
                       colors: colors,
                       theme: theme,
@@ -352,7 +355,10 @@ class HomePage extends ConsumerWidget {
                       label: l10n.homeQuickMostPlayed,
                       onTap: () => context.push(
                         '/song-list',
-                        extra: {'title': l10n.homeQuickMostPlayed, 'songs': mostSongs},
+                        extra: {
+                          'title': l10n.homeQuickMostPlayed,
+                          'songs': mostSongs,
+                        },
                       ),
                       colors: colors,
                       theme: theme,
@@ -479,7 +485,10 @@ class HomePage extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            AppLocalizations.of(context).homeShuffleAllSubtitle(songs.length, durationLabel),
+                            AppLocalizations.of(context).homeShuffleAllSubtitle(
+                              songs.length,
+                              durationLabel,
+                            ),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colors.onSurface.withValues(alpha: 0.45),
                             ),
@@ -596,7 +605,10 @@ class HomePage extends ConsumerWidget {
               icon: Icons.history_rounded,
               onSeeAll: () => context.push(
                 '/song-list',
-                extra: {'title': l10n.homeRecentlyPlayedTitle, 'songs': recentSongs},
+                extra: {
+                  'title': l10n.homeRecentlyPlayedTitle,
+                  'songs': recentSongs,
+                },
               ),
             ),
           ),
