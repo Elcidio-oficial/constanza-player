@@ -69,6 +69,10 @@ dependencies:
   # v12+ exige AGP >=8.12.1 + Kotlin 2.2.0. Mantemos v11 (mesma API SharePlus.instance).
   share_plus: ^11.1.0
 
+  # === URL LAUNCHER ===
+  # Abre links externos (política de privacidade hospedada no GitHub Pages).
+  url_launcher: ^6.3.1
+
   # === UTILS ===
   equatable: ^2.0.7
 

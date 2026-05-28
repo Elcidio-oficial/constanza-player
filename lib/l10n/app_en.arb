@@ -121,6 +121,8 @@
   "settingsRateDesc": "Help us with your review",
   "settingsLicenses": "Licenses",
   "settingsLicensesDesc": "Open-source licenses",
+  "settingsPrivacyPolicy": "Privacy policy",
+  "settingsPrivacyPolicyDesc": "How we handle your data (we don't)",
   "settingsLanguage": "Language",
   "settingsLanguageSystem": "System default",
   "settingsLanguageEnglish": "English",

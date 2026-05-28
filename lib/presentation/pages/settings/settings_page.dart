@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/constants/app_constants.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -456,6 +457,15 @@ class SettingsPage extends ConsumerWidget {
               ),
               _divider(colors),
               _SettingsTile(
+                icon: Icons.privacy_tip_outlined,
+                title: l10n.settingsPrivacyPolicy,
+                subtitle: l10n.settingsPrivacyPolicyDesc,
+                colors: colors,
+                theme: theme,
+                onTap: () => _openPrivacyPolicy(context),
+              ),
+              _divider(colors),
+              _SettingsTile(
                 icon: Icons.description_outlined,
                 title: l10n.settingsLicenses,
                 subtitle: l10n.settingsLicensesDesc,
@@ -804,6 +814,16 @@ class SettingsPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    final uri = Uri.parse(AppConstants.privacyPolicyUrl);
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppConstants.privacyPolicyUrl)),
+      );
+    }
   }
 
   void _showAboutDialog(BuildContext context) {
