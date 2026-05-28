@@ -115,7 +115,18 @@
       "Skill(commit)",
       "Skill(commit:*)",
       "Bash(Select-String -Pattern \"^[+-]\\(version|  [a-z_]+:\\)\")",
-      "Bash(Select-Object -First 60)"
+      "Bash(Select-Object -First 60)",
+      "Bash(git commit *)",
+      "Bash(findstr /N \"msix flutter: name: version:\")",
+      "Bash(git reset *)",
+      "Bash(git restore *)",
+      "PowerShell(git status --porcelain -- windows/runner/resources/app_icon.ico; \\(Get-Item windows/runner/resources/app_icon.ico\\).LastWriteTime)",
+      "Bash(powershell -Command 'try { $c = Get-PfxCertificate -FilePath '\\\\''certs/constanza.pfx'\\\\'' -Password \\(ConvertTo-SecureString '\\\\''constanza123'\\\\'' -AsPlainText -Force\\); Write-Output \\('\\\\''Subject: '\\\\'' + $c.Subject\\); Write-Output \\('\\\\''NotAfter: '\\\\'' + $c.NotAfter\\); Write-Output \\('\\\\''Expired: '\\\\'' + \\($c.NotAfter -lt \\(Get-Date\\)\\)\\) } catch { Write-Output \\('\\\\''ERR: '\\\\'' + $_.Exception.Message\\) }')",
+      "Bash(git check-ignore *)",
+      "Bash(echo \"exit=$?\")",
+      "PowerShell($c = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2\\('certs\\\\constanza.pfx','constanza123'\\); \"Subject: $\\($c.Subject\\)\"; \"NotAfter: $\\($c.NotAfter\\)\"; \"Expired: $\\($c.NotAfter -lt \\(Get-Date\\)\\)\")",
+      "Bash(git remote *)",
+      "Bash(powershell -NoProfile -Command 'Get-Item '\\\\''build\\\\windows\\\\x64\\\\runner\\\\Release\\\\constanza_player.msix'\\\\'','\\\\''certs\\\\constanza.cer'\\\\'' | Select-Object FullName,@{N='\\\\''SizeMB'\\\\'';E={[math]::Round\\($_.Length/1MB,2\\)}},LastWriteTime | Format-List')"
     ]
   }
 }
