@@ -12,7 +12,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/services/widget_service.dart';
 import 'package:constanza_player/core/theme/app_theme.dart';
 import 'package:constanza_player/core/router/app_router.dart';
-import 'package:constanza_player/presentation/pages/now_playing/now_playing_page.dart' show showSleepTimerSheet, openQueuePage;
+import 'package:constanza_player/presentation/pages/now_playing/now_playing_page.dart'
+    show showSleepTimerSheet, openQueuePage;
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
@@ -41,10 +42,7 @@ void main() async {
       // setFilePath() não emite áudio nem erro — apenas falha em silêncio.
       // Deve rodar ANTES de qualquer AudioPlayer ser instanciado.
       if (Platform.isWindows || Platform.isLinux) {
-        JustAudioMediaKit.ensureInitialized(
-          windows: true,
-          linux: true,
-        );
+        JustAudioMediaKit.ensureInitialized(windows: true, linux: true);
 
         // Desktop: tira a title bar nativa (substituída pelo [WindowsTitleBar])
         // e define tamanho mínimo. Sem awaitar tudo: ensureInitialized é
@@ -90,7 +88,8 @@ void main() async {
       // Android/iOS: on_audio_query (MediaStore).
       // Windows/Linux/macOS: varredura de filesystem + audiotags.
       await MediaLibrary.init(
-        windowsScanFolders: SettingsStorageService.loadMusicFolders() ?? const [],
+        windowsScanFolders:
+            SettingsStorageService.loadMusicFolders() ?? const [],
       );
 
       // Cada serviço isolado: falha num não impede inicialização dos demais
@@ -111,23 +110,25 @@ void main() async {
       // — sem notificação de mídia (será coberto por smtc_windows depois).
       late final ConstanzaAudioHandler audioHandler;
       if (Platform.isAndroid || Platform.isIOS) {
-        // AudioSession configurada para MIXAR com outros apps: não tomamos
-        // audio focus exclusivo, então quando YouTube/WhatsApp/etc tocarem som,
-        // o Constanza continua tocando em paralelo sem pausar.
+        // AudioSession configurada como um app de música padrão: requisita
+        // audio focus (gain) e recebe eventos de interrupção. O handler
+        // (ConstanzaAudioHandler) escuta interruptionEventStream e:
+        //   • duck (SMS, notificação curta) → reduz volume temporariamente
+        //   • pause (chamada, outro player) → pausa e retoma ao fim
+        //   • becoming noisy (fones desconectados) → pausa
+        // androidWillPauseWhenDucked:false garante que duck venha como tipo
+        // 'duck' (e não 'pause'), permitindo só baixar o volume.
         try {
           final session = await AudioSession.instance;
           await session.configure(
             const AudioSessionConfiguration(
               avAudioSessionCategory: AVAudioSessionCategory.playback,
-              avAudioSessionCategoryOptions:
-                  AVAudioSessionCategoryOptions.mixWithOthers,
               avAudioSessionMode: AVAudioSessionMode.defaultMode,
               androidAudioAttributes: AndroidAudioAttributes(
                 contentType: AndroidAudioContentType.music,
                 usage: AndroidAudioUsage.media,
               ),
-              androidAudioFocusGainType:
-                  AndroidAudioFocusGainType.gainTransientMayDuck,
+              androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
               androidWillPauseWhenDucked: false,
             ),
           );
@@ -286,10 +287,7 @@ class _ConstanzaAppState extends ConsumerState<ConstanzaApp> {
                   );
             return Stack(
               fit: StackFit.expand,
-              children: [
-                const AppBackgroundLayer(),
-                body,
-              ],
+              children: [const AppBackgroundLayer(), body],
             );
           },
         );

@@ -429,7 +429,9 @@ class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library_rounded),
-              title: Text(AppLocalizations.of(context).bgSettingsPickFromGallery),
+              title: Text(
+                AppLocalizations.of(context).bgSettingsPickFromGallery,
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 _pick(ImageSource.gallery);

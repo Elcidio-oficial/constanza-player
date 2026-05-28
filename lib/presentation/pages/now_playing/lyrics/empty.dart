@@ -63,7 +63,9 @@ class _EmptyLyrics extends StatelessWidget {
               ),
             ],
           );
-          return Center(child: Padding(padding: padding, child: searching));
+          return Center(
+            child: Padding(padding: padding, child: searching),
+          );
         }
 
         // ── Cabeçalho (ícone + título + subtítulo) ───────────────
@@ -129,9 +131,7 @@ class _EmptyLyrics extends StatelessWidget {
             attempted ? Icons.refresh_rounded : Icons.travel_explore_rounded,
             size: 18,
           ),
-          label: Text(
-            attempted ? l10n.lyricsRetry : l10n.lyricsSearchOnline,
-          ),
+          label: Text(attempted ? l10n.lyricsRetry : l10n.lyricsSearchOnline),
         );
 
         final col = Column(

@@ -231,10 +231,11 @@ class ThemeState {
         json['npCustomColor3'] as int?,
       ),
       autoCarMode: json['autoCarMode'] as bool? ?? false,
-      carModeView: CarModeView.values[(json['carModeView'] as int? ?? 0).clamp(
-        0,
-        CarModeView.values.length - 1,
-      )],
+      carModeView:
+          CarModeView.values[(json['carModeView'] as int? ?? 0).clamp(
+            0,
+            CarModeView.values.length - 1,
+          )],
       languageCode: json['languageCode'] as String?,
     );
   }
