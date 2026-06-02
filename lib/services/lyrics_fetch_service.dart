@@ -123,11 +123,21 @@ class LyricsFetchService {
         }
       }
 
-      // 3. /search — escolhe o melhor candidato (synced + duração próxima).
+      // 3. /search — escolhe o melhor candidato. Como o /search é fuzzy (e a
+      // estratégia "só título" pode trazer faixas de outros artistas), só
+      // aceitamos candidatos cujo título E artista batem com a música tocando.
+      // Sem este filtro, músicas com título comum recebiam letras de outra
+      // faixa qualquer ("letras que não são das respetivas músicas").
       final hits = await search(title: title, artist: artist);
-      final best = _pickBest(hits, duration);
+      final matching = hits
+          .where((h) => _matches(h, title, artist))
+          .toList();
+      final best = _pickBest(matching, duration);
       if (best != null) {
-        debugPrint('[LyricsFetch] /search HIT (${hits.length} candidates)');
+        debugPrint(
+          '[LyricsFetch] /search HIT '
+          '(${matching.length}/${hits.length} matching candidates)',
+        );
         return best.toLines();
       }
 
@@ -194,6 +204,70 @@ class LyricsFetchService {
   }
 
   // ── Internos ──────────────────────────────────────────────────
+
+  /// Remove diacríticos (ç, ã, é, ñ…) para comparar títulos/artistas de forma
+  /// robusta — o ID3 local e o LRCLIB nem sempre normalizam acentos igual.
+  static String _stripDiacritics(String s) {
+    const from = 'àáâãäåçèéêëìíîïñòóôõöùúûüýÿ';
+    const to = 'aaaaaaceeeeiiiinooooouuuuyy';
+    final buf = StringBuffer();
+    for (final ch in s.split('')) {
+      final i = from.indexOf(ch);
+      buf.write(i >= 0 ? to[i] : ch);
+    }
+    return buf.toString();
+  }
+
+  /// Normaliza para um conjunto de tokens alfanuméricos minúsculos, já sem
+  /// acentos, ruído entre parênteses/colchetes e sufixos "feat./- Remaster".
+  static Set<String> _tokens(String input) {
+    var t = _stripDiacritics(_clean(input).toLowerCase());
+    t = t.replaceAll(RegExp(r'[^a-z0-9\s]'), ' ');
+    return t.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toSet();
+  }
+
+  /// Artistas tidos como "não informado" — quando o ID3 não traz artista
+  /// confiável, não dá para validar por artista (deixamos passar).
+  static const _unknownArtists = {
+    '',
+    'unknown',
+    'unknown artist',
+    'desconhecido',
+    'artista desconhecido',
+    '<unknown>',
+  };
+
+  /// `true` se [a] e [b] partilham token suficiente (substring ou ≥1 token
+  /// significativo em comum). [minOverlap] = fração mínima de tokens em comum.
+  static bool _tokensOverlap(
+    Set<String> a,
+    Set<String> b, {
+    double minOverlap = 0.5,
+  }) {
+    if (a.isEmpty || b.isEmpty) return false;
+    final common = a.intersection(b);
+    if (common.isEmpty) return false;
+    final ratio = common.length / (a.length < b.length ? a.length : b.length);
+    return ratio >= minOverlap;
+  }
+
+  /// Valida que o candidato do /search corresponde à música pedida.
+  /// Exige correspondência de título E (quando o artista é conhecido) de
+  /// artista — evita importar letras de uma faixa homónima de outro artista.
+  static bool _matches(LyricsHit hit, String title, String artist) {
+    final titleOk = _tokensOverlap(_tokens(title), _tokens(hit.trackName));
+    if (!titleOk) return false;
+
+    final reqArtist = _stripDiacritics(artist.trim().toLowerCase());
+    if (_unknownArtists.contains(reqArtist)) return true; // não dá p/ validar
+
+    // Artista costuma ter token único significativo em comum — exigimos só 1.
+    return _tokensOverlap(
+      _tokens(artist),
+      _tokens(hit.artistName),
+      minOverlap: 0.34,
+    );
+  }
 
   static LyricsHit? _pickBest(List<LyricsHit> hits, Duration? duration) {
     if (hits.isEmpty) return null;
