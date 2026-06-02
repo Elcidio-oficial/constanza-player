@@ -157,8 +157,17 @@ void main() async {
               androidResumeOnClick: true,
             ),
           );
-        } catch (e) {
+        } catch (e, st) {
+          // Falha aqui = nenhuma notificação / controles de lockscreen (o app
+          // cai num handler sem foreground service). debugPrint é mudo em
+          // release, então persistimos no CrashReporter para diagnóstico —
+          // visível em Configurações → logs.
           debugPrint('[Main] AudioService.init failed: $e');
+          CrashReporter.recordNonFatal(
+            e,
+            stack: st,
+            context: 'AudioService.init — notificação de mídia indisponível',
+          );
           audioHandler = ConstanzaAudioHandler();
         }
       } else {
