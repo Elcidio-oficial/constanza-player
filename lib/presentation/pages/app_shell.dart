@@ -75,6 +75,11 @@ class _AppShellState extends ConsumerState<AppShell>
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.detached) {
       ref.read(playerProvider.notifier).savePlaybackState();
+    } else if (state == AppLifecycleState.resumed) {
+      // Ao voltar à frente: se o player nativo morreu enquanto em background
+      // (SO recuperou o decoder), re-prepara a faixa para o play() voltar a
+      // funcionar — sem precisar forçar o fecho do app.
+      ref.read(playerProvider.notifier).recoverIfNeeded();
     }
   }
 

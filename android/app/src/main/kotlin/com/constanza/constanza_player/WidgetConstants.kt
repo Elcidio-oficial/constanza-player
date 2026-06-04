@@ -25,4 +25,10 @@ object WidgetConstants {
 
     const val FLUTTER_ENGINE_ID = "constanza_main_engine"
     const val WIDGET_CHANNEL    = "com.constanza.constanza_player/widget"
+
+    /** Canal para abrir áudio externo (leitor padrão) e checar/abrir defaults. */
+    const val INTENT_CHANNEL    = "com.constanza.constanza_player/intent"
+
+    /** Canal do leitor flutuante (system overlay sobre o explorador). */
+    const val FLOATING_CHANNEL  = "com.constanza.constanza_player/floating"
 }

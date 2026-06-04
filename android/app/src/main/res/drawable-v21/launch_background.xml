@@ -3,9 +3,13 @@
      Fundo preto + ícone centralizado para combinar com o tema escuro do app. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@android:color/black" />
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@mipmap/ic_launcher" />
-    </item>
+    <!-- @mipmap/ic_launcher é um adaptive-icon (XML) em API 26+; <bitmap> exige
+         um raster e rebenta ("requires a valid 'src'"). Usamos <item
+         android:drawable> com tamanho explícito (válido em API 23+, minSdk=24),
+         que desenha adaptive-icons sem problema. -->
+    <item
+        android:gravity="center"
+        android:width="160dp"
+        android:height="160dp"
+        android:drawable="@mipmap/ic_launcher" />
 </layer-list>

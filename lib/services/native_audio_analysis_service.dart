@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -62,10 +63,12 @@ class NativeAudioAnalysisService {
     if (cached != null) return cached;
 
     try {
-      final result = await _channel.invokeMethod<Map<Object?, Object?>>(
-        'analyze',
-        {'uri': uri},
-      );
+      // Timeout de segurança: se o decode/DSP nativo travar (mídia malformada,
+      // codec lento), o badge de BPM não pode girar para sempre. 45s é folgado
+      // para a análise legítima de 60s de áudio mesmo em devices modestos.
+      final result = await _channel
+          .invokeMethod<Map<Object?, Object?>>('analyze', {'uri': uri})
+          .timeout(const Duration(seconds: 45));
 
       if (result == null) return null;
 

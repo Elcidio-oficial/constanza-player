@@ -10,6 +10,7 @@ import 'package:constanza_player/presentation/providers/lyrics_provider.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
+import 'package:constanza_player/presentation/widgets/media_seek_bar.dart';
 import 'package:constanza_player/services/lyrics_fetch_service.dart';
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -1092,29 +1093,38 @@ class _ProgressSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final style = ref.watch(themeProvider.select((s) => s.mediaBarStyle));
+    // Car Mode lives on a dark backdrop — derive lively gradient stops from the
+    // accent so visualizer styles read well without a full palette.
+    final hsl = HSLColor.fromColor(accent);
+    final secondary = hsl
+        .withHue((hsl.hue + 18) % 360)
+        .withLightness((hsl.lightness + 0.12).clamp(0.0, 1.0))
+        .toColor();
+    final tertiary = hsl
+        .withHue((hsl.hue + 36) % 360)
+        .withLightness((hsl.lightness + 0.20).clamp(0.0, 1.0))
+        .toColor();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 28),
       child: Column(
         children: [
-          SliderTheme(
-            data: SliderThemeData(
-              trackHeight: 5,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-              activeTrackColor: accent,
-              inactiveTrackColor: Colors.white.withValues(alpha: 0.15),
-              thumbColor: Colors.white,
-              overlayColor: accent.withValues(alpha: 0.15),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
-            ),
-            child: Slider(
-              value: player.progress,
-              onChanged: (v) {
-                final ms = (v * player.duration.inMilliseconds).round();
-                ref
-                    .read(playerProvider.notifier)
-                    .seek(Duration(milliseconds: ms));
-              },
-            ),
+          MediaSeekBar(
+            progress: player.progress.clamp(0.0, 1.0),
+            style: style,
+            seed: player.currentSong?.id.hashCode ?? 0,
+            activeColor: accent,
+            inactiveColor: Colors.white.withValues(alpha: 0.15),
+            neutralColor: Colors.white,
+            secondaryColor: secondary,
+            tertiaryColor: tertiary,
+            onSeek: (v) {
+              final ms = (v * player.duration.inMilliseconds).round();
+              ref
+                  .read(playerProvider.notifier)
+                  .seek(Duration(milliseconds: ms));
+            },
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),

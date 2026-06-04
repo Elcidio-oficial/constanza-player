@@ -52,6 +52,38 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     // em vez de esperar a análise terminar.
     private var activeAnalysisJob: Job? = null
 
+    // Planos de FFT (twiddle factors + bit-reversal) por tamanho. A FFT é
+    // chamada milhares de vezes por análise (≈5000 frames p/ BPM + ≈640 p/
+    // tonalidade), e antes recalculava cos/sin DENTRO do butterfly a cada
+    // chamada — o gargalo que fazia a análise "ficar processando" por dezenas
+    // de segundos. Pré-computar uma vez por tamanho reduz o custo em ~3-5×.
+    // Acesso serializado pelo analysisMutex (uma análise por vez), logo o
+    // HashMap não precisa de sincronização.
+    private val fftPlans = HashMap<Int, FftPlan>()
+
+    private fun planFor(n: Int): FftPlan = fftPlans.getOrPut(n) { FftPlan(n) }
+
+    /** Twiddle factors e índices de bit-reversal pré-computados para FFT de tamanho [n]. */
+    private class FftPlan(val n: Int) {
+        val cos = DoubleArray(n / 2)
+        val sin = DoubleArray(n / 2)
+        val rev = IntArray(n)
+        init {
+            for (i in 0 until n / 2) {
+                val a = -2.0 * PI * i / n
+                cos[i] = kotlin.math.cos(a)
+                sin[i] = kotlin.math.sin(a)
+            }
+            var j = 0
+            for (i in 0 until n) {
+                rev[i] = j
+                var m = n / 2
+                while (m >= 1 && j >= m) { j -= m; m /= 2 }
+                j += m
+            }
+        }
+    }
+
     companion object {
         private const val TAG = "AudioAnalysis"
         private const val CHANNEL_NAME = "com.constanza.audio_analysis"
@@ -398,14 +430,17 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         val framesPerSecond = sampleRate.toDouble() / hop
         val binWidth = sampleRate.toDouble() / frameSize
 
-        // Step 1 — magnitude spectra (Hann window para BPM)
+        // Step 1 — magnitude spectra (Hann window para BPM).
+        // Janela pré-computada uma vez (antes recalculava cos por amostra/frame).
+        val hannWindow = DoubleArray(frameSize) { i ->
+            0.5 * (1.0 - cos(2.0 * PI * i / (frameSize - 1)))
+        }
         val spectra = Array(numFrames) { f ->
             val start = f * hop
             val windowed = DoubleArray(frameSize)
             for (i in 0 until frameSize) {
                 if (start + i < samples.size) {
-                    val hann = 0.5 * (1.0 - cos(2.0 * PI * i / (frameSize - 1)))
-                    windowed[i] = samples[start + i].toDouble() * hann
+                    windowed[i] = samples[start + i].toDouble() * hannWindow[i]
                 }
             }
             fftMagnitude(windowed)
@@ -684,42 +719,39 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     /**
-     * FFT de magnitude — Cooley-Tukey Radix-2 in-place.
-     * Pads para próxima potência de 2 se necessário.
+     * FFT de magnitude — Cooley-Tukey Radix-2 com twiddle factors e
+     * bit-reversal pré-computados (ver [FftPlan]). Pads para a próxima
+     * potência de 2 se necessário.
      */
     private fun fftMagnitude(input: DoubleArray): DoubleArray {
         val n = nextPowerOf2(input.size)
+        val plan = planFor(n)
         val real = DoubleArray(n)
-        input.copyInto(real, 0, 0, min(input.size, n))
         val imag = DoubleArray(n)
 
-        // Bit-reversal permutation
-        var j = 0
-        for (i in 0 until n) {
-            if (i < j) {
-                var tmp = real[i]; real[i] = real[j]; real[j] = tmp
-                tmp = imag[i]; imag[i] = imag[j]; imag[j] = tmp
-            }
-            var m = n / 2
-            while (m >= 1 && j >= m) { j -= m; m /= 2 }
-            j += m
-        }
+        // Copia já aplicando a permutação bit-reversal: real[rev[i]] = input[i].
+        // Slots não escritos (padding) ficam 0 — equivalente a zero-pad + reversa.
+        val copyLen = min(input.size, n)
+        for (i in 0 until copyLen) real[plan.rev[i]] = input[i]
 
-        // Cooley-Tukey butterfly
+        // Cooley-Tukey butterfly usando a tabela de twiddles do plano.
         var step = 2
         while (step <= n) {
             val half = step / 2
-            val angle = -2.0 * PI / step
-            for (k in 0 until n step step) {
+            val tableStep = n / step
+            var k = 0
+            while (k < n) {
+                var ti = 0
                 for (l in 0 until half) {
-                    val theta = angle * l
-                    val wr = cos(theta); val wi = sin(theta)
+                    val wr = plan.cos[ti]; val wi = plan.sin[ti]
                     val i1 = k + l; val i2 = k + l + half
                     val tR = wr * real[i2] - wi * imag[i2]
                     val tI = wr * imag[i2] + wi * real[i2]
                     real[i2] = real[i1] - tR; imag[i2] = imag[i1] - tI
                     real[i1] += tR; imag[i1] += tI
+                    ti += tableStep
                 }
+                k += step
             }
             step *= 2
         }

@@ -22,6 +22,7 @@ import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/providers/audio_settings_provider.dart';
 import 'package:constanza_player/presentation/providers/audio_analysis_provider.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
+import 'package:constanza_player/presentation/widgets/media_seek_bar.dart';
 import 'package:constanza_player/presentation/widgets/artist_links_text.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -642,7 +643,7 @@ class _NowPlayingContent extends ConsumerWidget {
     return GestureDetector(
       onVerticalDragEnd: (d) {
         if (d.primaryVelocity != null && d.primaryVelocity! > 300) {
-          Navigator.of(context).pop();
+          dismissNowPlaying(context);
         }
       },
       child: Container(
@@ -807,7 +808,7 @@ class _Header extends ConsumerWidget {
               size: 32,
               color: colors.onSurface.withValues(alpha: 0.9),
             ),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => dismissNowPlaying(context),
           ),
           Expanded(
             child: Column(
@@ -1710,52 +1711,9 @@ class _ProgressBar extends ConsumerWidget {
     final mediaBarStyle = ref.watch(
       themeProvider.select((s) => s.mediaBarStyle),
     );
-    final sliderTheme = switch (mediaBarStyle) {
-      MediaBarStyle.minimal => SliderTheme.of(context).copyWith(
-        trackHeight: 2.0,
-        thumbShape: SliderComponentShape.noThumb,
-        overlayShape: SliderComponentShape.noOverlay,
-        activeTrackColor: colors.onSurface.withValues(alpha: 0.8),
-        inactiveTrackColor: colors.onSurface.withValues(alpha: 0.10),
-      ),
-      MediaBarStyle.glow => SliderTheme.of(context).copyWith(
-        trackHeight: 3.5,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-        overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
-        activeTrackColor: accentColor,
-        inactiveTrackColor: accentColor.withValues(alpha: 0.15),
-        thumbColor: Colors.white,
-        overlayColor: accentColor.withValues(alpha: 0.35),
-      ),
-      MediaBarStyle.gradient => SliderTheme.of(context).copyWith(
-        trackHeight: 4.5,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-        activeTrackColor: accentColor,
-        inactiveTrackColor: colors.onSurface.withValues(alpha: 0.10),
-        thumbColor: Colors.white,
-        trackShape: _GradientSliderTrackShape(
-          gradientColors: [accentColor, colors.secondary, colors.tertiary],
-        ),
-      ),
-      MediaBarStyle.thick => SliderTheme.of(context).copyWith(
-        trackHeight: 10,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-        overlayShape: const RoundSliderOverlayShape(overlayRadius: 22),
-        activeTrackColor: accentColor,
-        inactiveTrackColor: colors.onSurface.withValues(alpha: 0.12),
-        thumbColor: Colors.white,
-      ),
-      MediaBarStyle.classic => SliderTheme.of(context).copyWith(
-        trackHeight: 3,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-        overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
-        activeTrackColor: Colors.white,
-        inactiveTrackColor: Colors.white.withValues(alpha: 0.20),
-        thumbColor: Colors.white,
-      ),
-    };
-
+    final songId = ref.watch(
+      playerProvider.select((s) => s.currentSong?.id),
+    );
     // Remaining time as negative
     final remaining = duration - position;
     final remMin = remaining.inMinutes;
@@ -1766,20 +1724,22 @@ class _ProgressBar extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Column(
         children: [
-          SliderTheme(
-            data: sliderTheme,
-            child: Slider(
-              value: progress.clamp(0.0, 1.0),
-              onChanged: (value) {
-                ref
-                    .read(playerProvider.notifier)
-                    .seek(
-                      Duration(
-                        milliseconds: (value * duration.inMilliseconds).round(),
-                      ),
-                    );
-              },
-            ),
+          MediaSeekBar(
+            progress: progress.clamp(0.0, 1.0),
+            style: mediaBarStyle,
+            seed: songId.hashCode,
+            activeColor: accentColor,
+            inactiveColor: colors.onSurface.withValues(alpha: 0.18),
+            neutralColor: colors.onSurface,
+            secondaryColor: colors.secondary,
+            tertiaryColor: colors.tertiary,
+            onSeek: (value) {
+              ref.read(playerProvider.notifier).seek(
+                    Duration(
+                      milliseconds: (value * duration.inMilliseconds).round(),
+                    ),
+                  );
+            },
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
@@ -2852,6 +2812,19 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
 // SLEEP TIMER BOTTOM SHEET — premium picker with fade-out toggle
 // ============================================================
 
+/// Fecha o Now Playing. Quando aberto normalmente (push sobre o /home) faz um
+/// pop simples. Quando aberto via deeplink/intent externo (`router.go`), a
+/// pilha contém SÓ o Now Playing — um `pop()` aqui esvazia o Navigator e deixa
+/// a tela preta; nesse caso caímos no /home.
+void dismissNowPlaying(BuildContext context) {
+  final nav = Navigator.of(context);
+  if (nav.canPop()) {
+    nav.pop();
+  } else {
+    context.go('/home');
+  }
+}
+
 /// Public entry-point para abrir a Fila de fora do NowPlayingPage
 /// (deeplink do widget de ecrã inicial).
 void openQueuePage(BuildContext context) {
@@ -3259,61 +3232,6 @@ class _TapScaleWidgetState extends State<_TapScaleWidget>
 // ============================================================
 // LYRICS PAGE — Spotify-premium style com scroll inteligente
 // ============================================================
-
-class _GradientSliderTrackShape extends SliderTrackShape
-    with BaseSliderTrackShape {
-  const _GradientSliderTrackShape({required this.gradientColors});
-  final List<Color> gradientColors;
-
-  @override
-  void paint(
-    PaintingContext context,
-    Offset offset, {
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required Animation<double> enableAnimation,
-    required TextDirection textDirection,
-    required Offset thumbCenter,
-    Offset? secondaryOffset,
-    bool isDiscrete = false,
-    bool isEnabled = false,
-    double additionalActiveTrackHeight = 2,
-  }) {
-    final trackRect = getPreferredRect(
-      parentBox: parentBox,
-      offset: offset,
-      sliderTheme: sliderTheme,
-      isEnabled: isEnabled,
-      isDiscrete: isDiscrete,
-    );
-    final double h = sliderTheme.trackHeight ?? 4;
-    final radius = Radius.circular(h / 2);
-    final activeRect = Rect.fromLTRB(
-      trackRect.left,
-      trackRect.top - additionalActiveTrackHeight / 2,
-      thumbCenter.dx,
-      trackRect.bottom + additionalActiveTrackHeight / 2,
-    );
-    final inactiveRect = Rect.fromLTRB(
-      thumbCenter.dx,
-      trackRect.top,
-      trackRect.right,
-      trackRect.bottom,
-    );
-    final activePaint = Paint()
-      ..shader = LinearGradient(colors: gradientColors).createShader(trackRect);
-    final inactivePaint = Paint()
-      ..color = sliderTheme.inactiveTrackColor ?? Colors.white24;
-    context.canvas.drawRRect(
-      RRect.fromRectAndRadius(activeRect, radius),
-      activePaint,
-    );
-    context.canvas.drawRRect(
-      RRect.fromRectAndRadius(inactiveRect, radius),
-      inactivePaint,
-    );
-  }
-}
 
 // ============================================================
 // QUEUE PAGE — fila funcional com reorder e remoção

@@ -426,8 +426,12 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
 
   void removeSong(String songId) {
     final newSongs = state.songs.where((s) => s.id != songId).toList();
-    state = state.copyWith(songs: newSongs);
-    _saveToCache(newSongs, state.albums, state.artists);
+    // Reconstrói álbuns/artistas para que as vistas derivadas (álbuns, artistas,
+    // gêneros, pastas) também reflitam a remoção sem precisar de re-escanear.
+    final albums = _buildAlbumsFromSongs(newSongs);
+    final artists = _buildArtistsFromSongs(newSongs);
+    state = state.copyWith(songs: newSongs, albums: albums, artists: artists);
+    _saveToCache(newSongs, albums, artists);
   }
 
   /// Remove múltiplas músicas do dispositivo (usada para duplicadas).
