@@ -15,4 +15,35 @@
     <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+
+    <!-- Tema do arranque a frio por áudio (alias MainActivityAudioOpen → MainActivity).
+         TRANSLÚCIDO + sem preview: ao tocar uma música com a app fechada, a
+         MainActivity arranca o motor (o Dart toca já no initState, sem depender
+         de frame) e vai logo para trás em onResume. Como a janela é transparente,
+         o explorador fica à vista o tempo todo — sem o vislumbre/flash da app que
+         o tema opaco (NormalTheme) deixava passar no MIUI entre onCreate e o
+         moveTaskToBack. Casa com getBackgroundMode()=transparent na MainActivity
+         (FlutterView em modo TextureView, transparente até ao moveTaskToBack).
+         NÃO afeta o arranque normal pelo ícone (LaunchTheme, opaco, com splash):
+         só o trampolim usa este alias, e só ele passa o EXTRA_RESOLVED. -->
+    <style name="AudioColdStartTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <!-- Tema do trampolim nativo (AudioOpenActivity, sem Flutter). Janela
+         translúcida e invisível + sem animação: ao tocar áudio pelo explorador,
+         o explorador continua à vista (sem flash branco) enquanto o trampolim
+         empurra a música e mostra o leitor flutuante por cima. -->
+    <style name="TranslucentTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
 </resources>

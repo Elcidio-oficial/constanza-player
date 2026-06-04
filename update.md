@@ -7,6 +7,45 @@
 
 ---
 
+## [1.4.0] — 2026-06-04
+### Barras de progresso — 11 novos estilos de visualizador
+- **`MediaBarStyle` expandido de 6 → 17 estilos.** Além dos cinco sliders simples (Minimal, Brilho, Gradiente, Espessa, Clássico) e da Onda sonora já existente, agora há **11 visualizadores interativos** inspirados em designs de áudio profissionais, cada um podendo ser escolhido em **Configurações → Barra de progresso**:
+  - **Frequências** — barras finas centradas com envelope tipo espectro.
+  - **Barras** — gráfico de barras ancorado na base.
+  - **Degraus** — barras quantizadas em níveis, formando escada.
+  - **Equalizador** — colunas LED segmentadas (blocos empilhados).
+  - **Segmentos** — medidor em blocos chunky arredondados.
+  - **Pontilhado** — matriz de pontos (halftone) com queda em losango.
+  - **Pulso** — linha de ECG/batimento estilizada (P-QRS-T).
+  - **Onda suave** — senoide modulada por envelope (efeito de batimento).
+  - **Onda** — senoide única e encorpada.
+  - **Espelhada** — forma de onda simétrica preenchida (top/bottom).
+  - **Espectro** — forma de onda densa de gravação (~104 traços finos).
+- **Todos são "seek bars" reais**: tocar ou arrastar busca a posição; a porção tocada usa gradiente (acento → secundária → terciária da paleta da capa), a não tocada fica esmaecida, com playhead luminoso. Cada música mantém um desenho **determinístico** (semente = id da faixa), com animação viva e subtil.
+- **Reflete no Now Playing e no Modo Carro.** Nova widget partilhada `MediaSeekBar` (`lib/presentation/widgets/media_seek_bar.dart`) centraliza render + gestos + animação; o `_ProgressBar` do Now Playing e o `_ProgressSection` do Modo Carro passaram a delegá-la. **O Modo Carro agora respeita o estilo escolhido** (antes ignorava e usava sempre um slider simples), derivando os tons do gradiente a partir do acento sobre fundo escuro.
+- **Refatoração**: removidos `_WaveformSeekBar`/`_WaveformPainter`/`_GradientSliderTrackShape` duplicados de `now_playing_page.dart`; a lógica de SliderTheme dos cinco estilos simples também migrou para a widget partilhada (zero divergência entre as duas telas).
+- **i18n**: 11 novas chaves `mediaBar*` em PT e EN.
+
+---
+
+## [1.3.5] — 2026-06-04
+### Letras — precisão da busca online
+- **Falha de rede tratada como "sem letra"**: `LyricsFetchService.fetch()`/`search()` engoliam timeout/erro de rede e retornavam `null` — o mesmo retorno de "esta música não tem letra". O chamador então gravava **permanentemente** `markOnlineMiss()`, obrigando o utilizador a buscar 2-3× até cair numa janela com rede boa.
+- **Fix:** nova `LyricsNetworkException`, lançada após esgotar **3 tentativas com backoff** (350ms→1400ms) em timeout/socket/429/5xx. `fetch`/`search` só retornam `null` em **miss definitivo** (servidor respondeu sem letra). Timeout por pedido 10s → 12s.
+- **Chamadores** (`_searchOnline`, diálogo de busca manual `_run`, Modo Carro): em exceção de rede **não marcam "sem letra"** — mostram "sem conexão" e voltam a buscar na próxima abertura/reprodução.
+
+### BPM & Tonalidade — fim do "fica só processando"
+- **FFT nativa recalculava `cos/sin` no butterfly** a cada um de ~5000 frames/música (`AudioAnalysisPlugin.kt`) — o gargalo que fazia a análise demorar dezenas de segundos. Agora usa **twiddle factors + índices de bit-reversal pré-computados por tamanho** (`FftPlan`/`planFor`) e **janela Hann pré-computada** no BPM. ~3-5× mais rápida, mesmo resultado.
+- **Análise sob demanda**: deixou de rodar a cada troca de faixa (decodificar 60s via `MediaCodec` em paralelo com o playback). Agora só corre quando o badge de análise do Now Playing fica visível. Removido o gatilho automático em `PlayerNotifier._loadAndPlay`.
+- **Timeout de segurança** de 45s em `NativeAudioAnalysisService.analyze` — o spinner do badge nunca gira eternamente (mídia malformada/codec lento → estado de retry).
+
+### Player — faixas paravam de tocar após tempo em background
+- **Sintoma:** após tocar por minutos/horas e sair do app, ao voltar mais tarde o `play()` não produzia som — só forçar o fecho (ou limpar dados) resolvia.
+- **Causa provável:** ao ficar muito tempo em background, o SO recupera o decoder do just_audio e o player fica num estado morto (`idle`), com `play()` virando no-op silencioso. A pressão sobre o pool de `MediaCodec` pela análise DSP automática a cada faixa (ver acima) agravava o quadro.
+- **Fix:** `PlayerNotifier.recoverIfNeeded()`, chamado no `resumed` do `AppShell`: se houver faixa carregada mas o handler estiver `idle`, re-prepara a faixa na última posição (pausada) para que o `play()` volte a funcionar sem reiniciar o processo. Combinado com a análise agora sob demanda, remove o principal estressor de codecs.
+
+---
+
 ## [1.3.4] — 2026-05-14
 ### Correções de áudio & ícone
 - **Zombie state no repeat (Android)**: após `ProcessingState.completed`, o pipeline de áudio do just_audio é encerrado no Android. `seek(zero)+play` deixava o player em estado mudo (posição avançava, sem som). Corrigido: `_onPlaybackCompleted` chama `_loadAndPlay()` em `RepeatMode.one`, que reinicializa o source e chama `resetVolume()`.

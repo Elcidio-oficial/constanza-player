@@ -420,6 +420,18 @@
   "mediaBarGradient": "Gradiente",
   "mediaBarThick": "Espessa",
   "mediaBarClassic": "Clássico",
+  "mediaBarWaveform": "Onda sonora",
+  "mediaBarFrequencyBars": "Frequências",
+  "mediaBarBars": "Barras",
+  "mediaBarSteps": "Degraus",
+  "mediaBarEqualizer": "Equalizador",
+  "mediaBarSegments": "Segmentos",
+  "mediaBarDots": "Pontilhado",
+  "mediaBarPulse": "Pulso",
+  "mediaBarSineWave": "Onda suave",
+  "mediaBarWave": "Onda",
+  "mediaBarMirror": "Espelhada",
+  "mediaBarDense": "Espectro",
 
   "npColorStyleDegrade": "Degradê",
   "npColorStyleGradient": "Gradiente",
@@ -923,5 +935,17 @@
   "sleepTimerRemaining": "Faltam {time}",
   "@sleepTimerRemaining": {
     "placeholders": { "time": { "type": "String" } }
-  }
+  },
+  "settingsDefaultPlayer": "Leitor padrão",
+  "defaultPlayerStatusYes": "O Constanza é o seu leitor de áudio padrão",
+  "defaultPlayerStatusNo": "Toque para definir como padrão",
+  "defaultPlayerStatusChecking": "Verificando…",
+  "defaultPlayerDialogBody": "Para tornar o Constanza o seu leitor de áudio padrão, toque em “Definir como padrão”. O sistema vai perguntar com qual app abrir o arquivo — escolha o Constanza e toque em “Sempre”.",
+  "defaultPlayerDialogBodyActive": "O Constanza já é o app padrão para arquivos de áudio. Para alterar, abra as configurações do app e limpe os padrões.",
+  "defaultPlayerSetAsDefault": "Definir como padrão",
+  "defaultPlayerOpenSettings": "Abrir configurações",
+  "defaultPlayerDialogClose": "Fechar",
+  "defaultPlayerBannerMessage": "Tornar o Constanza seu leitor de áudio padrão?",
+  "defaultPlayerBannerAction": "Definir",
+  "defaultPlayerSetConfirmed": "O Constanza agora é o seu leitor de áudio padrão"
 }

@@ -1,7 +1,7 @@
 name: constanza_player
 description: "Constanza Músicas — Sua música. Seu silêncio. Seu momento."
 publish_to: 'none'
-version: 1.3.4+12
+version: 1.4.0+14
 
 environment:
   sdk: ^3.10.7

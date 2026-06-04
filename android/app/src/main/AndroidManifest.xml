@@ -23,6 +23,11 @@
     <!-- Isenção de Battery Optimization (Doze mode) — usuário decide -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <!-- Leitor flutuante: sobrepor a outras apps (ao tocar áudio pelo
+         explorador, o mini leitor aparece por cima do gerenciador de
+         arquivos). Concedida pelo usuário em Configurações. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <application
         android:label="Constanza Músicas"
         android:name="${applicationName}"
@@ -34,8 +39,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop"
-            android:taskAffinity=""
+            android:launchMode="singleTask"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
@@ -43,9 +47,77 @@
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
+            <!-- Desativa o deep linking automático do Flutter. Sem isto, a URI
+                 do intent ACTION_VIEW (abrir áudio do gerenciador de arquivos)
+                 é entregue ao go_router como rota — ex.: "/external_files/..." —
+                 e cai em "Page Not Found". O áudio externo já é tratado pelo
+                 canal nativo (INTENT_CHANNEL → DefaultPlayerService), não por
+                 rotas; a navegação de widgets também usa MethodChannel. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- Alias da MainActivity para o arranque a frio por áudio: mesma
+             activity/engine, mas com tema TRANSLÚCIDO (AudioColdStartTheme) → o
+             explorador fica à vista enquanto a app arranca o motor e vai para
+             trás, sem flash. Sem meta-data NormalTheme (de propósito): assim o
+             FlutterFragmentActivity NÃO troca o tema translúcido por um opaco no
+             onCreate. Não exportado: só o trampolim o lança, por componente
+             explícito (e com o EXTRA_RESOLVED que ativa o modo transparente). -->
+        <activity-alias
+            android:name=".MainActivityAudioOpen"
+            android:targetActivity=".MainActivity"
+            android:exported="false"
+            android:theme="@style/AudioColdStartTheme" />
+
+        <!-- ===== Trampolim do leitor flutuante / leitor padrão de áudio =====
+             Activity nativa PURA (NÃO-Flutter), translúcida e invisível, alvo dos
+             intents de áudio (Abrir com / Compartilhar). NÃO pode ser FlutterActivity:
+             agarraria o FlutterEngine partilhado e despejaria a MainActivity →
+             "engine evicted" → UI congelada (bug confirmado em logcat). Em vez disso
+             empurra a música pelo motor existente (a quente) ou reencaminha para a
+             MainActivity (a frio). excludeFromRecents: não aparece nos recentes só
+             por se abrir um ficheiro. taskAffinity próprio: task separada da
+             MainActivity (o ícone/launcher continua a abrir a UI real). -->
+        <activity
+            android:name=".AudioOpenActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.constanza.constanza_player.audioopen"
+            android:excludeFromRecents="true"
+            android:theme="@style/TranslucentTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true">
+
+            <!-- Abrir com: Faz o Constanza aparecer no "Abrir com" de qualquer
+                 arquivo de áudio. Ao escolher "Sempre", vira leitor padrão. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="application/ogg" />
+                <data android:mimeType="application/x-ogg" />
+                <data android:mimeType="application/itunes" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+            </intent-filter>
+
+            <!-- Receber áudio compartilhado: Compartilhar → Constanza -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="audio/*" />
             </intent-filter>
         </activity>
 

@@ -16,6 +16,7 @@ import 'package:constanza_player/presentation/pages/now_playing/now_playing_page
     show showSleepTimerSheet, openQueuePage;
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
+import 'package:constanza_player/presentation/providers/library_provider.dart';
 import 'package:constanza_player/presentation/widgets/background_wrapper.dart';
 import 'package:constanza_player/presentation/widgets/windows_title_bar.dart';
 import 'package:constanza_player/services/audio_handler.dart';
@@ -24,6 +25,8 @@ import 'package:constanza_player/services/media_library/media_library_backend.da
 import 'package:constanza_player/services/media_library/scan_crash_guard.dart';
 import 'package:constanza_player/services/windows_smtc_service.dart';
 import 'package:constanza_player/services/settings_storage_service.dart';
+import 'package:constanza_player/services/default_player_service.dart';
+import 'package:constanza_player/services/floating_player_service.dart';
 import 'package:constanza_player/services/lyrics_service.dart';
 import 'package:constanza_player/services/audio_analysis_service.dart';
 import 'package:constanza_player/services/bpm_key_fetch_service.dart';
@@ -220,10 +223,30 @@ class ConstanzaApp extends ConsumerStatefulWidget {
   ConsumerState<ConstanzaApp> createState() => _ConstanzaAppState();
 }
 
-class _ConstanzaAppState extends ConsumerState<ConstanzaApp> {
+class _ConstanzaAppState extends ConsumerState<ConstanzaApp>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    // ── Leitor padrão de áudio (NÃO pode depender de um frame) ─────────
+    // Quando o app arranca pelo AudioOpenActivity e vai logo para trás
+    // (leitor flutuante + moveTaskToBack), o Flutter é mandado para o fundo
+    // ANTES de pintar o primeiro frame — e o addPostFrameCallback abaixo nunca
+    // dispara. Se a drenagem/registos vivessem lá, a música não tocava e a capa
+    // não carregava. Por isso correm já aqui, síncronos no initState.
+    DefaultPlayerService.registerOpenHandler(_handleOpenAudio);
+    // Leitor flutuante: ao fechar (X), para o push de progresso E a música.
+    FloatingPlayerService.registerOnClosed(_onFloatingClosed);
+    // Seek pela linha do tempo do leitor flutuante.
+    FloatingPlayerService.registerOnSeek((ms) {
+      ref.read(playerProvider.notifier).seek(Duration(milliseconds: ms));
+    });
+    // Cold start: drena o que ficou pendente do intent de abertura.
+    // (Opens com o app já vivo são drenados em [didChangeAppLifecycleState].)
+    _drainExternalOpens();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final router = ref.read(appRouterProvider);
       WidgetService.registerNavigationHandler((route) {
@@ -249,7 +272,177 @@ class _ConstanzaAppState extends ConsumerState<ConstanzaApp> {
           router.go(route);
         }
       });
+
+      // O banner sugerindo virar leitor padrão aparece só DEPOIS do scan da
+      // biblioteca — o usuário já viu o valor do app e a biblioteca está
+      // populada. Dispara uma única vez, quando o status vai para `loaded`.
+      ref.listenManual<LibraryState>(libraryProvider, (prev, next) {
+        if (_promptHandled || _openedExternally) return;
+        if (next.status == LibraryStatus.loaded) {
+          _promptHandled = true;
+          _maybePromptDefaultPlayer();
+        }
+      });
     });
+  }
+
+  @override
+  void dispose() {
+    _stopFloatingProgress();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // App voltou ao primeiro plano: pode ter recebido um ACTION_VIEW enquanto
+    // vivo (tocar OUTRA música pelo explorador). Puxamos o pendente aqui de
+    // forma confiável — o nativo só o limpa após esta entrega.
+    if (state == AppLifecycleState.resumed) {
+      // O overlay é escondido nativamente ao voltar à frente; paramos o push.
+      _stopFloatingProgress();
+      _drainExternalOpens();
+    }
+  }
+
+  /// Timer que empurra posição/duração para o leitor flutuante enquanto visível.
+  Timer? _floatingTimer;
+
+  /// Pede a permissão de overlay no máximo uma vez por sessão.
+  bool _overlayPromptShown = false;
+
+  void _startFloatingProgress() {
+    _floatingTimer?.cancel();
+    _floatingTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      final st = ref.read(playerProvider);
+      FloatingPlayerService.updateProgress(
+        positionMs: st.position.inMilliseconds,
+        durationMs: st.duration.inMilliseconds,
+        isPlaying: st.isPlaying,
+      );
+    });
+  }
+
+  void _stopFloatingProgress() {
+    _floatingTimer?.cancel();
+    _floatingTimer = null;
+  }
+
+  /// X do leitor flutuante: para o push de progresso E a reprodução (fecha o
+  /// leitor por completo). O overlay já foi removido nativamente; aqui paramos
+  /// a música e o serviço de áudio para não continuar a tocar em background.
+  void _onFloatingClosed() {
+    _stopFloatingProgress();
+    if (mounted) ref.read(playerProvider.notifier).stop();
+  }
+
+  /// Drena os áudios abertos externamente (cold start e retomada de foreground)
+  /// e toca-os. O nativo entrega cada intent uma única vez (limpa ao consumir).
+  void _drainExternalOpens() {
+    DefaultPlayerService.consumePending().then((reqs) {
+      if (reqs.isNotEmpty) {
+        // Abrimos via "Abrir com" — não sugerir virar padrão nesta sessão.
+        _openedExternally = true;
+        _handleOpenAudio(reqs);
+      }
+    });
+  }
+
+  /// Evita sugerir virar padrão na mesma sessão em que abrimos via "Abrir com".
+  bool _openedExternally = false;
+
+  /// Garante que o banner pós-scan dispare no máximo uma vez por sessão.
+  bool _promptHandled = false;
+
+  /// Toca os áudios abertos externamente. Em vez de abrir o Now Playing
+  /// inteiro, mostra um leitor flutuante sobre o explorador (se houver
+  /// permissão de overlay); senão, cai no Now Playing como antes.
+  Future<void> _handleOpenAudio(List<OpenAudioRequest> reqs) async {
+    if (!mounted || reqs.isEmpty) return;
+    // Eco do nosso próprio fluxo de "tornar padrão": o usuário escolheu
+    // "Sempre" no resolver que abrimos com uma faixa de amostra. Não tocar
+    // nem abrir o Now Playing — apenas confirmar que o app virou padrão.
+    if (DefaultPlayerService.consumeSetDefaultEcho(reqs)) {
+      _confirmBecameDefault();
+      return;
+    }
+    final items = [
+      for (final r in reqs) (uri: r.uri, title: r.title),
+    ];
+    ref.read(playerProvider.notifier).playExternalAudio(items);
+
+    // Leitor flutuante sobre o explorador, se a permissão estiver concedida.
+    if (await FloatingPlayerService.hasPermission()) {
+      final shown = await FloatingPlayerService.show();
+      if (shown) {
+        _startFloatingProgress();
+        return;
+      }
+    } else if (!_overlayPromptShown) {
+      // Pede a permissão uma vez; nesta 1ª abertura cai no Now Playing.
+      _overlayPromptShown = true;
+      FloatingPlayerService.requestPermission();
+    }
+
+    // Fallback: sem overlay, abre o Now Playing.
+    if (mounted) ref.read(appRouterProvider).go('/now-playing');
+  }
+
+  /// Snackbar de confirmação após o app virar leitor padrão (sem tocar nada).
+  void _confirmBecameDefault() {
+    final ctx = ref
+        .read(appRouterProvider)
+        .routerDelegate
+        .navigatorKey
+        .currentContext;
+    if (ctx == null || !ctx.mounted) return;
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(ctx).defaultPlayerSetConfirmed)),
+    );
+  }
+
+  /// Banner único (1º uso) sugerindo definir o Constanza como leitor padrão.
+  /// Só em Android, só se ainda não somos o padrão e nunca foi exibido.
+  Future<void> _maybePromptDefaultPlayer() async {
+    if (!Platform.isAndroid || !mounted) return;
+    if (SettingsStorageService.loadDefaultPlayerPromptShown()) return;
+    if (await DefaultPlayerService.isDefault()) {
+      // Já é o padrão — não precisa sugerir novamente.
+      await SettingsStorageService.saveDefaultPlayerPromptShown(true);
+      return;
+    }
+    if (!mounted) return;
+    await SettingsStorageService.saveDefaultPlayerPromptShown(true);
+
+    final ctx = ref
+        .read(appRouterProvider)
+        .routerDelegate
+        .navigatorKey
+        .currentContext;
+    if (ctx == null || !ctx.mounted) return;
+    final l10n = AppLocalizations.of(ctx);
+    final messenger = ScaffoldMessenger.of(ctx);
+    messenger.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 8),
+        content: Text(l10n.defaultPlayerBannerMessage),
+        action: SnackBarAction(
+          label: l10n.defaultPlayerBannerAction,
+          onPressed: () => DefaultPlayerService.requestSetDefault(
+            sampleAudioUri: _sampleAudioUri(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Primeira URI `content://` da biblioteca, usada para disparar o resolver
+  /// "Abrir com" e o usuário escolher o Constanza como padrão.
+  String? _sampleAudioUri() {
+    for (final s in ref.read(libraryProvider).songs) {
+      if (s.uri.startsWith('content://')) return s.uri;
+    }
+    return null;
   }
 
   @override

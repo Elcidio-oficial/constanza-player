@@ -248,6 +248,18 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
           );
         }
       }
+    } on LyricsNetworkException {
+      // Falha de rede — NÃO marcar "sem letra". A próxima tentativa (ao reabrir
+      // ou tocar de novo) volta a buscar automaticamente. Silencioso no auto.
+      if (mounted && !auto) {
+        final l10n = AppLocalizations.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.lyricsSearchError('sem conexão')),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
@@ -978,6 +990,19 @@ class _ManualSearchSheetState extends State<_ManualSearchSheet> {
           _searched = true;
         });
       }
+    } on LyricsNetworkException {
+      // Falha de rede: não apresenta "nada encontrado" (seria enganoso) — avisa
+      // para tentar de novo. _searched fica false → o utilizador pode repetir.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).lyricsSearchError('sem conexão')),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) setState(() => _searched = true);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
