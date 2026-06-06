@@ -186,15 +186,23 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
 
   // ── Busca online ────────────────────────────────────────────
 
+  /// Id da faixa tocando agora (fallback para a que abriu a tela). Usado pelos
+  /// guards de corrida das buscas online.
+  String _currentSongId() =>
+      ref.read(playerProvider).currentSong?.id ?? widget.song.id;
+
   Future<void> _searchOnline({bool auto = false}) async {
     if (_isSearching) return;
     setState(() => _isSearching = true);
+    // Sempre usar a música atual do player — não a que abriu a tela. Capturada
+    // ANTES do try para que o guard de corrida (e o catch) saibam qual faixa
+    // originou esta busca, mesmo que o utilizador pule de música durante o await.
+    final song = ref.read(playerProvider).currentSong ?? widget.song;
+    final targetId = song.id;
     try {
-      // Sempre usar a música atual do player — não a que abriu a tela.
-      final song = ref.read(playerProvider).currentSong ?? widget.song;
-      // Garante que o lyricsProvider está vinculado a esta música
-      // antes de importar (evita salvar letras na chave errada).
-      await ref.read(lyricsProvider.notifier).loadForSong(song.id);
+      // Garante que o lyricsProvider está vinculado a esta música antes de
+      // qualquer escrita (evita salvar letras na chave errada).
+      await ref.read(lyricsProvider.notifier).loadForSong(targetId);
       final lines = await LyricsFetchService.fetch(
         title: song.title,
         artist: song.artist,
@@ -202,29 +210,16 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
         duration: song.duration,
       );
       if (!mounted) return;
+
+      // A faixa ainda é a que originou a busca? Se o utilizador pulou durante
+      // o await, o resultado é persistido na chave certa (targetId) mas NÃO é
+      // mostrado por cima da faixa nova.
+      final stillCurrent = _currentSongId() == targetId;
+      final notifier = ref.read(lyricsProvider.notifier);
+
       if (lines != null && lines.isNotEmpty) {
-        final notifier = ref.read(lyricsProvider.notifier);
-        // Import synced lines and persist
-        final lrcText = lines
-            .where((l) => l.isSynced)
-            .map((l) {
-              final ts = l.timestamp!;
-              final m = ts.inMinutes.remainder(60).toString().padLeft(2, '0');
-              final s = ts.inSeconds.remainder(60).toString().padLeft(2, '0');
-              final ms = (ts.inMilliseconds.remainder(1000) ~/ 10)
-                  .toString()
-                  .padLeft(2, '0');
-              return '[$m:$s.$ms]${l.text}';
-            })
-            .join('\n');
-        if (lrcText.isNotEmpty) {
-          await notifier.importLrc(lrcText);
-        } else {
-          // Plain text lines — import as unsynchronized text
-          final plainText = lines.map((l) => l.text).join('\n');
-          await notifier.importPlainText(plainText);
-        }
-        if (mounted) {
+        await notifier.applyOnlineResult(targetId, lines);
+        if (stillCurrent && mounted) {
           final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -237,8 +232,8 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
         // Busca esgotada sem resultado — estado definitivo e persistido.
         // O _EmptyLyrics passa a mostrar "Nenhuma letra encontrada" com
         // botão de re-tentar, em vez de um snackbar ambíguo.
-        await ref.read(lyricsProvider.notifier).markOnlineMiss();
-        if (mounted && !auto) {
+        await notifier.markOnlineMissFor(targetId);
+        if (stillCurrent && mounted && !auto) {
           final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -250,8 +245,9 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
       }
     } on LyricsNetworkException {
       // Falha de rede — NÃO marcar "sem letra". A próxima tentativa (ao reabrir
-      // ou tocar de novo) volta a buscar automaticamente. Silencioso no auto.
-      if (mounted && !auto) {
+      // ou tocar de novo) volta a buscar automaticamente. Silencioso no auto e
+      // se o utilizador já trocou de faixa.
+      if (mounted && !auto && _currentSongId() == targetId) {
         final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -821,19 +817,17 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
     );
     if (hit == null || !mounted) return;
 
-    final notifier = ref.read(lyricsProvider.notifier);
-    if (hit.hasSynced) {
-      await notifier.importLrc(hit.syncedLyrics!);
-    } else if (hit.hasPlain) {
-      await notifier.importPlainText(hit.plainLyrics!);
-    }
-    if (!mounted) return;
+    // Mesmo guard de corrida da busca automática: a faixa pode ter avançado
+    // com o bottom sheet aberto. Grava na chave de origem (song.id) e só mostra
+    // se ainda for a música atual.
+    final lines = hit.toLines();
+    if (lines == null || lines.isEmpty) return;
+    await ref.read(lyricsProvider.notifier).applyOnlineResult(song.id, lines);
+    if (!mounted || _currentSongId() != song.id) return;
     final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          l10n.lyricsLinesFound(ref.read(lyricsProvider).lines.length),
-        ),
+        content: Text(l10n.lyricsLinesFound(lines.length)),
         duration: const Duration(seconds: 2),
       ),
     );

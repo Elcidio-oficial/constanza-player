@@ -80,12 +80,32 @@ class LyricsNotifier extends StateNotifier<LyricsState> {
     state = const LyricsState();
   }
 
-  /// Regista o resultado de uma busca online esgotada (nada encontrado),
-  /// persistindo para não repetir a busca automática.
-  Future<void> markOnlineMiss() async {
-    if (state.songId == null) return;
-    await LyricsService.markMissing(state.songId!);
-    state = state.copyWith(onlineMiss: true);
+  /// Aplica letras vindas de uma busca online para [songId].
+  ///
+  /// Persiste **sempre** na chave correta ([songId]); só atualiza o estado
+  /// visível quando o provider ainda está nessa música. É o guard de corrida:
+  /// sem ele, uma busca lenta da faixa anterior aplicava o resultado na faixa
+  /// atual após um skip ("letra da música A aparecendo na B"). O trabalho de
+  /// rede não se perde — fica gravado na música certa para quando voltar a ela.
+  Future<void> applyOnlineResult(String songId, List<LyricLine> lines) async {
+    if (lines.isEmpty) return;
+    await LyricsService.init();
+    await LyricsService.save(songId, lines);
+    if (state.songId == songId) {
+      state = state.copyWith(lines: lines, onlineMiss: false, isLoaded: true);
+    }
+  }
+
+  /// Regista o resultado de uma busca online esgotada (nada encontrado) para
+  /// [songId], persistindo para não repetir a busca automática. Mesmo guard de
+  /// corrida do [applyOnlineResult]: só reflete no estado se ainda for a música
+  /// atual — assim um skip não marca a faixa nova como "sem letra".
+  Future<void> markOnlineMissFor(String songId) async {
+    await LyricsService.init();
+    await LyricsService.markMissing(songId);
+    if (state.songId == songId) {
+      state = state.copyWith(onlineMiss: true);
+    }
   }
 
   // ── Modo edição ─────────────────────────────────────────

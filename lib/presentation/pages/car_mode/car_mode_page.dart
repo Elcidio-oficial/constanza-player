@@ -560,11 +560,15 @@ class _LyricsLayoutState extends ConsumerState<_LyricsLayout> {
   Future<void> _searchOnline() async {
     if (_isSearching) return;
     setState(() => _isSearching = true);
+    final song = ref.read(playerProvider).currentSong ?? widget.song;
+    if (song == null) {
+      if (mounted) setState(() => _isSearching = false);
+      return;
+    }
+    final targetId = song.id;
     try {
-      final song = ref.read(playerProvider).currentSong ?? widget.song;
-      if (song == null) return;
-      // Vincula o provider a esta música antes de importar.
-      await ref.read(lyricsProvider.notifier).loadForSong(song.id);
+      // Vincula o provider a esta música antes de qualquer escrita.
+      await ref.read(lyricsProvider.notifier).loadForSong(targetId);
       final lines = await LyricsFetchService.fetch(
         title: song.title,
         artist: song.artist,
@@ -572,28 +576,13 @@ class _LyricsLayoutState extends ConsumerState<_LyricsLayout> {
         duration: song.duration,
       );
       if (!mounted) return;
+      // Guard de corrida: persiste na chave de origem; o notifier só atualiza a
+      // UI se a faixa atual ainda for [targetId] (skip não vaza letra p/ a nova).
       final notifier = ref.read(lyricsProvider.notifier);
       if (lines != null && lines.isNotEmpty) {
-        final synced = lines.where((l) => l.isSynced).toList();
-        if (synced.isNotEmpty) {
-          final lrc = synced
-              .map((l) {
-                final ts = l.timestamp!;
-                final m = ts.inMinutes.remainder(60).toString().padLeft(2, '0');
-                final s = ts.inSeconds.remainder(60).toString().padLeft(2, '0');
-                final ms = (ts.inMilliseconds.remainder(1000) ~/ 10)
-                    .toString()
-                    .padLeft(2, '0');
-                return '[$m:$s.$ms]${l.text}';
-              })
-              .join('\n');
-          await notifier.importLrc(lrc);
-        } else {
-          await notifier.importPlainText(lines.map((l) => l.text).join('\n'));
-        }
+        await notifier.applyOnlineResult(targetId, lines);
       } else {
-        // Nada encontrado — marca para não repetir a busca automática.
-        await notifier.markOnlineMiss();
+        await notifier.markOnlineMissFor(targetId);
       }
     } catch (_) {
       // Silencioso no Modo Carro — sem distrair o motorista.

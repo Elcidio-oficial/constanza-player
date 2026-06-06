@@ -17,6 +17,12 @@
 - **Sem regressões de precisão**: o filtro título **E** artista (`_matches`) e a distinção **rede vs. "sem letra"** continuam intactos — o 404 do `/get` é tratado como inconclusivo; só o `/search` decide que não existe letra, então uma falha de rede nunca marca a música como "sem letra".
 - `flutter analyze` no serviço: **0 issues**.
 
+### Letras — correção do "skip durante a busca"
+- **Bug:** pular de faixa **antes** de a letra ser encontrada fazia a letra da música anterior aparecer (e ser gravada) na música seguinte. Era uma **condição de corrida**: `_searchOnline` capturava a música no início, mas depois do `await` gravava no *song atual do provider* (já trocado para a faixa nova), não na de origem.
+- **Fix:** guard de corrida centralizado no `LyricsNotifier` — novos `applyOnlineResult(songId, lines)`/`markOnlineMissFor(songId)` **persistem sempre na chave correta** e só atualizam a UI se a faixa ainda for aquela (`state.songId == songId`). As telas capturam o `targetId` antes do `await` e só mostram feedback se a música não mudou.
+- **Resolve 3 sintomas de uma vez:** (1) letra da A não vaza para a B; (2) a B não é marcada como "sem letra" por engano; (3) a B passa a buscar a própria letra. Aplicado no Now Playing (auto + seleção manual) e no Modo Carro.
+- Bônus: import passa a salvar `List<LyricLine>` direto (sem roundtrip LRC text→parse).
+
 ---
 
 ## [1.4.0] — 2026-06-04
