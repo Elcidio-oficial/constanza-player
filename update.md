@@ -7,6 +7,18 @@
 
 ---
 
+## [1.4.1] — 2026-06-06
+### Letras — busca online mais rápida
+- **`LyricsFetchService.fetch()` deixou de ser cascata sequencial.** Antes, encontrar a letra exigia até **5 idas à rede em série** (`/get` exato → `/get` limpo → `/search` estratégia 1 → 2 → 3), cada uma esperando a anterior. Como o `/get` do LRCLIB exige duração **exata** (que o ID3 local quase nunca tem certa), a maioria das músicas caía até ao fim da fila — daí o "demora um tempinho".
+- **Fix — duas ondas em paralelo:**
+  - **Onda 1 (caso comum):** o caminho preciso (`/get` exato) e o fuzzy (`/search` estruturado) disparam **ao mesmo tempo** (`_fetchExactSafe` + `_runSearches`). A maioria das músicas resolve agora num **único round-trip**, mesmo quando o `/get` dá 404.
+  - **Onda 2 (só em miss):** variantes "limpas" (`/get` sem feat./- Remaster/(Live)… + termos livres) também em paralelo.
+- **`search()` (seletor manual) paraleliza as 3 estratégias** via `Future.wait`, sem o antigo gating sequencial `if hits.length < N`.
+- **Sem regressões de precisão**: o filtro título **E** artista (`_matches`) e a distinção **rede vs. "sem letra"** continuam intactos — o 404 do `/get` é tratado como inconclusivo; só o `/search` decide que não existe letra, então uma falha de rede nunca marca a música como "sem letra".
+- `flutter analyze` no serviço: **0 issues**.
+
+---
+
 ## [1.4.0] — 2026-06-04
 ### Barras de progresso — 11 novos estilos de visualizador
 - **`MediaBarStyle` expandido de 6 → 17 estilos.** Além dos cinco sliders simples (Minimal, Brilho, Gradiente, Espessa, Clássico) e da Onda sonora já existente, agora há **11 visualizadores interativos** inspirados em designs de áudio profissionais, cada um podendo ser escolhido em **Configurações → Barra de progresso**:
