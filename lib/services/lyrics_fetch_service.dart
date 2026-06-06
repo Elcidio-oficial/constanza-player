@@ -74,12 +74,38 @@ class LyricsHit {
   }
 }
 
+/// Resultado agregado de um conjunto de buscas `/search` disparadas juntas.
+///
+/// [anyResponse] = ao menos uma query obteve resposta do servidor (200 ou
+/// outro status definitivo). [networkFailed] = ao menos uma query falhou por
+/// rede. Juntos permitem distinguir "não há letra" de "a rede caiu".
+class _SearchOutcome {
+  const _SearchOutcome(this.hits, this.anyResponse, this.networkFailed);
+  final List<LyricsHit> hits;
+  final bool anyResponse;
+  final bool networkFailed;
+}
+
+/// Resultado de um `/get` exato. [networkFailed] indica falha de rede (o 404
+/// do /get é INCONCLUSIVO — quem decide a existência da letra é o /search).
+class _ExactOutcome {
+  const _ExactOutcome(this.lines, this.networkFailed);
+  final List<LyricLine>? lines;
+  final bool networkFailed;
+  bool get hasLines => lines != null && lines!.isNotEmpty;
+}
+
 /// Busca letras online via LRCLIB (lrclib.net).
 ///
 /// - [fetch]: melhor correspondência automática (uma chamada, sem interação).
 /// - [search]: lista de candidatos para escolha manual do utilizador.
 ///
 /// Prioriza letras sincronizadas (LRC); cai para texto simples quando não há.
+///
+/// **Latência:** [fetch] dispara os pedidos independentes em paralelo (duas
+/// "ondas") em vez de em cascata sequencial — a maioria das músicas resolve
+/// num único round-trip, mesmo quando o `/get` exato falha (caso comum, porque
+/// a duração do ID3 raramente bate certo com o LRCLIB).
 class LyricsFetchService {
   static const _baseUrl = 'https://lrclib.net/api';
   static const _timeout = Duration(seconds: 12);
@@ -162,38 +188,77 @@ class LyricsFetchService {
       '[LyricsFetch] query title="$title" artist="$artist" '
       'album="$album" duration=${duration?.inSeconds}s',
     );
-    // 1. /get exato (título/artista/álbum/duração crus).
-    final exact = await _fetchExact(title, artist, album, duration);
-    if (exact != null && exact.isNotEmpty) {
+
+    // ── Onda 1 (caso comum) ──────────────────────────────────────
+    // Dispara em paralelo o caminho preciso (/get exato) e o fuzzy (/search
+    // estruturado). Como o /get exige duração exata e quase sempre dá 404,
+    // antes a busca só começava DEPOIS de 1-2 /get falharem em série. Agora os
+    // dois correm juntos: na maioria das músicas a letra vem num único hop.
+    final exactFut = _fetchExactSafe(title, artist, album, duration);
+    final structFut = _runSearches([
+      {'track_name': title, 'artist_name': artist},
+    ]);
+
+    final exact = await exactFut;
+    if (exact.hasLines) {
       debugPrint('[LyricsFetch] /get HIT');
-      return exact;
+      return exact.lines;
     }
 
-    // 2. /get exato com título/artista limpos.
+    // /search é fuzzy (e a estratégia "só título" pode trazer faixas de outros
+    // artistas), por isso só aceitamos candidatos cujo título E artista batem
+    // com a música tocando — senão títulos comuns recebiam letra de outra faixa.
+    final struct = await structFut;
+    final best1 = _pickBest(
+      struct.hits.where((h) => _matches(h, title, artist)).toList(),
+      duration,
+    );
+    if (best1 != null) {
+      debugPrint('[LyricsFetch] /search HIT (onda 1)');
+      return best1.toLines();
+    }
+
+    // ── Onda 2 (casos difíceis) ──────────────────────────────────
+    // Variantes "limpas" (sem feat./- Remaster/(Live)…) — também em paralelo.
     final cTitle = _clean(title);
     final cArtist = _clean(artist);
-    if (cTitle != title || cArtist != artist) {
-      final cleaned = await _fetchExact(cTitle, cArtist, null, duration);
-      if (cleaned != null && cleaned.isNotEmpty) {
-        debugPrint('[LyricsFetch] /get(cleaned) HIT');
-        return cleaned;
-      }
+    final cleanedFut = (cTitle != title || cArtist != artist)
+        ? _fetchExactSafe(cTitle, cArtist, null, duration)
+        : Future<_ExactOutcome>.value(const _ExactOutcome(null, false));
+
+    final queries = <Map<String, String>>[];
+    final qFull = '$cTitle $cArtist'.trim();
+    if (qFull.isNotEmpty) queries.add({'q': qFull});
+    if (cTitle.isNotEmpty && cTitle != qFull) queries.add({'q': cTitle});
+    final moreFut = _runSearches(queries);
+
+    final cleaned = await cleanedFut;
+    if (cleaned.hasLines) {
+      debugPrint('[LyricsFetch] /get(cleaned) HIT');
+      return cleaned.lines;
     }
 
-    // 3. /search — escolhe o melhor candidato. Como o /search é fuzzy (e a
-    // estratégia "só título" pode trazer faixas de outros artistas), só
-    // aceitamos candidatos cujo título E artista batem com a música tocando.
-    // Sem este filtro, músicas com título comum recebiam letras de outra
-    // faixa qualquer ("letras que não são das respetivas músicas").
-    final hits = await search(title: title, artist: artist);
-    final matching = hits.where((h) => _matches(h, title, artist)).toList();
-    final best = _pickBest(matching, duration);
-    if (best != null) {
-      debugPrint(
-        '[LyricsFetch] /search HIT '
-        '(${matching.length}/${hits.length} matching candidates)',
-      );
-      return best.toLines();
+    final more = await moreFut;
+    final allHits = <LyricsHit>[...struct.hits, ...more.hits];
+    final best2 = _pickBest(
+      allHits.where((h) => _matches(h, title, artist)).toList(),
+      duration,
+    );
+    if (best2 != null) {
+      debugPrint('[LyricsFetch] /search HIT (onda 2)');
+      return best2.toLines();
+    }
+
+    // Distinguir "rede caiu" de "não há letra": o /search é a autoridade sobre
+    // existência. Só lançamos falha de rede se NENHUMA busca obteve resposta E
+    // houve falha de rede — o 404 do /get é inconclusivo e não conta aqui.
+    final searchResponded = struct.anyResponse || more.anyResponse;
+    final anyNetworkFail = exact.networkFailed ||
+        struct.networkFailed ||
+        cleaned.networkFailed ||
+        more.networkFailed;
+    if (!searchResponded && anyNetworkFail) {
+      throw const LyricsNetworkException('busca falhou (sem resposta da rede)');
     }
 
     debugPrint('[LyricsFetch] MISS (definitivo — servidor respondeu)');
@@ -206,19 +271,74 @@ class LyricsFetchService {
     required String title,
     required String artist,
   }) async {
+    // As 3 estratégias são independentes → correm em paralelo (antes eram
+    // sequenciais, somando latência). Sem o gating "if hits.length < N": com
+    // execução concorrente não há ganho em encadear, e mais candidatos ajudam
+    // o seletor manual.
+    final queries = <Map<String, String>>[
+      // Estratégia 1: estruturada (track_name + artist_name).
+      {'track_name': title, 'artist_name': artist},
+    ];
+    // Estratégia 2: termo livre limpo "titulo artista".
+    final qFull = '${_clean(title)} ${_clean(artist)}'.trim();
+    if (qFull.isNotEmpty) queries.add({'q': qFull});
+    // Estratégia 3: só o título limpo (artista mal preenchido no ID3).
+    final qTitle = _clean(title);
+    if (qTitle.isNotEmpty && qTitle != qFull) queries.add({'q': qTitle});
+
+    final outcome = await _runSearches(queries);
+
+    // Nenhuma resposta E houve falha de rede → propaga como falha de rede para
+    // o chamador não confundir com "não há letra".
+    if (outcome.hits.isEmpty && outcome.networkFailed && !outcome.anyResponse) {
+      throw const LyricsNetworkException('busca falhou (sem resposta da rede)');
+    }
+
+    final hits = outcome.hits;
+    hits.sort((a, b) {
+      if (a.hasSynced != b.hasSynced) return a.hasSynced ? -1 : 1;
+      return 0;
+    });
+    return hits.take(25).toList();
+  }
+
+  // ── Internos ──────────────────────────────────────────────────
+
+  /// Dispara N buscas `/search` em paralelo e agrega os candidatos
+  /// (deduplicados). Cada query falha de forma isolada: uma falha de rede ou
+  /// de parse numa não derruba as outras. Devolve também os flags
+  /// resposta/rede para a decisão "não há letra" vs "rede caiu".
+  static Future<_SearchOutcome> _runSearches(
+    List<Map<String, String>> queries,
+  ) async {
+    if (queries.isEmpty) return const _SearchOutcome([], false, false);
+
+    var anyResponse = false;
+    var networkFailed = false;
+
+    final responses = await Future.wait(
+      queries.map((params) async {
+        try {
+          final uri = Uri.parse(
+            '$_baseUrl/search',
+          ).replace(queryParameters: params);
+          final r = await _get(uri);
+          anyResponse = true;
+          return r;
+        } on LyricsNetworkException {
+          networkFailed = true; // as outras ainda podem ter resposta
+          return null;
+        } catch (_) {
+          return null; // erro de parse/inesperado; ignora esta estratégia
+        }
+      }),
+    );
+
     final hits = <LyricsHit>[];
     final seen = <String>{};
-    var anyResponse = false; // alguma estratégia obteve resposta do servidor
-    var networkFailed = false; // alguma estratégia falhou por rede
-
-    Future<void> run(Map<String, String> params) async {
+    for (final r in responses) {
+      if (r == null || r.statusCode != 200) continue;
       try {
-        final uri = Uri.parse(
-          '$_baseUrl/search',
-        ).replace(queryParameters: params);
-        final r = await _get(uri);
-        anyResponse = true;
-        if (r.statusCode != 200) return;
         final list = jsonDecode(r.body) as List<dynamic>;
         for (final item in list) {
           final hit = LyricsHit.fromJson(item as Map<String, dynamic>);
@@ -229,41 +349,12 @@ class LyricsFetchService {
               '${hit.duration?.inSeconds ?? 0}';
           if (seen.add(key)) hits.add(hit);
         }
-      } on LyricsNetworkException {
-        // Rede falhou nesta estratégia; as outras ainda podem ter resposta.
-        networkFailed = true;
       } catch (_) {
-        // Erro de parse de uma estratégia; as outras ainda podem acertar.
+        // Corpo malformado numa estratégia; as outras ainda valem.
       }
     }
-
-    // Estratégia 1: estruturada (track_name + artist_name).
-    await run({'track_name': title, 'artist_name': artist});
-    // Estratégia 2: termo livre limpo "titulo artista".
-    if (hits.length < 5) {
-      final q = '${_clean(title)} ${_clean(artist)}'.trim();
-      if (q.isNotEmpty) await run({'q': q});
-    }
-    // Estratégia 3: só o título limpo (artista mal preenchido no ID3).
-    if (hits.length < 3) {
-      final q = _clean(title);
-      if (q.isNotEmpty) await run({'q': q});
-    }
-
-    // Nenhuma resposta E houve falha de rede → propaga como falha de rede para
-    // o chamador não confundir com "não há letra".
-    if (hits.isEmpty && networkFailed && !anyResponse) {
-      throw const LyricsNetworkException('busca falhou (sem resposta da rede)');
-    }
-
-    hits.sort((a, b) {
-      if (a.hasSynced != b.hasSynced) return a.hasSynced ? -1 : 1;
-      return 0;
-    });
-    return hits.take(25).toList();
+    return _SearchOutcome(hits, anyResponse, networkFailed);
   }
-
-  // ── Internos ──────────────────────────────────────────────────
 
   /// Remove diacríticos (ç, ã, é, ñ…) para comparar títulos/artistas de forma
   /// robusta — o ID3 local e o LRCLIB nem sempre normalizam acentos igual.
@@ -348,7 +439,10 @@ class LyricsFetchService {
     return hits.first;
   }
 
-  static Future<List<LyricLine>?> _fetchExact(
+  /// `/get` exato, seguro para correr em paralelo: captura a falha de rede num
+  /// flag em vez de a lançar, para não derrubar a busca concorrente. Quem
+  /// decide "não há letra" é o `/search` — o 404 do `/get` é inconclusivo.
+  static Future<_ExactOutcome> _fetchExactSafe(
     String title,
     String artist,
     String? album,
@@ -362,13 +456,17 @@ class LyricsFetchService {
     };
 
     final uri = Uri.parse('$_baseUrl/get').replace(queryParameters: params);
-    // _get pode lançar LyricsNetworkException (propaga ao fetch → ao chamador).
-    final response = await _get(uri);
-    // 404 = LRCLIB não tem esta faixa (definitivo); demais não-200 → sem dados.
-    if (response.statusCode != 200) return null;
-
-    final json = jsonDecode(response.body) as Map<String, dynamic>;
-    return LyricsHit.fromJson(json).toLines();
+    try {
+      final response = await _get(uri);
+      // 404 = LRCLIB não tem ESTA faixa exata; demais não-200 → sem dados.
+      if (response.statusCode != 200) return const _ExactOutcome(null, false);
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return _ExactOutcome(LyricsHit.fromJson(json).toLines(), false);
+    } on LyricsNetworkException {
+      return const _ExactOutcome(null, true);
+    } catch (_) {
+      return const _ExactOutcome(null, false);
+    }
   }
 
   static Map<String, String> get _headers => {
