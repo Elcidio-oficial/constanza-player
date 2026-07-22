@@ -484,8 +484,21 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
   }
 
   static const _audioExts = {
-    '.mp3', '.m4a', '.aac', '.flac', '.wav', '.ogg', '.oga', '.opus',
-    '.wma', '.aiff', '.aif', '.mka', '.ape', '.alac', '.m4b',
+    '.mp3',
+    '.m4a',
+    '.aac',
+    '.flac',
+    '.wav',
+    '.ogg',
+    '.oga',
+    '.opus',
+    '.wma',
+    '.aiff',
+    '.aif',
+    '.mka',
+    '.ape',
+    '.alac',
+    '.m4b',
   };
 
   /// Remove a extensão de áudio do fim do nome (o DISPLAY_NAME do Android vem

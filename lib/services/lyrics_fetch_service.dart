@@ -144,7 +144,9 @@ class LyricsFetchService {
         await Future<void>.delayed(_backoff(attempt));
       }
     }
-    throw LyricsNetworkException('falha de rede após $_maxAttempts tentativas: $lastError');
+    throw LyricsNetworkException(
+      'falha de rede após $_maxAttempts tentativas: $lastError',
+    );
   }
 
   // ── Normalização de query ─────────────────────────────────────
@@ -253,7 +255,8 @@ class LyricsFetchService {
     // existência. Só lançamos falha de rede se NENHUMA busca obteve resposta E
     // houve falha de rede — o 404 do /get é inconclusivo e não conta aqui.
     final searchResponded = struct.anyResponse || more.anyResponse;
-    final anyNetworkFail = exact.networkFailed ||
+    final anyNetworkFail =
+        exact.networkFailed ||
         struct.networkFailed ||
         cleaned.networkFailed ||
         more.networkFailed;

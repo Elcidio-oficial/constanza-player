@@ -825,9 +825,9 @@ class SettingsPage extends ConsumerWidget {
     final uri = Uri.parse(AppConstants.privacyPolicyUrl);
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppConstants.privacyPolicyUrl)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppConstants.privacyPolicyUrl)));
     }
   }
 
@@ -1159,11 +1159,23 @@ class SettingsPage extends ConsumerWidget {
       (MediaBarStyle.thick, l10n.mediaBarThick, Icons.linear_scale_rounded),
       (MediaBarStyle.classic, l10n.mediaBarClassic, Icons.tune_rounded),
       (MediaBarStyle.waveform, l10n.mediaBarWaveform, Icons.graphic_eq_rounded),
-      (MediaBarStyle.frequencyBars, l10n.mediaBarFrequencyBars, Icons.bar_chart_rounded),
+      (
+        MediaBarStyle.frequencyBars,
+        l10n.mediaBarFrequencyBars,
+        Icons.bar_chart_rounded,
+      ),
       (MediaBarStyle.bars, l10n.mediaBarBars, Icons.equalizer_rounded),
       (MediaBarStyle.steps, l10n.mediaBarSteps, Icons.stairs_rounded),
-      (MediaBarStyle.equalizer, l10n.mediaBarEqualizer, Icons.view_week_rounded),
-      (MediaBarStyle.segments, l10n.mediaBarSegments, Icons.view_column_rounded),
+      (
+        MediaBarStyle.equalizer,
+        l10n.mediaBarEqualizer,
+        Icons.view_week_rounded,
+      ),
+      (
+        MediaBarStyle.segments,
+        l10n.mediaBarSegments,
+        Icons.view_column_rounded,
+      ),
       (MediaBarStyle.dots, l10n.mediaBarDots, Icons.grain_rounded),
       (MediaBarStyle.pulse, l10n.mediaBarPulse, Icons.monitor_heart_rounded),
       (MediaBarStyle.sineWave, l10n.mediaBarSineWave, Icons.waves_rounded),
