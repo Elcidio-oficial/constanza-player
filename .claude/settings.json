@@ -43,7 +43,11 @@
       "Read(//c/Dev_/flutter/engine/src/flutter/shell/platform/android/io/flutter/embedding/android/**)",
       "Bash(awk 'NR>=455 && NR<=520' /c/Dev_/flutter/engine/src/flutter/shell/platform/android/io/flutter/embedding/android/FlutterFragmentActivity.java)",
       "Bash(awk 'NR>=370 && NR<=433' /c/Dev_/flutter/engine/src/flutter/shell/platform/android/io/flutter/embedding/android/FlutterFragmentActivity.java)",
-      "Bash(rtk grep *)"
+      "Bash(rtk grep *)",
+      "Bash(rtk du *)",
+      "Bash(keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab)",
+      "Bash(certutil -hashfile build/app/outputs/bundle/release/app-release.aab SHA256)",
+      "WebFetch(domain:elcidio-oficial.github.io)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Dev\\Documents",
