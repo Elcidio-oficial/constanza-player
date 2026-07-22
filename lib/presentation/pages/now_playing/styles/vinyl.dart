@@ -188,11 +188,7 @@ class _VinylPainter extends CustomPainter {
     //       quase preto nas bordas) para dar volume sem virar cinza. ──
     final bodyPaint = Paint()
       ..shader = RadialGradient(
-        colors: const [
-          Color(0xFF1A1A1A),
-          Color(0xFF0E0E0E),
-          Color(0xFF050505),
-        ],
+        colors: const [Color(0xFF1A1A1A), Color(0xFF0E0E0E), Color(0xFF050505)],
         stops: const [0.0, 0.7, 1.0],
       ).createShader(Rect.fromCircle(center: center, radius: maxR));
     canvas.drawCircle(center, maxR, bodyPaint);

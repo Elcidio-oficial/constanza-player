@@ -8,6 +8,11 @@ abstract final class AppConstants {
   static const String appVersion = '1.3.3';
   static const String appAuthor = 'Elcídio Crisanto';
 
+  /// Política de privacidade hospedada via GitHub Pages no próprio repo.
+  /// Para alterar: ver PRIVACY.md na raiz + Settings → Pages no GitHub.
+  static const String privacyPolicyUrl =
+      'https://elcidio-oficial.github.io/constanza-player/PRIVACY.html';
+
   // ============================================================
   // ANIMAÇÃO — Durações
   // ============================================================

@@ -116,8 +116,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
     });
   }
 
-  bool get _isDesktop =>
-      !Platform.isAndroid && !Platform.isIOS;
+  bool get _isDesktop => !Platform.isAndroid && !Platform.isIOS;
 
   /// Número de músicas incluídas em [folder] (não excluídas).
   int _includedCount(String folder) {
@@ -187,10 +186,11 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
     // Mescla pastas já escaneadas (provider) com as adicionadas localmente
     // (_folderSongs / _selectedFolders) — sem isto, uma pasta recém-adicionada
     // não aparece até dar Aplicar e voltar à tela.
-    final folders =
-        <String>{...allFolders, ..._folderSongs.keys, ..._selectedFolders}
-            .toList()
-          ..sort();
+    final folders = <String>{
+      ...allFolders,
+      ..._folderSongs.keys,
+      ..._selectedFolders,
+    }.toList()..sort();
 
     return PopScope(
       canPop: !_dirty,
@@ -389,7 +389,10 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                     AppSpacing.xs,
                   ),
                   child: Text(
-                    AppLocalizations.of(context).foldersFolderSummary(folders.length, _selectedFolders.length),
+                    AppLocalizations.of(context).foldersFolderSummary(
+                      folders.length,
+                      _selectedFolders.length,
+                    ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurface.withValues(alpha: 0.4),
                     ),
@@ -618,8 +621,12 @@ class _FolderTile extends StatelessWidget {
                       const SizedBox(width: 3),
                       Text(
                         includedCount == totalCount
-                            ? AppLocalizations.of(context).foldersSongsTotal(totalCount)
-                            : AppLocalizations.of(context).foldersSongsPartial(includedCount, totalCount),
+                            ? AppLocalizations.of(
+                                context,
+                              ).foldersSongsTotal(totalCount)
+                            : AppLocalizations.of(
+                                context,
+                              ).foldersSongsPartial(includedCount, totalCount),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: isSelected
                               ? colors.primary.withValues(alpha: 0.7)
@@ -863,7 +870,9 @@ class _FolderSongsSelectionPageState extends State<_FolderSongsSelectionPage> {
           TextButton(
             onPressed: allIncluded ? _deselectAll : _selectAll,
             child: Text(
-              allIncluded ? AppLocalizations.of(context).commonDeselectAll : AppLocalizations.of(context).commonSelectAll,
+              allIncluded
+                  ? AppLocalizations.of(context).commonDeselectAll
+                  : AppLocalizations.of(context).commonSelectAll,
               style: TextStyle(color: colors.primary, fontSize: 12),
             ),
           ),

@@ -23,7 +23,27 @@ enum NavBarStyle { glass, artwork, solid, minimal }
 
 enum MiniPlayerStyle { glass, artwork, minimal, card, dynamic }
 
-enum MediaBarStyle { minimal, glow, gradient, thick, classic }
+enum MediaBarStyle {
+  // Simple slider family
+  minimal,
+  glow,
+  gradient,
+  thick,
+  classic,
+  // Visualizer family (one per reference audio-wave design)
+  waveform,
+  frequencyBars,
+  bars,
+  steps,
+  equalizer,
+  segments,
+  dots,
+  pulse,
+  sineWave,
+  wave,
+  mirror,
+  dense,
+}
 
 enum NowPlayingColorStyle { degrade, gradient, artwork }
 
@@ -143,6 +163,18 @@ class ThemeState {
     MediaBarStyle.gradient => l10n.mediaBarGradient,
     MediaBarStyle.thick => l10n.mediaBarThick,
     MediaBarStyle.classic => l10n.mediaBarClassic,
+    MediaBarStyle.waveform => l10n.mediaBarWaveform,
+    MediaBarStyle.frequencyBars => l10n.mediaBarFrequencyBars,
+    MediaBarStyle.bars => l10n.mediaBarBars,
+    MediaBarStyle.steps => l10n.mediaBarSteps,
+    MediaBarStyle.equalizer => l10n.mediaBarEqualizer,
+    MediaBarStyle.segments => l10n.mediaBarSegments,
+    MediaBarStyle.dots => l10n.mediaBarDots,
+    MediaBarStyle.pulse => l10n.mediaBarPulse,
+    MediaBarStyle.sineWave => l10n.mediaBarSineWave,
+    MediaBarStyle.wave => l10n.mediaBarWave,
+    MediaBarStyle.mirror => l10n.mediaBarMirror,
+    MediaBarStyle.dense => l10n.mediaBarDense,
   };
 
   String nowPlayingColorStyleLabel(AppLocalizations l10n) =>
@@ -231,10 +263,11 @@ class ThemeState {
         json['npCustomColor3'] as int?,
       ),
       autoCarMode: json['autoCarMode'] as bool? ?? false,
-      carModeView: CarModeView.values[(json['carModeView'] as int? ?? 0).clamp(
-        0,
-        CarModeView.values.length - 1,
-      )],
+      carModeView:
+          CarModeView.values[(json['carModeView'] as int? ?? 0).clamp(
+            0,
+            CarModeView.values.length - 1,
+          )],
       languageCode: json['languageCode'] as String?,
     );
   }

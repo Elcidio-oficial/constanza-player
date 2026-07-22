@@ -247,6 +247,19 @@ class SettingsStorageService {
     }
   }
 
+  // ─── LEITOR PADRÃO (default audio handler) ───
+
+  static const _keyDefaultPlayerPromptShown =
+      'constanza_default_player_prompt_shown';
+
+  /// Indica se o banner sugerindo definir o app como leitor padrão de áudio
+  /// já foi exibido (mostrado apenas uma vez para não ser intrusivo).
+  static bool loadDefaultPlayerPromptShown() =>
+      _safePrefs.getBool(_keyDefaultPlayerPromptShown) ?? false;
+
+  static Future<void> saveDefaultPlayerPromptShown(bool shown) =>
+      _safePrefs.setBool(_keyDefaultPlayerPromptShown, shown);
+
   // ─── GRID LAYOUT PREFERENCES (Albums / Artists) ───
 
   static const _keyAlbumShape = 'constanza_album_shape';

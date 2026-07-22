@@ -72,55 +72,65 @@ class WindowsSmtcService {
 
     // ── OUTGOING: handler → SMTC ─────────────────────────────────
 
-    _subs.add(_handler.playingStream.listen((playing) {
-      smtc.setPlaybackStatus(
-        playing ? PlaybackStatus.Playing : PlaybackStatus.Paused,
-      );
-    }));
+    _subs.add(
+      _handler.playingStream.listen((playing) {
+        smtc.setPlaybackStatus(
+          playing ? PlaybackStatus.Playing : PlaybackStatus.Paused,
+        );
+      }),
+    );
 
-    _subs.add(_handler.processingStateStream.listen((state) {
-      if (state == ProcessingState.idle ||
-          state == ProcessingState.completed) {
-        smtc.setPlaybackStatus(PlaybackStatus.Stopped);
-      }
-    }));
+    _subs.add(
+      _handler.processingStateStream.listen((state) {
+        if (state == ProcessingState.idle ||
+            state == ProcessingState.completed) {
+          smtc.setPlaybackStatus(PlaybackStatus.Stopped);
+        }
+      }),
+    );
 
     _subs.add(_handler.mediaItem.listen(_onMediaItem));
 
     // Position update (a cada ~1s é suficiente; just_audio emite com mais
     // frequência, mas SMTC só precisa do valor para o overlay).
-    _subs.add(_handler.positionStream.listen((pos) {
-      final dur = _handler.duration ?? Duration.zero;
-      smtc.updateTimeline(PlaybackTimeline(
-        startTimeMs: 0,
-        endTimeMs: dur.inMilliseconds,
-        positionMs: pos.inMilliseconds,
-      ));
-    }));
+    _subs.add(
+      _handler.positionStream.listen((pos) {
+        final dur = _handler.duration ?? Duration.zero;
+        smtc.updateTimeline(
+          PlaybackTimeline(
+            startTimeMs: 0,
+            endTimeMs: dur.inMilliseconds,
+            positionMs: pos.inMilliseconds,
+          ),
+        );
+      }),
+    );
 
     // ── INCOMING: SMTC buttons → handler ─────────────────────────
 
-    _subs.add(smtc.buttonPressStream.listen((btn) {
-      switch (btn) {
-        case PressedButton.play:
-          _handler.play();
-          break;
-        case PressedButton.pause:
-          _handler.pause();
-          break;
-        case PressedButton.next:
-          _handler.skipToNext();
-          break;
-        case PressedButton.previous:
-          _handler.skipToPrevious();
-          break;
-        case PressedButton.stop:
-          _handler.stop();
-          break;
-        default:
-          break;
-      }
-    }));
+    _subs.add(
+      smtc.buttonPressStream.listen((btn) {
+        switch (btn) {
+          case PressedButton.play:
+            _handler.play();
+            break;
+          case PressedButton.pause:
+            _handler.pause();
+            break;
+          case PressedButton.next:
+            _handler.skipToNext();
+            break;
+          case PressedButton.previous:
+            _handler.skipToPrevious();
+            break;
+          case PressedButton.stop:
+            _handler.stop();
+            break;
+          default:
+            break;
+        }
+      }),
+    );
   }
 
   Future<void> _onMediaItem(MediaItem? item) async {
@@ -135,11 +145,13 @@ class WindowsSmtcService {
     }
     _lastMediaItemId = item.id;
 
-    await smtc.updateMetadata(MusicMetadata(
-      title: item.title,
-      artist: item.artist ?? '',
-      album: item.album ?? '',
-    ));
+    await smtc.updateMetadata(
+      MusicMetadata(
+        title: item.title,
+        artist: item.artist ?? '',
+        album: item.album ?? '',
+      ),
+    );
 
     // Tenta gerar thumbnail a partir do artwork file URI (mesma rota do Android).
     // O numericId vem nos extras do MediaItem (definido em audio_handler.loadSong).

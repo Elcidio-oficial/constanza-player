@@ -3,9 +3,12 @@ package com.constanza.constanza_player
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -91,6 +94,14 @@ class MediaTagPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
                     return
                 }
                 deleteSong(filePath, songId, result)
+            }
+            "extractArtwork" -> {
+                val uri = call.argument<String>("uri")
+                if (uri.isNullOrEmpty()) {
+                    result.success(null)
+                    return
+                }
+                extractArtwork(uri, result)
             }
             else -> result.notImplemented()
         }
@@ -372,6 +383,40 @@ class MediaTagPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
     // ════════════════════════════════════════════════════════════
     // SHARED HELPERS
     // ════════════════════════════════════════════════════════════
+
+    /**
+     * Lê a capa embebida (ID3 APIC / FLAC picture) de um áudio externo aberto
+     * pelo explorador — `content://`, `file://` ou caminho de filesystem.
+     * Roda em thread de fundo (MediaMetadataRetriever faz I/O) e devolve os
+     * bytes da imagem, ou `null` se não houver capa / em erro. Usado para
+     * mostrar a capa de faixas que NÃO estão na biblioteca (sem MediaStore id).
+     */
+    private fun extractArtwork(uriOrPath: String, result: MethodChannel.Result) {
+        val ctx = context
+        if (ctx == null) {
+            result.success(null)
+            return
+        }
+        Thread {
+            val bytes: ByteArray? = try {
+                val retriever = MediaMetadataRetriever()
+                try {
+                    if (uriOrPath.startsWith("content://") || uriOrPath.startsWith("file://")) {
+                        retriever.setDataSource(ctx, Uri.parse(uriOrPath))
+                    } else {
+                        retriever.setDataSource(uriOrPath)
+                    }
+                    retriever.embeddedPicture
+                } finally {
+                    retriever.release()
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "extractArtwork failed for $uriOrPath: ${e.message}")
+                null
+            }
+            Handler(Looper.getMainLooper()).post { result.success(bytes) }
+        }.start()
+    }
 
     private fun findContentUri(ctx: Context, filePath: String): Uri? {
         val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI

@@ -124,8 +124,24 @@ class ArtworkNotifier extends StateNotifier<int> {
   final ArtworkCache _cache = ArtworkCache();
   MediaLibraryBackend get _backend => MediaLibrary.instance;
 
+  /// Capas de faixas externas (abertas pelo explorador, fora da biblioteca,
+  /// sem MediaStore id). Indexadas pelo `numericId` estável da Song externa.
+  /// Têm prioridade sobre o on_audio_query e servem qualquer tamanho pedido.
+  final Map<int, Uint8List> _externalArtwork = {};
+
   /// Indica se a permissão foi concedida e é seguro fazer queries.
   bool _ready = false;
+
+  /// Injeta a capa embebida de uma faixa externa. [bytes] null/vazio remove.
+  void setExternalArtwork(int id, Uint8List? bytes) {
+    if (id == 0) return;
+    if (bytes == null || bytes.isEmpty) {
+      _externalArtwork.remove(id);
+    } else {
+      _externalArtwork[id] = bytes;
+    }
+    if (mounted) state++;
+  }
 
   /// Chamado quando a permissão é concedida e a biblioteca está carregada.
   void setReady(bool ready) {
@@ -135,6 +151,10 @@ class ArtworkNotifier extends StateNotifier<int> {
 
   /// Obtém artwork em cache, ou retorna null e inicia carregamento.
   Uint8List? getArtwork(int id, ArtworkType type, {int size = 300}) {
+    // Capa de faixa externa (explorador) tem prioridade e serve qualquer tamanho.
+    final ext = _externalArtwork[id];
+    if (ext != null) return ext;
+
     // Não fazer queries antes da permissão ser concedida
     if (!_ready || id == 0) return null;
 
