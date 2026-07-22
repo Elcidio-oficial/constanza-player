@@ -99,7 +99,9 @@ class DefaultPlayerService {
         // Marca a amostra para suprimir seu eco (ver [consumeSetDefaultEcho]).
         _setDefaultSampleUri = sampleAudioUri;
         _setDefaultAt = DateTime.now();
-        await _channel.invokeMethod('openAudioChooser', {'uri': sampleAudioUri});
+        await _channel.invokeMethod('openAudioChooser', {
+          'uri': sampleAudioUri,
+        });
       } else {
         await _channel.invokeMethod('openDefaultAppSettings');
       }

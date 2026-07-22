@@ -366,9 +366,7 @@ class _ConstanzaAppState extends ConsumerState<ConstanzaApp>
       _confirmBecameDefault();
       return;
     }
-    final items = [
-      for (final r in reqs) (uri: r.uri, title: r.title),
-    ];
+    final items = [for (final r in reqs) (uri: r.uri, title: r.title)];
     ref.read(playerProvider.notifier).playExternalAudio(items);
 
     // Leitor flutuante sobre o explorador, se a permissão estiver concedida.
@@ -397,7 +395,9 @@ class _ConstanzaAppState extends ConsumerState<ConstanzaApp>
         .currentContext;
     if (ctx == null || !ctx.mounted) return;
     ScaffoldMessenger.of(ctx).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(ctx).defaultPlayerSetConfirmed)),
+      SnackBar(
+        content: Text(AppLocalizations.of(ctx).defaultPlayerSetConfirmed),
+      ),
     );
   }
 

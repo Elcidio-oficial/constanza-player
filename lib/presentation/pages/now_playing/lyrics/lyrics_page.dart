@@ -990,7 +990,9 @@ class _ManualSearchSheetState extends State<_ManualSearchSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).lyricsSearchError('sem conexão')),
+            content: Text(
+              AppLocalizations.of(context).lyricsSearchError('sem conexão'),
+            ),
             duration: const Duration(seconds: 2),
           ),
         );

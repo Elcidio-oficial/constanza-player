@@ -310,8 +310,12 @@ class _MediaBarPainter extends CustomPainter {
       case MediaBarStyle.sineWave:
         _line(canvas, size, _sinePoints(size, beats: 3.2, amp: 0.62));
       case MediaBarStyle.wave:
-        _line(canvas, size, _sinePoints(size, beats: 1.6, amp: 0.72),
-            stroke: 4.0);
+        _line(
+          canvas,
+          size,
+          _sinePoints(size, beats: 1.6, amp: 0.72),
+          stroke: 4.0,
+        );
       case MediaBarStyle.mirror:
         _mirror(canvas, size);
       // Slider styles never reach the painter.
@@ -350,17 +354,19 @@ class _MediaBarPainter extends CustomPainter {
       final x = i * slot + (slot - barW) / 2;
       paint.color = isPlayed ? _played(i / (n - 1)) : inactiveColor;
       canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(x, cy - h / 2, barW, h),
-          radius,
-        ),
+        RRect.fromRectAndRadius(Rect.fromLTWH(x, cy - h / 2, barW, h), radius),
         paint,
       );
     }
   }
 
   // ── Bottom-anchored bar chart / stair steps ─────────────────────────────────
-  void _columnBars(Canvas canvas, Size size, {required int n, required int quantize}) {
+  void _columnBars(
+    Canvas canvas,
+    Size size, {
+    required int n,
+    required int quantize,
+  }) {
     final slot = size.width / n;
     final barW = slot * 0.6;
     final maxH = size.height * 0.96;
@@ -372,16 +378,15 @@ class _MediaBarPainter extends CustomPainter {
     for (var i = 0; i < n; i++) {
       final isPlayed = i < played;
       var a = _amp(i, n);
-      if (quantize > 0) a = (((a * quantize).round()) / quantize).clamp(0.16, 1.0);
+      if (quantize > 0) {
+        a = (((a * quantize).round()) / quantize).clamp(0.16, 1.0);
+      }
       final wob = isPlayed ? 1 + 0.06 * math.sin(phase * 2 * math.pi + i) : 1.0;
       final h = (a * maxH * wob).clamp(barW, maxH);
       final x = i * slot + (slot - barW) / 2;
       paint.color = isPlayed ? _played(i / (n - 1)) : inactiveColor;
       canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(x, bottom - h, barW, h),
-          radius,
-        ),
+        RRect.fromRectAndRadius(Rect.fromLTWH(x, bottom - h, barW, h), radius),
         paint,
       );
     }
@@ -414,10 +419,7 @@ class _MediaBarPainter extends CustomPainter {
             ? _played(t).withValues(alpha: 0.55 + 0.45 * (s / segs))
             : inactiveColor;
         canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(x, top, barW, segH),
-            radius,
-          ),
+          RRect.fromRectAndRadius(Rect.fromLTWH(x, top, barW, segH), radius),
           paint,
         );
       }
@@ -435,7 +437,10 @@ class _MediaBarPainter extends CustomPainter {
 
     for (var i = 0; i < n; i++) {
       final isPlayed = i < played;
-      final h = (size.height * (0.40 + 0.45 * _amp(i, n))).clamp(6.0, size.height);
+      final h = (size.height * (0.40 + 0.45 * _amp(i, n))).clamp(
+        6.0,
+        size.height,
+      );
       final x = i * slot + (slot - segW) / 2;
       paint.color = isPlayed ? _played(i / (n - 1)) : inactiveColor;
       canvas.drawRRect(
@@ -476,7 +481,12 @@ class _MediaBarPainter extends CustomPainter {
   }
 
   // ── Line families (pulse / sineWave / wave) ──────────────────────────────────
-  void _line(Canvas canvas, Size size, List<Offset> pts, {double stroke = 2.6}) {
+  void _line(
+    Canvas canvas,
+    Size size,
+    List<Offset> pts, {
+    double stroke = 2.6,
+  }) {
     if (pts.length < 2) return;
     final path = Path()..moveTo(pts.first.dx, pts.first.dy);
     for (var i = 1; i < pts.length; i++) {
@@ -508,7 +518,11 @@ class _MediaBarPainter extends CustomPainter {
     canvas.restore();
   }
 
-  List<Offset> _sinePoints(Size size, {required double beats, required double amp}) {
+  List<Offset> _sinePoints(
+    Size size, {
+    required double beats,
+    required double amp,
+  }) {
     final cy = size.height / 2;
     final maxA = size.height / 2 * amp;
     const step = 3.0;
@@ -516,8 +530,10 @@ class _MediaBarPainter extends CustomPainter {
     for (double x = 0; x <= size.width; x += step) {
       final t = x / size.width;
       // Beating envelope so amplitude swells/relaxes across the width.
-      final env = 0.45 + 0.55 * (0.5 + 0.5 * math.sin(t * math.pi * 2 - math.pi / 2));
-      final y = cy +
+      final env =
+          0.45 + 0.55 * (0.5 + 0.5 * math.sin(t * math.pi * 2 - math.pi / 2));
+      final y =
+          cy +
           math.sin(t * math.pi * 2 * beats + phase * 2 * math.pi) * maxA * env;
       pts.add(Offset(x, y));
     }
