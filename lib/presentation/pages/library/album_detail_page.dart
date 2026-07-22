@@ -499,7 +499,9 @@ class AlbumDetailPage extends ConsumerWidget {
                       }
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(l10n.albumDetailAddedToOk(songs.length, p.name)),
+                          content: Text(
+                            l10n.albumDetailAddedToOk(songs.length, p.name),
+                          ),
                           duration: const Duration(seconds: 2),
                         ),
                       );

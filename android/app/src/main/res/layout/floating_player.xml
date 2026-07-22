@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Leitor flutuante (system overlay) exibido ao tocar áudio pelo explorador.
+     Formato de card largo (proporção ~4x2, estilo widget de ecrã): capa grande
+     à esquerda, título/artista, linha do tempo arrastável (SeekBar) e play. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/floating_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
+
+    <LinearLayout
+        android:id="@+id/floating_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/floating_player_bg"
+        android:elevation="14dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp">
+
+        <!-- Capa (bitmap já vem arredondado do código). -->
+        <ImageView
+            android:id="@+id/floating_artwork"
+            android:layout_width="108dp"
+            android:layout_height="108dp"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="Capa" />
+
+        <!-- Título, artista e linha do tempo. -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="6dp"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/floating_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Constanza Músicas"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/floating_artist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text=""
+                android:textColor="#B3FFFFFF"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/floating_position"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0:00"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="11sp" />
+
+                <!-- Linha do tempo arrastável: toque/arraste faz seek na música. -->
+                <SeekBar
+                    android:id="@+id/floating_progress"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:max="1000"
+                    android:progress="0"
+                    android:progressTint="#FFFFFF"
+                    android:progressBackgroundTint="#4DFFFFFF"
+                    android:thumbTint="#FFFFFF" />
+
+                <TextView
+                    android:id="@+id/floating_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0:00"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Play/Pause -->
+        <ImageButton
+            android:id="@+id/floating_play_pause"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_widget_play"
+            android:tint="#FFFFFF"
+            android:background="@drawable/widget_btn_circle"
+            android:contentDescription="Play/Pause"
+            android:scaleType="centerInside"
+            android:padding="12dp" />
+
+    </LinearLayout>
+
+    <!-- Fechar (canto superior direito, sobreposto ao card).
+         elevation MAIOR que a do card (14dp): no Android o touch dispatch dá
+         prioridade ao filho com maior Z. Sem isto, o card (elevation 14) recebia
+         o toque na zona do X primeiro e o seu OnTouchListener consumia-o como
+         início de arraste — o onClick do X nunca disparava (overlay não fechava). -->
+    <ImageButton
+        android:id="@+id/floating_close"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="2dp"
+        android:elevation="20dp"
+        android:src="@drawable/ic_floating_close"
+        android:tint="#CCFFFFFF"
+        android:background="@android:color/transparent"
+        android:contentDescription="Fechar"
+        android:scaleType="centerInside"
+        android:padding="8dp" />
+
+</FrameLayout>

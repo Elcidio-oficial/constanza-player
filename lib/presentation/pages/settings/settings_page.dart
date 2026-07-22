@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/constants/app_constants.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -13,6 +14,7 @@ import 'package:constanza_player/core/theme/app_backgrounds.dart';
 import 'package:constanza_player/services/crash_reporter.dart';
 import 'package:constanza_player/services/backup_service.dart';
 import 'package:constanza_player/services/permission_service.dart';
+import 'package:constanza_player/services/default_player_service.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/providers/audio_settings_provider.dart';
@@ -405,6 +407,10 @@ class SettingsPage extends ConsumerWidget {
                   AppPageRoute(page: const DuplicatesPage()),
                 ),
               ),
+              if (Platform.isAndroid) ...[
+                _divider(colors),
+                _DefaultPlayerTile(colors: colors, theme: theme),
+              ],
             ],
           ),
 
@@ -453,6 +459,15 @@ class SettingsPage extends ConsumerWidget {
                 colors: colors,
                 theme: theme,
                 onTap: () => _showDiagnosticsSheet(context),
+              ),
+              _divider(colors),
+              _SettingsTile(
+                icon: Icons.privacy_tip_outlined,
+                title: l10n.settingsPrivacyPolicy,
+                subtitle: l10n.settingsPrivacyPolicyDesc,
+                colors: colors,
+                theme: theme,
+                onTap: () => _openPrivacyPolicy(context),
               ),
               _divider(colors),
               _SettingsTile(
@@ -628,7 +643,9 @@ class SettingsPage extends ConsumerWidget {
     if (already) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).settingsBackgroundExemptionAlready),
+          content: Text(
+            AppLocalizations.of(context).settingsBackgroundExemptionAlready,
+          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -802,6 +819,16 @@ class SettingsPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    final uri = Uri.parse(AppConstants.privacyPolicyUrl);
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppConstants.privacyPolicyUrl)),
+      );
+    }
   }
 
   void _showAboutDialog(BuildContext context) {
@@ -989,69 +1016,69 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.lg),
                 // Degradê option
                 _ColorStyleOption(
-                title: l10n.npColorStyleDegrade,
-                description: l10n.npColorOptionDegradeDesc,
-                icon: Icons.gradient_rounded,
-                isSelected: current == NowPlayingColorStyle.degrade,
-                colors: colors,
-                theme: theme,
-                previewColors: const [
-                  Color(0xFF6A3DE8),
-                  Color(0xFF3A1F8C),
-                  Color(0xFF1A1028),
-                ],
-                isLinear: true,
-                onTap: () {
-                  ref
-                      .read(themeProvider.notifier)
-                      .setNowPlayingColorStyle(NowPlayingColorStyle.degrade);
-                  ctx.pop();
-                },
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              // Gradient option
-              _ColorStyleOption(
-                title: l10n.npColorStyleGradient,
-                description: l10n.npColorOptionGradientDesc,
-                icon: Icons.blur_on_rounded,
-                isSelected: current == NowPlayingColorStyle.gradient,
-                colors: colors,
-                theme: theme,
-                previewColors: const [
-                  Color(0xFF00BCD4),
-                  Color(0xFFFF9800),
-                  Color(0xFFE91E63),
-                ],
-                isLinear: false,
-                onTap: () {
-                  ref
-                      .read(themeProvider.notifier)
-                      .setNowPlayingColorStyle(NowPlayingColorStyle.gradient);
-                  ctx.pop();
-                },
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              // Artwork fullscreen option — like Car Mode
-              _ColorStyleOption(
-                title: l10n.npColorStyleArtwork,
-                description: l10n.npColorOptionArtworkDesc,
-                icon: Icons.wallpaper_rounded,
-                isSelected: current == NowPlayingColorStyle.artwork,
-                colors: colors,
-                theme: theme,
-                previewColors: const [
-                  Color(0xFF2A2A2A),
-                  Color(0xFF4A4A4A),
-                  Color(0xFF1A1A1A),
-                ],
-                isLinear: false,
-                onTap: () {
-                  ref
-                      .read(themeProvider.notifier)
-                      .setNowPlayingColorStyle(NowPlayingColorStyle.artwork);
-                  ctx.pop();
-                },
-              ),
+                  title: l10n.npColorStyleDegrade,
+                  description: l10n.npColorOptionDegradeDesc,
+                  icon: Icons.gradient_rounded,
+                  isSelected: current == NowPlayingColorStyle.degrade,
+                  colors: colors,
+                  theme: theme,
+                  previewColors: const [
+                    Color(0xFF6A3DE8),
+                    Color(0xFF3A1F8C),
+                    Color(0xFF1A1028),
+                  ],
+                  isLinear: true,
+                  onTap: () {
+                    ref
+                        .read(themeProvider.notifier)
+                        .setNowPlayingColorStyle(NowPlayingColorStyle.degrade);
+                    ctx.pop();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                // Gradient option
+                _ColorStyleOption(
+                  title: l10n.npColorStyleGradient,
+                  description: l10n.npColorOptionGradientDesc,
+                  icon: Icons.blur_on_rounded,
+                  isSelected: current == NowPlayingColorStyle.gradient,
+                  colors: colors,
+                  theme: theme,
+                  previewColors: const [
+                    Color(0xFF00BCD4),
+                    Color(0xFFFF9800),
+                    Color(0xFFE91E63),
+                  ],
+                  isLinear: false,
+                  onTap: () {
+                    ref
+                        .read(themeProvider.notifier)
+                        .setNowPlayingColorStyle(NowPlayingColorStyle.gradient);
+                    ctx.pop();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                // Artwork fullscreen option — like Car Mode
+                _ColorStyleOption(
+                  title: l10n.npColorStyleArtwork,
+                  description: l10n.npColorOptionArtworkDesc,
+                  icon: Icons.wallpaper_rounded,
+                  isSelected: current == NowPlayingColorStyle.artwork,
+                  colors: colors,
+                  theme: theme,
+                  previewColors: const [
+                    Color(0xFF2A2A2A),
+                    Color(0xFF4A4A4A),
+                    Color(0xFF1A1A1A),
+                  ],
+                  isLinear: false,
+                  onTap: () {
+                    ref
+                        .read(themeProvider.notifier)
+                        .setNowPlayingColorStyle(NowPlayingColorStyle.artwork);
+                    ctx.pop();
+                  },
+                ),
               ],
             ),
           ),
@@ -1131,6 +1158,18 @@ class SettingsPage extends ConsumerWidget {
       (MediaBarStyle.gradient, l10n.mediaBarGradient, Icons.gradient_rounded),
       (MediaBarStyle.thick, l10n.mediaBarThick, Icons.linear_scale_rounded),
       (MediaBarStyle.classic, l10n.mediaBarClassic, Icons.tune_rounded),
+      (MediaBarStyle.waveform, l10n.mediaBarWaveform, Icons.graphic_eq_rounded),
+      (MediaBarStyle.frequencyBars, l10n.mediaBarFrequencyBars, Icons.bar_chart_rounded),
+      (MediaBarStyle.bars, l10n.mediaBarBars, Icons.equalizer_rounded),
+      (MediaBarStyle.steps, l10n.mediaBarSteps, Icons.stairs_rounded),
+      (MediaBarStyle.equalizer, l10n.mediaBarEqualizer, Icons.view_week_rounded),
+      (MediaBarStyle.segments, l10n.mediaBarSegments, Icons.view_column_rounded),
+      (MediaBarStyle.dots, l10n.mediaBarDots, Icons.grain_rounded),
+      (MediaBarStyle.pulse, l10n.mediaBarPulse, Icons.monitor_heart_rounded),
+      (MediaBarStyle.sineWave, l10n.mediaBarSineWave, Icons.waves_rounded),
+      (MediaBarStyle.wave, l10n.mediaBarWave, Icons.water_rounded),
+      (MediaBarStyle.mirror, l10n.mediaBarMirror, Icons.flip_rounded),
+      (MediaBarStyle.dense, l10n.mediaBarDense, Icons.density_medium_rounded),
     ];
     showDialog(
       context: context,
@@ -1332,6 +1371,126 @@ class _SettingsTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ============================================================
+// DEFAULT PLAYER TILE — status do leitor padrão de áudio (Android)
+// ============================================================
+
+/// Tile que mostra se o Constanza é o leitor de áudio padrão e abre um diálogo
+/// explicando como defini-lo. Re-checa o status ao voltar das configurações
+/// do sistema (lifecycle resumed). Só faz sentido em Android.
+class _DefaultPlayerTile extends ConsumerStatefulWidget {
+  const _DefaultPlayerTile({required this.colors, required this.theme});
+
+  final ColorScheme colors;
+  final ThemeData theme;
+
+  @override
+  ConsumerState<_DefaultPlayerTile> createState() => _DefaultPlayerTileState();
+}
+
+class _DefaultPlayerTileState extends ConsumerState<_DefaultPlayerTile>
+    with WidgetsBindingObserver {
+  bool? _isDefault; // null = ainda checando
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refresh();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Ao voltar das configurações do sistema, re-checa o status.
+    if (state == AppLifecycleState.resumed) _refresh();
+  }
+
+  Future<void> _refresh() async {
+    final v = await DefaultPlayerService.isDefault();
+    if (mounted) setState(() => _isDefault = v);
+  }
+
+  /// Primeira URI `content://` da biblioteca, para disparar o resolver
+  /// "Abrir com" e o usuário escolher o Constanza como padrão.
+  String? _sampleAudioUri() {
+    for (final s in ref.read(libraryProvider).songs) {
+      if (s.uri.startsWith('content://')) return s.uri;
+    }
+    return null;
+  }
+
+  Future<void> _openDialog() async {
+    final l10n = AppLocalizations.of(context);
+    final isDefault = _isDefault == true;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.settingsDefaultPlayer),
+        content: Text(
+          isDefault
+              ? l10n.defaultPlayerDialogBodyActive
+              : l10n.defaultPlayerDialogBody,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.defaultPlayerDialogClose),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              // Já é padrão → abrir settings (para limpar). Caso contrário →
+              // resolver "Abrir com" de um áudio real (deixa escolher "Sempre").
+              DefaultPlayerService.requestSetDefault(
+                sampleAudioUri: isDefault ? null : _sampleAudioUri(),
+              );
+            },
+            child: Text(
+              isDefault
+                  ? l10n.defaultPlayerOpenSettings
+                  : l10n.defaultPlayerSetAsDefault,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final isDefault = _isDefault;
+    final subtitle = isDefault == null
+        ? l10n.defaultPlayerStatusChecking
+        : (isDefault
+              ? l10n.defaultPlayerStatusYes
+              : l10n.defaultPlayerStatusNo);
+    return _SettingsTile(
+      icon: isDefault == true
+          ? Icons.verified_rounded
+          : Icons.library_music_outlined,
+      title: l10n.settingsDefaultPlayer,
+      subtitle: subtitle,
+      colors: widget.colors,
+      theme: widget.theme,
+      trailing: isDefault == true
+          ? Icon(
+              Icons.check_circle_rounded,
+              size: 18,
+              color: widget.colors.primary,
+            )
+          : null,
+      onTap: _openDialog,
     );
   }
 }
@@ -1951,7 +2110,9 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).backupFileEmptyOrUnreadable),
+            content: Text(
+              AppLocalizations.of(context).backupFileEmptyOrUnreadable,
+            ),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -1985,7 +2146,9 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).backupRestoredOk(restored)),
+          content: Text(
+            AppLocalizations.of(context).backupRestoredOk(restored),
+          ),
           duration: const Duration(seconds: 4),
         ),
       );
@@ -1993,7 +2156,9 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).backupFileOpenError(e.toString())),
+          content: Text(
+            AppLocalizations.of(context).backupFileOpenError(e.toString()),
+          ),
           duration: const Duration(seconds: 3),
         ),
       );

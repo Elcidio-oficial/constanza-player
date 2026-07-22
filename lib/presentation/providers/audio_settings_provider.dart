@@ -361,7 +361,9 @@ class AudioSettingsNotifier extends StateNotifier<AudioSettingsState> {
   void _runFadeOut() {
     _sleepFadeStartTimer = null;
     var tick = 0;
-    _sleepFadeTickTimer = Timer.periodic(const Duration(milliseconds: 100), (t) {
+    _sleepFadeTickTimer = Timer.periodic(const Duration(milliseconds: 100), (
+      t,
+    ) {
       tick++;
       if (!mounted) {
         t.cancel();

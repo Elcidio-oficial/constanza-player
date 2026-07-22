@@ -172,7 +172,9 @@ class HistoryPage extends ConsumerWidget {
     final today = DateTime(now.year, now.month, now.day);
     final date = DateTime(d.year, d.month, d.day);
     if (date == today) return l10n.historyDateToday;
-    if (date == today.subtract(const Duration(days: 1))) return l10n.historyDateYesterday;
+    if (date == today.subtract(const Duration(days: 1))) {
+      return l10n.historyDateYesterday;
+    }
     return DateFormat('dd MMM yyyy', l10n.localeName).format(d).toUpperCase();
   }
 
@@ -189,13 +191,19 @@ class HistoryPage extends ConsumerWidget {
         title: Text(l10n.historyClearTitle),
         content: Text(l10n.historyClearBody),
         actions: [
-          TextButton(onPressed: () => ctx.pop(), child: Text(l10n.commonCancel)),
+          TextButton(
+            onPressed: () => ctx.pop(),
+            child: Text(l10n.commonCancel),
+          ),
           TextButton(
             onPressed: () {
               ref.read(playlistProvider.notifier).clearHistory();
               ctx.pop();
             },
-            child: Text(l10n.historyClearAction, style: TextStyle(color: colors.error)),
+            child: Text(
+              l10n.historyClearAction,
+              style: TextStyle(color: colors.error),
+            ),
           ),
         ],
       ),

@@ -34,6 +34,10 @@ import 'package:constanza_player/presentation/pages/mini_player/mini_player_page
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
+    // Rede de segurança: qualquer location não mapeada (p.ex. uma URI de intent
+    // externo que escape do bloqueio de deep linking) volta ao /home em vez de
+    // exibir a tela "Page Not Found".
+    onException: (context, state, router) => router.go('/home'),
     routes: [
       GoRoute(
         path: '/splash',

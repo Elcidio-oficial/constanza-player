@@ -75,6 +75,11 @@ class _AppShellState extends ConsumerState<AppShell>
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.detached) {
       ref.read(playerProvider.notifier).savePlaybackState();
+    } else if (state == AppLifecycleState.resumed) {
+      // Ao voltar à frente: se o player nativo morreu enquanto em background
+      // (SO recuperou o decoder), re-prepara a faixa para o play() voltar a
+      // funcionar — sem precisar forçar o fecho do app.
+      ref.read(playerProvider.notifier).recoverIfNeeded();
     }
   }
 
@@ -370,10 +375,22 @@ class _PremiumNavBar extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final items = [
       _NavItem(Icons.home_outlined, Icons.home_rounded, l10n.navHome),
-      _NavItem(Icons.library_music_outlined, Icons.library_music_rounded, l10n.navSongs),
-      _NavItem(Icons.queue_music_outlined, Icons.queue_music_rounded, l10n.navPlaylists),
+      _NavItem(
+        Icons.library_music_outlined,
+        Icons.library_music_rounded,
+        l10n.navSongs,
+      ),
+      _NavItem(
+        Icons.queue_music_outlined,
+        Icons.queue_music_rounded,
+        l10n.navPlaylists,
+      ),
       _NavItem(Icons.search_outlined, Icons.search_rounded, l10n.navSearch),
-      _NavItem(Icons.settings_outlined, Icons.settings_rounded, l10n.navSettings),
+      _NavItem(
+        Icons.settings_outlined,
+        Icons.settings_rounded,
+        l10n.navSettings,
+      ),
     ];
     final navStyle = ref.watch(themeProvider.select((s) => s.navBarStyle));
     final artworkColor = ref.watch(artworkColorProvider);

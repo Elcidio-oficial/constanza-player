@@ -396,7 +396,9 @@ class PlaylistDetailPage extends ConsumerWidget {
                     // Stats
                     Text(
                       [
-                        AppLocalizations.of(context).playlistsCount(songs.length),
+                        AppLocalizations.of(
+                          context,
+                        ).playlistsCount(songs.length),
                         if (songs.isNotEmpty) durationLabel,
                         if (favCount > 0) '$favCount ♥',
                       ].join(' · '),
@@ -434,7 +436,9 @@ class PlaylistDetailPage extends ConsumerWidget {
                           Expanded(
                             child: _PremiumActionButton(
                               icon: Icons.play_arrow_rounded,
-                              label: AppLocalizations.of(context).albumDetailPlay,
+                              label: AppLocalizations.of(
+                                context,
+                              ).albumDetailPlay,
                               filled: true,
                               colors: colors,
                               theme: theme,
@@ -449,7 +453,9 @@ class PlaylistDetailPage extends ConsumerWidget {
                           Expanded(
                             child: _PremiumActionButton(
                               icon: Icons.shuffle_rounded,
-                              label: AppLocalizations.of(context).albumDetailShuffle,
+                              label: AppLocalizations.of(
+                                context,
+                              ).albumDetailShuffle,
                               filled: false,
                               colors: colors,
                               theme: theme,
@@ -538,7 +544,9 @@ class PlaylistDetailPage extends ConsumerWidget {
                             .removeSongFromPlaylist(playlist.id, song.id);
                         _showSnack(
                           context,
-                          AppLocalizations.of(context).playlistsRemovedFrom(currentPlaylist.name),
+                          AppLocalizations.of(
+                            context,
+                          ).playlistsRemovedFrom(currentPlaylist.name),
                         );
                       },
                       child: SongTile(
@@ -660,7 +668,10 @@ class PlaylistDetailPage extends ConsumerWidget {
                       for (final song in songs.reversed) {
                         player.addNextInQueue(song);
                       }
-                      _showSnack(context, AppLocalizations.of(context).npAddedToQueue);
+                      _showSnack(
+                        context,
+                        AppLocalizations.of(context).npAddedToQueue,
+                      );
                     },
                   ),
                   ListTile(
@@ -672,7 +683,10 @@ class PlaylistDetailPage extends ConsumerWidget {
                       for (final song in songs) {
                         player.addToQueue(song);
                       }
-                      _showSnack(context, AppLocalizations.of(context).npAddedToQueue);
+                      _showSnack(
+                        context,
+                        AppLocalizations.of(context).npAddedToQueue,
+                      );
                     },
                   ),
                 ],
@@ -692,7 +706,9 @@ class PlaylistDetailPage extends ConsumerWidget {
                 if (songs.isNotEmpty)
                   ListTile(
                     leading: const Icon(Icons.file_upload_outlined),
-                    title: Text(AppLocalizations.of(context).playlistsExportM3U),
+                    title: Text(
+                      AppLocalizations.of(context).playlistsExportM3U,
+                    ),
                     onTap: () {
                       ctx.pop();
                       final m3u = ref
@@ -708,7 +724,9 @@ class PlaylistDetailPage extends ConsumerWidget {
                 // Imagem (todas as playlists)
                 ListTile(
                   leading: const Icon(Icons.image_outlined),
-                  title: Text(AppLocalizations.of(context).playlistsChangeImage),
+                  title: Text(
+                    AppLocalizations.of(context).playlistsChangeImage,
+                  ),
                   onTap: () {
                     ctx.pop();
                     _pickImage(context, ref, currentPlaylist.id);
@@ -720,20 +738,27 @@ class PlaylistDetailPage extends ConsumerWidget {
                       Icons.hide_image_outlined,
                       color: colors.onSurface.withValues(alpha: 0.7),
                     ),
-                    title: Text(AppLocalizations.of(context).playlistsRemoveImage),
+                    title: Text(
+                      AppLocalizations.of(context).playlistsRemoveImage,
+                    ),
                     onTap: () {
                       ctx.pop();
                       ref
                           .read(playlistProvider.notifier)
                           .removePlaylistImage(currentPlaylist.id);
-                      _showSnack(context, AppLocalizations.of(context).playlistsImageRemoved);
+                      _showSnack(
+                        context,
+                        AppLocalizations.of(context).playlistsImageRemoved,
+                      );
                     },
                   ),
                 // Editar/excluir (somente user playlists)
                 if (!currentPlaylist.isSmartPlaylist) ...[
                   ListTile(
                     leading: const Icon(Icons.edit_outlined),
-                    title: Text(AppLocalizations.of(context).playlistsEditPlaylist),
+                    title: Text(
+                      AppLocalizations.of(context).playlistsEditPlaylist,
+                    ),
                     onTap: () {
                       ctx.pop();
                       _showEditDialog(context, ref, currentPlaylist);
@@ -800,7 +825,9 @@ class PlaylistDetailPage extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
         title: Text(AppLocalizations.of(context).playlistsExcludeTitle),
-        content: Text(AppLocalizations.of(context).playlistsExcludeBody(pl.name)),
+        content: Text(
+          AppLocalizations.of(context).playlistsExcludeBody(pl.name),
+        ),
         actions: [
           TextButton(
             onPressed: () => ctx.pop(),
@@ -815,7 +842,10 @@ class PlaylistDetailPage extends ConsumerWidget {
               ref.read(playlistProvider.notifier).deletePlaylist(pl.id);
               context.pop();
             },
-            child: Text(AppLocalizations.of(context).playlistsExclude, style: TextStyle(color: colors.error)),
+            child: Text(
+              AppLocalizations.of(context).playlistsExclude,
+              style: TextStyle(color: colors.error),
+            ),
           ),
         ],
       ),
@@ -865,7 +895,9 @@ class PlaylistDetailPage extends ConsumerWidget {
               controller: descController,
               maxLines: 2,
               decoration: InputDecoration(
-                labelText: AppLocalizations.of(context).playlistsDescriptionField,
+                labelText: AppLocalizations.of(
+                  context,
+                ).playlistsDescriptionField,
                 labelStyle: TextStyle(
                   color: colors.onSurface.withValues(alpha: 0.4),
                 ),
@@ -904,7 +936,10 @@ class PlaylistDetailPage extends ConsumerWidget {
                 ctx.pop();
               }
             },
-            child: Text(AppLocalizations.of(context).commonSave, style: TextStyle(color: colors.onSurface)),
+            child: Text(
+              AppLocalizations.of(context).commonSave,
+              style: TextStyle(color: colors.onSurface),
+            ),
           ),
         ],
       ),

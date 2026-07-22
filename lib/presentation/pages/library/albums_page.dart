@@ -91,8 +91,9 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
               icon: Icon(_shapeIcon(_shape)),
               onPressed: () {
                 setState(() {
-                  _shape = AlbumCardShape.values[(_shape.index + 1) %
-                      AlbumCardShape.values.length];
+                  _shape =
+                      AlbumCardShape.values[(_shape.index + 1) %
+                          AlbumCardShape.values.length];
                 });
                 SettingsStorageService.saveAlbumShape(_shape.index);
               },
@@ -240,8 +241,16 @@ class _FilterRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final entries = [
       (AlbumFilter.all, l10n.albumsFilterAll, Icons.apps_rounded),
-      (AlbumFilter.popularity, l10n.albumsFilterPopular, Icons.trending_up_rounded),
-      (AlbumFilter.favorites, l10n.albumsFilterFavorites, Icons.favorite_rounded),
+      (
+        AlbumFilter.popularity,
+        l10n.albumsFilterPopular,
+        Icons.trending_up_rounded,
+      ),
+      (
+        AlbumFilter.favorites,
+        l10n.albumsFilterFavorites,
+        Icons.favorite_rounded,
+      ),
     ];
     return SizedBox(
       height: 40,

@@ -91,8 +91,9 @@ class _ArtistsPageState extends ConsumerState<ArtistsPage> {
               icon: Icon(_shapeIcon(_shape)),
               onPressed: () {
                 setState(() {
-                  _shape = ArtistCardShape.values[(_shape.index + 1) %
-                      ArtistCardShape.values.length];
+                  _shape =
+                      ArtistCardShape.values[(_shape.index + 1) %
+                          ArtistCardShape.values.length];
                 });
                 SettingsStorageService.saveArtistShape(_shape.index);
               },
@@ -235,8 +236,16 @@ class _FilterRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final entries = [
       (ArtistFilter.all, l10n.artistsFilterAll, Icons.apps_rounded),
-      (ArtistFilter.popularity, l10n.artistsFilterPopular, Icons.trending_up_rounded),
-      (ArtistFilter.favorites, l10n.artistsFilterFavorites, Icons.favorite_rounded),
+      (
+        ArtistFilter.popularity,
+        l10n.artistsFilterPopular,
+        Icons.trending_up_rounded,
+      ),
+      (
+        ArtistFilter.favorites,
+        l10n.artistsFilterFavorites,
+        Icons.favorite_rounded,
+      ),
     ];
     return SizedBox(
       height: 40,

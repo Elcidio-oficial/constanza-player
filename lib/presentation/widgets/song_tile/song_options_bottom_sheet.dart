@@ -149,9 +149,7 @@ class SongOptionsBottomSheet extends ConsumerWidget {
                       color: isFav ? colors.error : null,
                     ),
                     title: Text(
-                      isFav
-                          ? l10n.npRemoveFavorite
-                          : l10n.npAddFavorite,
+                      isFav ? l10n.npRemoveFavorite : l10n.npAddFavorite,
                     ),
                     onTap: () {
                       HapticFeedback.mediumImpact();

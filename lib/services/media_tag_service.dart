@@ -53,4 +53,17 @@ class MediaTagService {
       return false;
     }
   }
+
+  /// Lê a capa embebida de um áudio externo ([uri] = `content://`, `file://`
+  /// ou caminho). Usado para mostrar a capa de faixas abertas pelo explorador
+  /// que não estão na biblioteca (sem MediaStore id). `null` se não houver capa.
+  static Future<Uint8List?> extractArtwork(String uri) async {
+    try {
+      return await _channel.invokeMethod<Uint8List>('extractArtwork', {
+        'uri': uri,
+      });
+    } catch (_) {
+      return null;
+    }
+  }
 }

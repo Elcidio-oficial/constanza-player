@@ -96,7 +96,9 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
           content: Text(
             failCount == 0
                 ? AppLocalizations.of(context).duplicatesRemovedOk(successCount)
-                : AppLocalizations.of(context).duplicatesRemovedPartial(successCount, failCount),
+                : AppLocalizations.of(
+                    context,
+                  ).duplicatesRemovedPartial(successCount, failCount),
           ),
           backgroundColor: failCount == 0 ? colors.primary : Colors.orange,
         ),
@@ -113,7 +115,9 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
             final colors = Theme.of(ctx).colorScheme;
             return AlertDialog(
               title: Text(AppLocalizations.of(ctx).duplicatesRemoveTitle),
-              content: Text(AppLocalizations.of(ctx).duplicatesRemoveConfirm(count)),
+              content: Text(
+                AppLocalizations.of(ctx).duplicatesRemoveConfirm(count),
+              ),
               actions: [
                 TextButton(
                   onPressed: () => ctx.pop(false),
@@ -472,7 +476,11 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        isKeep ? AppLocalizations.of(context).duplicatesKeep : AppLocalizations.of(context).duplicatesRemoveLabel,
+                        isKeep
+                            ? AppLocalizations.of(context).duplicatesKeep
+                            : AppLocalizations.of(
+                                context,
+                              ).duplicatesRemoveLabel,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: isKeep
                               ? Colors.green.shade400
@@ -553,7 +561,9 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
           label: Text(
             _isLoading
                 ? AppLocalizations.of(context).duplicatesRemoving
-                : AppLocalizations.of(context).duplicatesRemoveCount(_totalToDelete),
+                : AppLocalizations.of(
+                    context,
+                  ).duplicatesRemoveCount(_totalToDelete),
           ),
           style: FilledButton.styleFrom(
             backgroundColor: _totalToDelete > 0 ? colors.error : null,

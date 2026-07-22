@@ -19,8 +19,16 @@ import 'scan_crash_guard.dart';
 /// - Sem MediaStore: precisa de pastas configuradas pelo usuário.
 class WindowsFileBackend implements MediaLibraryBackend {
   static const _audioExtensions = {
-    '.mp3', '.flac', '.m4a', '.aac', '.ogg', '.opus',
-    '.wav', '.wma', '.alac', '.aiff',
+    '.mp3',
+    '.flac',
+    '.m4a',
+    '.aac',
+    '.ogg',
+    '.opus',
+    '.wav',
+    '.wma',
+    '.alac',
+    '.aiff',
   };
 
   // Cache em memória após primeiro scan — evita re-ler todas as tags
@@ -152,8 +160,8 @@ class WindowsFileBackend implements MediaLibraryBackend {
     final rawArtist = (tag?.trackArtist?.trim().isNotEmpty ?? false)
         ? tag!.trackArtist!.trim()
         : (tag?.albumArtist?.trim().isNotEmpty ?? false)
-            ? tag!.albumArtist!.trim()
-            : 'Desconhecido';
+        ? tag!.albumArtist!.trim()
+        : 'Desconhecido';
     final artist = rawArtist;
     final album = (tag?.album?.trim().isNotEmpty ?? false)
         ? tag!.album!.trim()
@@ -225,16 +233,21 @@ class WindowsFileBackend implements MediaLibraryBackend {
       );
     }
 
-    final result = byKey.values
-        .map((a) => Album(
-              id: a.id,
-              name: a.name,
-              artist: a.artist,
-              songCount: a.count,
-              year: null,
-            ))
-        .toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final result =
+        byKey.values
+            .map(
+              (a) => Album(
+                id: a.id,
+                name: a.name,
+                artist: a.artist,
+                songCount: a.count,
+                year: null,
+              ),
+            )
+            .toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
 
     _albumsCache = result;
     return result;
@@ -249,24 +262,26 @@ class WindowsFileBackend implements MediaLibraryBackend {
     for (final s in songs) {
       final agg = byArtist.putIfAbsent(
         s.artist,
-        () => _ArtistAgg(
-          id: _stringHash(s.artist).toString(),
-          name: s.artist,
-        ),
+        () => _ArtistAgg(id: _stringHash(s.artist).toString(), name: s.artist),
       );
       agg.songs += 1;
       agg.albums.add(s.album);
     }
 
-    final result = byArtist.values
-        .map((a) => Artist(
-              id: a.id,
-              name: a.name,
-              songCount: a.songs,
-              albumCount: a.albums.length,
-            ))
-        .toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final result =
+        byArtist.values
+            .map(
+              (a) => Artist(
+                id: a.id,
+                name: a.name,
+                songCount: a.songs,
+                albumCount: a.albums.length,
+              ),
+            )
+            .toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
 
     _artistsCache = result;
     return result;
@@ -283,9 +298,7 @@ class WindowsFileBackend implements MediaLibraryBackend {
     int size = 300,
     int quality = 80,
   }) async {
-    final path = type == ArtworkType.ALBUM
-        ? _albumIdToPath[id]
-        : _idToPath[id];
+    final path = type == ArtworkType.ALBUM ? _albumIdToPath[id] : _idToPath[id];
     if (path == null) return null;
 
     // 1) tenta artwork embedded — protegido pelo crash guard (mesma libtag
@@ -309,10 +322,17 @@ class WindowsFileBackend implements MediaLibraryBackend {
     // 2) fallback: folder.jpg / cover.png / album.jpg na mesma pasta
     final folder = Directory(p.dirname(path));
     const candidates = [
-      'folder.jpg', 'folder.jpeg', 'folder.png',
-      'cover.jpg', 'cover.jpeg', 'cover.png',
-      'album.jpg', 'album.jpeg', 'album.png',
-      'front.jpg', 'front.png',
+      'folder.jpg',
+      'folder.jpeg',
+      'folder.png',
+      'cover.jpg',
+      'cover.jpeg',
+      'cover.png',
+      'album.jpg',
+      'album.jpeg',
+      'album.png',
+      'front.jpg',
+      'front.png',
     ];
     for (final name in candidates) {
       final f = File(p.join(folder.path, name));
@@ -341,14 +361,14 @@ class WindowsFileBackend implements MediaLibraryBackend {
   }
 
   String _defaultMusicFolder() {
-    final userProfile = Platform.environment['USERPROFILE'] ??
+    final userProfile =
+        Platform.environment['USERPROFILE'] ??
         Platform.environment['HOME'] ??
         '';
     return p.join(userProfile, 'Music');
   }
 
-  int _albumKey(String album, String artist) =>
-      _stringHash('$album|$artist');
+  int _albumKey(String album, String artist) => _stringHash('$album|$artist');
 
   int _pathHash(String path) => _stringHash(path);
 

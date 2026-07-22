@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:just_audio/just_audio.dart';
@@ -9,10 +11,11 @@ import 'package:constanza_player/domain/entities/song.dart';
 import 'package:constanza_player/services/audio_handler.dart';
 import 'package:constanza_player/services/settings_storage_service.dart';
 import 'package:constanza_player/services/artwork_file_service.dart';
+import 'package:constanza_player/services/media_tag_service.dart';
+import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/services/notification_color_service.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
-import 'package:constanza_player/presentation/providers/audio_analysis_provider.dart';
 import 'package:constanza_player/presentation/providers/audio_settings_provider.dart';
 import 'package:constanza_player/services/media_library/media_library_backend.dart';
 import 'package:constanza_player/services/widget_service.dart';
@@ -273,14 +276,12 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       _sendArtworkToNotification(song.numericId);
       _updateWidget();
       _ref.read(playlistProvider.notifier).trackPlay(song);
-      _ref
-          .read(audioAnalysisProvider.notifier)
-          .analyzeSong(
-            song.id,
-            song.uri,
-            title: song.title,
-            artist: song.artist,
-          );
+      // A análise de BPM/tonalidade é SOB DEMANDA: roda só quando o badge do
+      // Now Playing fica visível (ver _AnalysisBadge). Antes disparava em toda
+      // troca de faixa — decodificar 60s via MediaCodec a cada música, em
+      // paralelo com o playback, pressionava o pool de codecs/memória e, ao
+      // longo de horas, deixava o just_audio sem decoder (faixas paravam de
+      // tocar até forçar o fecho do app).
       _scheduleSave();
     } catch (e) {
       // Erro no player (ficheiro ausente, codec, etc.) — não crashar
@@ -356,12 +357,160 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     _loadAndPlay(song);
   }
 
+  /// Toca áudio(s) abertos externamente ("Abrir com" / Compartilhar).
+  ///
+  /// Cada item é uma `(uri, title)` crua entregue pelo Android. Quando a faixa
+  /// já existe na biblioteca (mesma uri/path), reusa a [Song] completa — assim
+  /// herda capa, metadados e estado de favorito. Caso contrário cria uma Song
+  /// transitória cujo título é o nome do arquivo; a duração é descoberta pelo
+  /// just_audio após o load.
+  void playExternalAudio(List<({String uri, String? title})> items) {
+    if (items.isEmpty) return;
+    final lib = _ref.read(libraryProvider).songs;
+    final songs = <Song>[];
+    for (var i = 0; i < items.length; i++) {
+      final normalized = _normalizeExternalUri(items[i].uri);
+      final path = normalized.startsWith('content://') ? '' : normalized;
+
+      final match = _matchLibrarySong(lib, normalized, path);
+      if (match != null) {
+        songs.add(match);
+        continue;
+      }
+
+      final rawTitle = items[i].title?.trim();
+      // ID numérico estável e positivo (faixa alta, nunca colide com IDs do
+      // MediaStore) → reusa cache de capa e serve de chave para a capa embebida.
+      final extId = _externalSongId(normalized);
+      songs.add(
+        Song(
+          id: extId.toString(),
+          title: (rawTitle != null && rawTitle.isNotEmpty)
+              ? _stripAudioExt(rawTitle)
+              : _fileNameFrom(normalized),
+          artist: '',
+          album: '',
+          duration: Duration.zero,
+          uri: normalized,
+          filePath: path,
+        ),
+      );
+      // Faixa fora da biblioteca: extrai a capa embebida (em background) e a
+      // injeta no provider para aparecer no Now Playing/mini player/fundos.
+      _loadExternalArtwork(extId, normalized);
+    }
+    if (songs.isEmpty) return;
+    playSong(songs.first, queue: songs);
+  }
+
+  /// ID numérico estável e positivo para uma faixa externa, derivado da URI.
+  /// Bit 30 setado garante faixa ≥ 0x40000000 — acima de qualquer id do
+  /// MediaStore (sequenciais e pequenos), evitando colisão de capa.
+  int _externalSongId(String uri) => 0x40000000 | (uri.hashCode & 0x3FFFFFFF);
+
+  void _loadExternalArtwork(int id, String uri) {
+    MediaTagService.extractArtwork(uri).then((bytes) async {
+      if (!mounted || bytes == null || bytes.isEmpty) return;
+      _ref.read(artworkProvider.notifier).setExternalArtwork(id, bytes);
+      // Escreve a capa em ficheiro e aponta o widget/leitor flutuante para ela:
+      // ambos leem KEY_ARTWORK_PATH dos prefs, e o upgrade normal de capa via
+      // on_audio_query não conhece faixas externas (id fora do MediaStore).
+      try {
+        final dir = await getTemporaryDirectory();
+        final file = File('${dir.path}/notif_art_$id.jpg');
+        await file.writeAsBytes(bytes, flush: true);
+        // Só atualiza se esta faixa ainda for a atual (evita capa trocada).
+        if (mounted && state.currentSong?.id == id.toString()) {
+          _updateWidget(artworkPath: file.path);
+        }
+      } catch (e) {
+        debugPrint('[PlayerNotifier] external artwork file error: $e');
+      }
+    });
+  }
+
+  Song? _matchLibrarySong(List<Song> lib, String uri, String path) {
+    for (final s in lib) {
+      if (s.uri == uri) return s;
+      if (path.isNotEmpty && s.filePath == path) return s;
+    }
+    // Fallback por nome de arquivo: o gerenciador de arquivos abre via
+    // content:// de FileProvider (ex.: .../external_files/Musics/Faixa.mp3),
+    // que nunca bate com o content://media/… da biblioteca. Casar pelo nome do
+    // arquivo reusa a Song escaneada — herdando capa, metadados e favorito.
+    final base = _baseName(path.isNotEmpty ? path : uri);
+    if (base.isEmpty) return null;
+    for (final s in lib) {
+      final sb = _baseName(s.filePath);
+      if (sb.isNotEmpty && sb == base) return s;
+    }
+    return null;
+  }
+
+  /// Último segmento de um path/URI, decodificado e em minúsculas — usado para
+  /// casar faixas externas com a biblioteca pelo nome do arquivo.
+  String _baseName(String uriOrPath) {
+    var name = uriOrPath;
+    final slash = name.lastIndexOf('/');
+    if (slash >= 0) name = name.substring(slash + 1);
+    try {
+      name = Uri.decodeComponent(name);
+    } catch (_) {}
+    return name.toLowerCase();
+  }
+
+  /// `file://…` → caminho de filesystem (o handler usa setFilePath fora de
+  /// content://). `content://…` e `http(s)://…` passam intactos.
+  String _normalizeExternalUri(String raw) {
+    if (raw.startsWith('file://')) {
+      try {
+        return Uri.parse(raw).toFilePath();
+      } catch (_) {
+        return raw;
+      }
+    }
+    return raw;
+  }
+
+  String _fileNameFrom(String uriOrPath) {
+    var name = uriOrPath;
+    final slash = name.lastIndexOf('/');
+    if (slash >= 0) name = name.substring(slash + 1);
+    try {
+      name = Uri.decodeComponent(name);
+    } catch (_) {}
+    name = _stripAudioExt(name);
+    return name.isEmpty ? 'Áudio' : name;
+  }
+
+  static const _audioExts = {
+    '.mp3', '.m4a', '.aac', '.flac', '.wav', '.ogg', '.oga', '.opus',
+    '.wma', '.aiff', '.aif', '.mka', '.ape', '.alac', '.m4b',
+  };
+
+  /// Remove a extensão de áudio do fim do nome (o DISPLAY_NAME do Android vem
+  /// com extensão). Só corta extensões conhecidas — preserva títulos reais que
+  /// contenham pontos (ex.: "Track 1.2").
+  String _stripAudioExt(String name) {
+    final lower = name.toLowerCase();
+    for (final ext in _audioExts) {
+      if (lower.endsWith(ext)) {
+        return name.substring(0, name.length - ext.length);
+      }
+    }
+    return name;
+  }
+
   void togglePlayPause() {
     if (!state.hasSong) return;
     state.isPlaying ? _handler.pause() : _handler.play();
   }
 
   void pause() => _handler.pause();
+
+  /// Pára a reprodução por completo: encerra o player e o serviço de áudio
+  /// (remove a notificação). Usado ao fechar o leitor flutuante com o "X".
+  Future<void> stop() => _handler.stop();
 
   void next() {
     if (state.queue.isEmpty) return;
@@ -600,8 +749,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       // posição real, fazendo a faixa "voltar ao início").
       final liveItem = _handler.mediaItem.valueOrNull;
       final handlerActive =
-          liveItem != null &&
-          _handler.processingState != ProcessingState.idle;
+          liveItem != null && _handler.processingState != ProcessingState.idle;
       if (handlerActive) {
         final liveId = liveItem.id;
         final liveSong = queue.firstWhere(
@@ -672,6 +820,72 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       // Fica pausado — o usuário decide quando continuar.
     } catch (e) {
       debugPrint('[PlayerNotifier] restorePlaybackState error: $e');
+    }
+  }
+
+  /// Chamado quando o app volta ao primeiro plano (resume).
+  ///
+  /// Cura o bug "ao voltar ao app depois de um tempo, as músicas não tocam e só
+  /// força-fechar resolve": quando o app fica muito tempo em background, o SO
+  /// pode recuperar o decoder do just_audio deixando o player num estado morto
+  /// (`idle`). O `play()` então vira no-op silencioso. Aqui detectamos esse
+  /// estado e re-preparamos a faixa atual na última posição (pausado), de modo
+  /// que o próximo `play()` volte a produzir som sem reiniciar o processo.
+  Future<void> recoverIfNeeded() async {
+    if (!mounted || !state.hasSong) return;
+
+    // Aguarda um eventual load em andamento antes de decidir (evita falso idle).
+    final lock = _loadLock;
+    if (lock != null) {
+      try {
+        await lock;
+      } catch (_) {}
+      if (!mounted || !state.hasSong) return;
+    }
+
+    // Player vivo (loading/buffering/ready/completed) → nada a recuperar.
+    if (_handler.processingState != ProcessingState.idle) return;
+
+    final song = state.currentSong!;
+    final pos = state.position;
+    debugPrint(
+      '[PlayerNotifier] recoverIfNeeded: player morto (idle) — '
+      're-preparando "${song.title}" @ ${pos.inSeconds}s',
+    );
+    try {
+      Uri? artworkUri = await ArtworkFileService.getArtworkFileUri(
+        song.numericId,
+      );
+      if (artworkUri == null && song.albumId != null) {
+        final albumNumId = int.tryParse(song.albumId!) ?? 0;
+        if (albumNumId > 0) {
+          artworkUri = Uri.parse(
+            'content://media/external/audio/albumart/$albumNumId',
+          );
+        }
+      }
+      await _handler.loadSong(song, artworkUri: artworkUri);
+      if (!mounted) return;
+
+      if (pos > Duration.zero) {
+        if (_handler.processingState != ProcessingState.ready) {
+          await _handler.processingStateStream
+              .firstWhere(
+                (s) => s == ProcessingState.ready || s == ProcessingState.idle,
+              )
+              .timeout(
+                const Duration(seconds: 8),
+                onTimeout: () => ProcessingState.idle,
+              );
+        }
+        if (mounted && _handler.processingState == ProcessingState.ready) {
+          await _handler.seek(pos);
+        }
+      }
+      // Permanece pausado — o utilizador decide quando continuar. O essencial é
+      // que o pipeline de áudio esteja vivo de novo.
+    } catch (e) {
+      debugPrint('[PlayerNotifier] recoverIfNeeded error: $e');
     }
   }
 

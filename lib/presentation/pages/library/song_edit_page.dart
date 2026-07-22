@@ -770,7 +770,12 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
           ),
           child: Column(
             children: [
-              _infoRow(l10n.songEditDuration, widget.song.durationFormatted, colors, theme),
+              _infoRow(
+                l10n.songEditDuration,
+                widget.song.durationFormatted,
+                colors,
+                theme,
+              ),
               if (widget.song.filePath.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.xs),
                 _infoRow(
@@ -780,7 +785,12 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
                   theme,
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                _infoRow(l10n.songEditPath, widget.song.filePath, colors, theme),
+                _infoRow(
+                  l10n.songEditPath,
+                  widget.song.filePath,
+                  colors,
+                  theme,
+                ),
               ],
               if (widget.song.dateAdded != null) ...[
                 const SizedBox(height: AppSpacing.xs),

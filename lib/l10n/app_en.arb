@@ -121,6 +121,8 @@
   "settingsRateDesc": "Help us with your review",
   "settingsLicenses": "Licenses",
   "settingsLicensesDesc": "Open-source licenses",
+  "settingsPrivacyPolicy": "Privacy policy",
+  "settingsPrivacyPolicyDesc": "How we handle your data (we don't)",
   "settingsLanguage": "Language",
   "settingsLanguageSystem": "System default",
   "settingsLanguageEnglish": "English",
@@ -418,6 +420,18 @@
   "mediaBarGradient": "Gradient",
   "mediaBarThick": "Thick",
   "mediaBarClassic": "Classic",
+  "mediaBarWaveform": "Waveform",
+  "mediaBarFrequencyBars": "Frequencies",
+  "mediaBarBars": "Bars",
+  "mediaBarSteps": "Steps",
+  "mediaBarEqualizer": "Equalizer",
+  "mediaBarSegments": "Segments",
+  "mediaBarDots": "Dot matrix",
+  "mediaBarPulse": "Pulse",
+  "mediaBarSineWave": "Smooth wave",
+  "mediaBarWave": "Wave",
+  "mediaBarMirror": "Mirror",
+  "mediaBarDense": "Spectrum",
 
   "npColorStyleDegrade": "Fade",
   "npColorStyleGradient": "Gradient",
@@ -921,5 +935,17 @@
   "sleepTimerRemaining": "{time} left",
   "@sleepTimerRemaining": {
     "placeholders": { "time": { "type": "String" } }
-  }
+  },
+  "settingsDefaultPlayer": "Default player",
+  "defaultPlayerStatusYes": "Constanza is your default audio player",
+  "defaultPlayerStatusNo": "Tap to set as the default",
+  "defaultPlayerStatusChecking": "Checking…",
+  "defaultPlayerDialogBody": "To make Constanza your default audio player, tap “Set as default”. The system will ask which app should open the file — pick Constanza and tap “Always”.",
+  "defaultPlayerDialogBodyActive": "Constanza is already the default app for audio files. To change this, open the app settings and clear the defaults.",
+  "defaultPlayerSetAsDefault": "Set as default",
+  "defaultPlayerOpenSettings": "Open settings",
+  "defaultPlayerDialogClose": "Close",
+  "defaultPlayerBannerMessage": "Make Constanza your default audio player?",
+  "defaultPlayerBannerAction": "Set",
+  "defaultPlayerSetConfirmed": "Constanza is now your default audio player"
 }
