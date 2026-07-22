@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, curly_braces_in_flow_control_structures, unused_element_parameter
+// ignore_for_file: deprecated_member_use, unused_local_variable, curly_braces_in_flow_control_structures, unused_element_parameter
 
 import 'dart:async';
 import 'dart:ui' as ui;
@@ -1711,9 +1711,7 @@ class _ProgressBar extends ConsumerWidget {
     final mediaBarStyle = ref.watch(
       themeProvider.select((s) => s.mediaBarStyle),
     );
-    final songId = ref.watch(
-      playerProvider.select((s) => s.currentSong?.id),
-    );
+    final songId = ref.watch(playerProvider.select((s) => s.currentSong?.id));
     // Remaining time as negative
     final remaining = duration - position;
     final remMin = remaining.inMinutes;
@@ -1734,7 +1732,9 @@ class _ProgressBar extends ConsumerWidget {
             secondaryColor: colors.secondary,
             tertiaryColor: colors.tertiary,
             onSeek: (value) {
-              ref.read(playerProvider.notifier).seek(
+              ref
+                  .read(playerProvider.notifier)
+                  .seek(
                     Duration(
                       milliseconds: (value * duration.inMilliseconds).round(),
                     ),

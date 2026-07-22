@@ -126,7 +126,14 @@
       "Bash(echo \"exit=$?\")",
       "PowerShell($c = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2\\('certs\\\\constanza.pfx','constanza123'\\); \"Subject: $\\($c.Subject\\)\"; \"NotAfter: $\\($c.NotAfter\\)\"; \"Expired: $\\($c.NotAfter -lt \\(Get-Date\\)\\)\")",
       "Bash(git remote *)",
-      "Bash(powershell -NoProfile -Command 'Get-Item '\\\\''build\\\\windows\\\\x64\\\\runner\\\\Release\\\\constanza_player.msix'\\\\'','\\\\''certs\\\\constanza.cer'\\\\'' | Select-Object FullName,@{N='\\\\''SizeMB'\\\\'';E={[math]::Round\\($_.Length/1MB,2\\)}},LastWriteTime | Format-List')"
+      "Bash(powershell -NoProfile -Command 'Get-Item '\\\\''build\\\\windows\\\\x64\\\\runner\\\\Release\\\\constanza_player.msix'\\\\'','\\\\''certs\\\\constanza.cer'\\\\'' | Select-Object FullName,@{N='\\\\''SizeMB'\\\\'';E={[math]::Round\\($_.Length/1MB,2\\)}},LastWriteTime | Format-List')",
+      "Read(//c/Users/Dev/Documents/constanza-keys/**)",
+      "Read(//c/Users/Root/Documents/constanza-keys//**)",
+      "Read(//c/Users/**)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(certutil -hashfile \"C:\\\\Users\\\\Root\\\\Documents\\\\constanza-keys\\\\constanza-release.jks\" SHA256)",
+      "Bash(certutil -hashfile \"C:\\\\Users\\\\Root\\\\Desktop\\\\AppsAndroid\\\\AppCosntanzaMusicas\\\\constanza-keys\\\\constanza-release.jks\" SHA256)",
+      "Bash(echo \"exit:$?\")"
     ]
   }
 }

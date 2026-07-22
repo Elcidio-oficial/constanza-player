@@ -1,4 +1,4 @@
-// ignore_for_file: curly_braces_in_flow_control_structures, unused_element_parameter
+// ignore_for_file: deprecated_member_use, curly_braces_in_flow_control_structures, unused_element_parameter
 part of '../now_playing_page.dart';
 
 class _EditView extends ConsumerStatefulWidget {
