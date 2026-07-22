@@ -26,6 +26,19 @@ subprojects {
         if (android.namespace.isNullOrEmpty()) {
             android.namespace = "com.${project.name.replace("-", ".")}"
         }
+
+        // Remove o atributo `package` legado do AndroidManifest.xml.
+        // AGP 8+ não aceita mais definir o namespace via package no manifest
+        // (ex.: on_audio_query_android). Auto-reparável a cada build, então
+        // funciona mesmo após `flutter pub cache repair`, em outra máquina ou em CI.
+        val manifestFile = file("${projectDir}/src/main/AndroidManifest.xml")
+        if (manifestFile.exists()) {
+            val content = manifestFile.readText()
+            if (content.contains("package=")) {
+                val cleaned = content.replace(Regex("\\s*package\\s*=\\s*\"[^\"]*\""), "")
+                manifestFile.writeText(cleaned)
+            }
+        }
     }
 }
 
