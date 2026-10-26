@@ -172,6 +172,53 @@ class MainActivity : AudioServiceFragmentActivity() {
         false
     }
 
+    /** App que hoje abre [uriString] por padrão, se for OUTRO app (ex.: Música do
+     *  MIUI). Nesse caso o Android entrega o VIEW direto a ele, sem mostrar o
+     *  resolver "Apenas uma vez / Sempre" — e nenhum app pode limpar o padrão de
+     *  outro por código; só o utilizador, nas definições desse app.
+     *  Devolve null quando não há padrão (o resolver aparece) ou quando o
+     *  padrão já é o Constanza. */
+    private fun otherAudioDefault(uriString: String?): Map<String, String>? = try {
+        if (uriString.isNullOrEmpty()) {
+            null
+        } else {
+            val uri = Uri.parse(uriString)
+            val type = try { contentResolver.getType(uri) } catch (_: Exception) { null }
+                ?: "audio/*"
+            val probe = Intent(Intent.ACTION_VIEW).apply { setDataAndType(uri, type) }
+            val pkg = packageManager
+                .resolveActivity(probe, PackageManager.MATCH_DEFAULT_ONLY)
+                ?.activityInfo?.packageName
+            // Sem padrão o resolve devolve o próprio resolver do sistema.
+            val isResolver = pkg == null || pkg == "android" || pkg.endsWith(".intentresolver")
+            if (isResolver || pkg == packageName) {
+                null
+            } else {
+                val label = try {
+                    packageManager.getApplicationLabel(
+                        packageManager.getApplicationInfo(pkg!!, 0),
+                    ).toString()
+                } catch (_: Exception) { pkg!! }
+                mapOf("package" to pkg!!, "label" to label)
+            }
+        }
+    } catch (_: Exception) {
+        null
+    }
+
+    /** Abre a página de informações de [pkg] (onde fica "Abrir por padrão →
+     *  Limpar predefinições"). */
+    private fun openAppDetails(pkg: String) {
+        try {
+            startActivity(
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", pkg, null))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+        } catch (_: Exception) {
+            openDefaultAppSettings()
+        }
+    }
+
     /** Dispara o resolver "Abrir com" para um áudio real, SEM createChooser —
      *  assim o sistema mostra os botões "Apenas uma vez / Sempre", deixando o
      *  usuário escolher o Constanza como padrão. É o único caminho real no
@@ -302,6 +349,11 @@ class MainActivity : AudioServiceFragmentActivity() {
                     }
                     "openDefaultAppSettings" -> {
                         openDefaultAppSettings()
+                        result.success(null)
+                    }
+                    "otherAudioDefault" -> result.success(otherAudioDefault(call.argument<String>("uri")))
+                    "openAppDetails" -> {
+                        call.argument<String>("package")?.let { openAppDetails(it) }
                         result.success(null)
                     }
                     else -> result.notImplemented()

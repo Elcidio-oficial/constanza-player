@@ -954,6 +954,11 @@
   "defaultPlayerSetAsDefault": "Set as default",
   "defaultPlayerOpenSettings": "Open settings",
   "defaultPlayerDialogClose": "Close",
+  "defaultPlayerBlockedTitle": "Another player is the default",
+  "defaultPlayerBlockedBody": "{app} is set to open music files, so Android sends everything to it and does not let you pick another player.\n\nTo change it: open the {app} settings and tap \"Clear defaults\" (on some phones it is inside \"Open by default\"). Come back to Constanza and tap \"Set as default\" again.",
+  "@defaultPlayerBlockedBody": {"placeholders": {"app": {"type": "String"}}},
+  "defaultPlayerBlockedAction": "Open {app} settings",
+  "@defaultPlayerBlockedAction": {"placeholders": {"app": {"type": "String"}}},
   "defaultPlayerBannerMessage": "Make Constanza your default audio player?",
   "defaultPlayerBannerAction": "Set",
   "defaultPlayerSetConfirmed": "Constanza is now your default audio player"

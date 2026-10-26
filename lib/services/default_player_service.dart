@@ -85,6 +85,37 @@ class DefaultPlayerService {
     }
   }
 
+  /// Outro app que hoje abre [sampleAudioUri] por padrão (ex.: Música do MIUI),
+  /// ou null se não houver padrão ou se já for o Constanza. Com outro app como
+  /// padrão o Android não mostra o resolver: o VIEW vai direto para ele.
+  static Future<({String package, String label})?> otherDefault(
+    String? sampleAudioUri,
+  ) async {
+    if (!Platform.isAndroid || sampleAudioUri == null) return null;
+    try {
+      final r = await _channel.invokeMapMethod<String, String>(
+        'otherAudioDefault',
+        {'uri': sampleAudioUri},
+      );
+      final pkg = r?['package'];
+      if (pkg == null) return null;
+      return (package: pkg, label: r?['label'] ?? pkg);
+    } catch (e) {
+      debugPrint('[DefaultPlayerService] otherDefault error: $e');
+      return null;
+    }
+  }
+
+  /// Abre as informações de [package] ("Abrir por padrão → Limpar").
+  static Future<void> openAppDetails(String package) async {
+    if (!Platform.isAndroid) return;
+    try {
+      await _channel.invokeMethod('openAppDetails', {'package': package});
+    } catch (e) {
+      debugPrint('[DefaultPlayerService] openAppDetails error: $e');
+    }
+  }
+
   /// Inicia o fluxo para o usuário definir o Constanza como padrão de áudio.
   ///
   /// Caminho real no Android moderno: disparar o resolver "Abrir com" de um

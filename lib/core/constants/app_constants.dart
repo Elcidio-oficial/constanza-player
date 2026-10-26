@@ -5,7 +5,7 @@ abstract final class AppConstants {
   // ============================================================
   static const String appName = 'Constanza Músicas';
   static const String appTagline = 'Sua música. Seu silêncio. Seu momento.';
-  static const String appVersion = '1.5.1';
+  static const String appVersion = '1.6.4';
   static const String appAuthor = 'Elcídio Crisanto';
 
   // ============================================================

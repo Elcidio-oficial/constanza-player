@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:constanza_player/presentation/widgets/default_player_flow.dart';
 import 'dart:io' show Platform;
 
 import 'package:audio_service/audio_service.dart';
@@ -428,9 +429,8 @@ class _ConstanzaAppState extends ConsumerState<ConstanzaApp>
         content: Text(l10n.defaultPlayerBannerMessage),
         action: SnackBarAction(
           label: l10n.defaultPlayerBannerAction,
-          onPressed: () => DefaultPlayerService.requestSetDefault(
-            sampleAudioUri: _sampleAudioUri(),
-          ),
+          onPressed: () =>
+              startSetDefaultFlow(ctx, sampleAudioUri: _sampleAudioUri()),
         ),
       ),
     );

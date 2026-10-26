@@ -76,9 +76,11 @@ class _DefaultPlayerTileState extends ConsumerState<_DefaultPlayerTile>
               Navigator.pop(ctx);
               // Já é padrão → abrir settings (para limpar). Caso contrário →
               // resolver "Abrir com" de um áudio real (deixa escolher "Sempre").
-              DefaultPlayerService.requestSetDefault(
-                sampleAudioUri: isDefault ? null : _sampleAudioUri(),
-              );
+              if (isDefault) {
+                DefaultPlayerService.requestSetDefault(sampleAudioUri: null);
+              } else {
+                startSetDefaultFlow(context, sampleAudioUri: _sampleAudioUri());
+              }
             },
             child: Text(
               isDefault

@@ -954,6 +954,9 @@
   "defaultPlayerSetAsDefault": "Definir como padrão",
   "defaultPlayerOpenSettings": "Abrir configurações",
   "defaultPlayerDialogClose": "Fechar",
+  "defaultPlayerBlockedTitle": "Outro leitor é o padrão",
+  "defaultPlayerBlockedBody": "O {app} está definido para abrir músicas, por isso o Android abre tudo nele e não deixa escolher outro leitor.\n\nPara mudar: abra as definições do {app} e toque em \"Limpar predefinições\" (em alguns aparelhos fica dentro de \"Abrir por padrão\"). Volte ao Constanza e toque em \"Definir como padrão\" outra vez.",
+  "defaultPlayerBlockedAction": "Abrir definições do {app}",
   "defaultPlayerBannerMessage": "Tornar o Constanza seu leitor de áudio padrão?",
   "defaultPlayerBannerAction": "Definir",
   "defaultPlayerSetConfirmed": "O Constanza agora é o seu leitor de áudio padrão"
