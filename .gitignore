@@ -61,3 +61,6 @@ app.*.map.json
 # Certificado de assinatura MSIX (auto-assinado, nao versionar)
 certs/*.pfx
 certs/*.cer
+
+# Permissões locais do Claude Code (podem conter comandos com segredos)
+.claude/settings.json
