@@ -202,6 +202,16 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
   /// Usado pela FoldersPage para mostrar músicas antes do filtro de exclusões.
   List<Song> get allScannedSongs => List.unmodifiable(_allScannedSongs);
 
+  /// true quando [allScannedSongs] veio de um scan completo do dispositivo.
+  /// Após carregar do cache ele contém só as músicas das pastas selecionadas,
+  /// então a FoldersPage precisa descobrir as demais pastas.
+  bool get hasFullScan => _hasFullScan;
+  bool _hasFullScan = false;
+
+  bool _refreshing = false;
+  DateTime? _lastRefresh;
+  static const _refreshMinInterval = Duration(seconds: 30);
+
   /// Timer para debounce do cache — evita re-serializar durante operações em lote.
   Timer? _cacheSaveTimer;
 
@@ -243,6 +253,9 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
       final loaded = _loadFromCache();
       if (loaded) {
         debugPrint('Library: loaded ${state.songs.length} songs from cache');
+        // O cache abre a biblioteca na hora; o scan em segundo plano traz
+        // músicas adicionadas/removidas desde a última execução.
+        unawaited(refreshInBackground());
         return;
       }
     }
@@ -276,6 +289,58 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
       await _scanWithFolders(folders);
     } else {
       state = state.copyWith(status: LibraryStatus.needsFolderSetup);
+    }
+  }
+
+  /// Sincroniza a biblioteca com o dispositivo sem mostrar carregamento.
+  ///
+  /// Chamado ao abrir (após o cache) e quando o app volta ao primeiro plano.
+  /// Não pede permissão, respeita [_refreshMinInterval] e só reaplica o filtro
+  /// (recriando álbuns/artistas e regravando o cache) se as músicas mudaram.
+  Future<void> refreshInBackground() async {
+    if (_refreshing) return;
+    if (state.status != LibraryStatus.loaded &&
+        state.status != LibraryStatus.empty) {
+      return;
+    }
+    final folders = state.selectedFolders;
+    if (folders.isEmpty) return;
+    final last = _lastRefresh;
+    if (last != null && DateTime.now().difference(last) < _refreshMinInterval) {
+      return;
+    }
+
+    _refreshing = true;
+    _lastRefresh = DateTime.now();
+    try {
+      if (!await PermissionService.hasAudioPermission()) return;
+      final scanned = await _scanner.scanSongs();
+      // A seleção de pastas pode ter mudado enquanto o scan rodava.
+      if (!mounted || !identical(folders, state.selectedFolders)) return;
+
+      _allScannedSongs = scanned;
+      _hasFullScan = true;
+
+      final before = {for (final s in state.songs) s.id};
+      final after = {
+        for (final s in scanned)
+          if (!_savedExcludedIds.contains(s.id) &&
+              _isInsideAny(s.folderPath, folders))
+            s.id,
+      };
+      if (before.length == after.length && before.containsAll(after)) {
+        // Nada mudou na biblioteca; só atualiza a lista de pastas.
+        state = state.copyWith(allFolders: _extractFolders(scanned));
+        return;
+      }
+      debugPrint(
+        'Library: background refresh ${before.length} → ${after.length} songs',
+      );
+      await _applyFolderFilter(folders);
+    } catch (e) {
+      debugPrint('Library background refresh failed: $e');
+    } finally {
+      _refreshing = false;
     }
   }
 
@@ -337,6 +402,7 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
     await MediaLibrary.instance.setScanFolders(folders);
     // Invalida cache de scan — força re-leitura com novas raízes.
     _allScannedSongs = const [];
+    _hasFullScan = false;
 
     if (folders.isEmpty) {
       state = state.copyWith(
@@ -366,6 +432,7 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
 
     try {
       _allScannedSongs = await _scanner.scanSongs();
+      _hasFullScan = true;
       final folders = _extractFolders(_allScannedSongs);
       state = state.copyWith(allFolders: folders);
 
@@ -563,6 +630,7 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
       // Também guarda em _allScannedSongs para que setSelectedFolders e
       // discoverFolders tenham um ponto de partida sem precisar re-escanear.
       _allScannedSongs = restored;
+      _hasFullScan = false;
       return true;
     } catch (e) {
       debugPrint('Library cache load failed: $e');
@@ -633,6 +701,8 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
       }
 
       _allScannedSongs = await _scanner.scanSongs();
+      _hasFullScan = true;
+      _lastRefresh = DateTime.now();
       await _applyFolderFilter(folders);
     } catch (e) {
       state = state.copyWith(
@@ -654,26 +724,26 @@ class LibraryNotifier extends StateNotifier<LibraryState> {
   }
 
   /// Filtra músicas escaneadas por pastas e atualiza estado + cache.
-  Future<void> _applyFolderFilter(List<String> folders) async {
-    // Match exato + prefixo: no Windows (e Linux/macOS) o usuário pica uma
-    // pasta-raiz esperando varredura recursiva. No Android cada subpasta com
-    // música aparece como item próprio, então o match exato continua sendo
-    // o caminho dominante — o prefixo só é exercido em desktop.
-    bool insideAnySelected(String songFolder) {
-      for (final f in folders) {
-        if (songFolder == f) return true;
-        // Trata tanto / quanto \\ como separador de subpastas.
-        if (songFolder.startsWith('$f/') || songFolder.startsWith('$f\\')) {
-          return true;
-        }
+  /// Match exato + prefixo: no Windows (e Linux/macOS) o usuário pica uma
+  /// pasta-raiz esperando varredura recursiva. No Android cada subpasta com
+  /// música aparece como item próprio, então o match exato continua sendo
+  /// o caminho dominante — o prefixo só é exercido em desktop.
+  static bool _isInsideAny(String songFolder, List<String> folders) {
+    for (final f in folders) {
+      if (songFolder == f) return true;
+      // Trata tanto / quanto \\ como separador de subpastas.
+      if (songFolder.startsWith('$f/') || songFolder.startsWith('$f\\')) {
+        return true;
       }
-      return false;
     }
+    return false;
+  }
 
+  Future<void> _applyFolderFilter(List<String> folders) async {
     final filtered = _allScannedSongs
         .where(
           (s) =>
-              insideAnySelected(s.folderPath) &&
+              _isInsideAny(s.folderPath, folders) &&
               !_savedExcludedIds.contains(s.id),
         )
         .toList();

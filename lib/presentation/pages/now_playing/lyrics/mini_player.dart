@@ -253,7 +253,9 @@ class _MiniPlayButton extends StatelessWidget {
         ),
         child: Icon(
           isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-          color: Colors.white,
+          color: accent.computeLuminance() > 0.179
+              ? Colors.black
+              : Colors.white,
           size: 30,
         ),
       ),

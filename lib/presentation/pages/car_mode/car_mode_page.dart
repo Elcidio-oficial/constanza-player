@@ -9,6 +9,7 @@ import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/providers/lyrics_provider.dart';
 import 'package:constanza_player/presentation/providers/player_provider.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
+import 'package:constanza_player/presentation/providers/waveform_provider.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/presentation/widgets/media_seek_bar.dart';
 import 'package:constanza_player/services/lyrics_fetch_service.dart';

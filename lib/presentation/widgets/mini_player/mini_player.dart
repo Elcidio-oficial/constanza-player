@@ -39,6 +39,10 @@ class MiniPlayer extends ConsumerWidget {
   ) {
     if (artColor != null) {
       final hsl = HSLColor.fromColor(artColor);
+      // Capa neutra: mantém cinza em vez de forçar saturação (virava rosa).
+      if (hsl.saturation < 0.12) {
+        return hsl.withLightness(hsl.lightness.clamp(0.40, 0.60)).toColor();
+      }
       return hsl
           .withLightness(hsl.lightness.clamp(0.40, 0.60))
           .withSaturation((hsl.saturation * 1.2).clamp(0.35, 1.0))
@@ -260,19 +264,27 @@ class _MiniPlayPause extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isPlaying = ref.watch(playerProvider.select((s) => s.isPlaying));
     final colors = Theme.of(context).colorScheme;
+    final background = MiniPlayer._playBtnColor(
+      miniStyle,
+      artworkColor,
+      colors,
+    );
     return GestureDetector(
       onTap: () => ref.read(playerProvider.notifier).togglePlayPause(),
       child: Container(
         width: 38,
         height: 38,
         decoration: BoxDecoration(
-          color: MiniPlayer._playBtnColor(miniStyle, artworkColor, colors),
+          color: background,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
           isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-          // Sem capa o fundo é colors.primary (branco no tema escuro).
-          color: artworkColor != null ? Colors.white : colors.onPrimary,
+          // Contraste pelo fundo real (sem capa é colors.primary, branco
+          // no tema escuro).
+          color: background.computeLuminance() > 0.179
+              ? Colors.black
+              : Colors.white,
           size: 22,
         ),
       ),

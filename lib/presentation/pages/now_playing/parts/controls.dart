@@ -23,6 +23,11 @@ class _ProgressBar extends ConsumerWidget {
       themeProvider.select((s) => s.mediaBarStyle),
     );
     final songId = ref.watch(playerProvider.select((s) => s.currentSong?.id));
+    final songUri = ref.watch(
+      playerProvider.select((s) => s.currentSong?.uri ?? ''),
+    );
+    final isPlaying = ref.watch(playerProvider.select((s) => s.isPlaying));
+    final levels = ref.watch(waveformProvider(songUri)).value;
     // Remaining time as negative
     final remaining = duration - position;
     final remMin = remaining.inMinutes;
@@ -37,6 +42,8 @@ class _ProgressBar extends ConsumerWidget {
             progress: progress.clamp(0.0, 1.0),
             style: mediaBarStyle,
             seed: songId.hashCode,
+            levels: levels,
+            animate: isPlaying,
             activeColor: accentColor,
             inactiveColor: colors.onSurface.withValues(alpha: 0.18),
             neutralColor: colors.onSurface,
@@ -247,7 +254,9 @@ class _PlayPauseBtnState extends State<_PlayPauseBtn>
             child: Icon(
               widget.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
               key: ValueKey(widget.isPlaying),
-              color: widget.accentColor.computeLuminance() > 0.5
+              // 0.179 = ponto em que preto e branco têm o mesmo contraste
+              // WCAG; 0.5 deixava ícone branco sobre fundos claros.
+              color: widget.accentColor.computeLuminance() > 0.179
                   ? Colors.black
                   : Colors.white,
               size: 36,

@@ -50,11 +50,11 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
       }
     }
     _buildFolderMap();
-    // Android: se _allScannedSongs estiver vazio (carregou do cache), descobre.
+    // Android: sem scan completo (biblioteca veio do cache, que só tem as
+    // pastas já selecionadas), descobre todas as pastas do dispositivo.
     // Desktop: discover precisa de pastas já configuradas — sem isso vira no-op,
     // então só pulamos o auto-discover.
-    if (!_isDesktop &&
-        ref.read(libraryProvider.notifier).allScannedSongs.isEmpty) {
+    if (!_isDesktop && !ref.read(libraryProvider.notifier).hasFullScan) {
       _discoverFolders();
     }
   }
@@ -72,6 +72,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
   Future<void> _discoverFolders() async {
     setState(() => _loading = true);
     await ref.read(libraryProvider.notifier).discoverFolders();
+    if (!mounted) return;
     _buildFolderMap();
     setState(() => _loading = false);
   }

@@ -80,6 +80,9 @@ class _AppShellState extends ConsumerState<AppShell>
       // (SO recuperou o decoder), re-prepara a faixa para o play() voltar a
       // funcionar — sem precisar forçar o fecho do app.
       ref.read(playerProvider.notifier).recoverIfNeeded();
+      // Pega músicas adicionadas enquanto o app estava em background
+      // (download, cópia pelo PC). Throttled dentro do notifier.
+      ref.read(libraryProvider.notifier).refreshInBackground();
     }
   }
 
@@ -339,10 +342,19 @@ class _AppShellState extends ConsumerState<AppShell>
       if (!mounted || token != _colorExtractToken) return;
     }
 
-    if (data == null || data.isEmpty) return;
+    // Sem capa (ou falha na extração): limpa a paleta — senão as cores da
+    // música anterior continuavam aplicadas.
+    if (data == null || data.isEmpty) {
+      ref.read(artworkPaletteProvider.notifier).state = null;
+      return;
+    }
 
     final palette = await ArtworkNotifier.extractPalette(data, songId: songId);
-    if (!mounted || palette == null || token != _colorExtractToken) return;
+    if (!mounted || token != _colorExtractToken) return;
+    if (palette == null) {
+      ref.read(artworkPaletteProvider.notifier).state = null;
+      return;
+    }
     ref.read(artworkPaletteProvider.notifier).state = palette;
 
     // Envia artwork ao plugin nativo para colorizar notificação.

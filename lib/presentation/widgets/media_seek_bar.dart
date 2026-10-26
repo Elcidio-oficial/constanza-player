@@ -34,7 +34,17 @@ class MediaSeekBar extends StatefulWidget {
     this.tertiaryColor,
     this.thumbColor = Colors.white,
     this.height = 44,
+    this.levels,
+    this.animate = true,
   });
+
+  /// Níveis reais de volume da música (0..1), da esquerda para a direita.
+  /// Quando null, os visualizadores usam um formato gerado a partir de [seed].
+  final List<double>? levels;
+
+  /// Anima a oscilação dos visualizadores. Desligar quando pausado poupa
+  /// bateria (o ticker deixa de redesenhar a 60 fps).
+  final bool animate;
 
   /// Playback progress in [0, 1].
   final double progress;
@@ -84,17 +94,31 @@ class _MediaSeekBarState extends State<MediaSeekBar>
   @override
   void initState() {
     super.initState();
-    _bars = _generateBars(widget.seed);
+    _bars = widget.levels ?? _generateBars(widget.seed);
     _anim = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
-    )..repeat();
+    );
+    _syncAnimation();
   }
 
   @override
   void didUpdateWidget(covariant MediaSeekBar old) {
     super.didUpdateWidget(old);
-    if (old.seed != widget.seed) _bars = _generateBars(widget.seed);
+    if (old.seed != widget.seed || old.levels != widget.levels) {
+      _bars = widget.levels ?? _generateBars(widget.seed);
+    }
+    if (old.animate != widget.animate || old.style != widget.style) {
+      _syncAnimation();
+    }
+  }
+
+  void _syncAnimation() {
+    if (widget.animate && widget._isVisualizer) {
+      if (!_anim.isAnimating) _anim.repeat();
+    } else {
+      _anim.stop();
+    }
   }
 
   @override

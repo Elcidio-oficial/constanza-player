@@ -23,6 +23,7 @@ import 'package:constanza_player/presentation/providers/library_provider.dart';
 import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/pages/settings/background_settings_page.dart';
+import 'package:constanza_player/presentation/pages/settings/developer_page.dart';
 import 'package:constanza_player/presentation/pages/settings/equalizer_page.dart';
 import 'package:constanza_player/presentation/pages/library/duplicates_page.dart';
 import 'package:constanza_player/core/utils/app_page_route.dart';
@@ -443,6 +444,17 @@ class SettingsPage extends ConsumerWidget {
               ),
               _divider(colors),
               _SettingsTile(
+                icon: Icons.person_outline_rounded,
+                title: l10n.settingsDeveloper,
+                subtitle: l10n.settingsDeveloperDesc,
+                colors: colors,
+                theme: theme,
+                onTap: () => Navigator.of(
+                  context,
+                ).push(AppPageRoute(page: const DeveloperPage())),
+              ),
+              _divider(colors),
+              _SettingsTile(
                 icon: Icons.star_outline_rounded,
                 title: l10n.settingsRate,
                 subtitle: l10n.settingsRateDesc,
@@ -510,13 +522,6 @@ class SettingsPage extends ConsumerWidget {
                   'v${AppConstants.appVersion}',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.15),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  l10n.settingsMadeBy(AppConstants.appAuthor),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.2),
                   ),
                 ),
               ],

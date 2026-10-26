@@ -21,6 +21,7 @@ import 'package:constanza_player/presentation/providers/playlist_provider.dart';
 import 'package:constanza_player/presentation/providers/artwork_provider.dart';
 import 'package:constanza_player/presentation/providers/audio_settings_provider.dart';
 import 'package:constanza_player/presentation/providers/audio_analysis_provider.dart';
+import 'package:constanza_player/presentation/providers/waveform_provider.dart';
 import 'package:constanza_player/presentation/widgets/artwork_image.dart';
 import 'package:constanza_player/presentation/widgets/media_seek_bar.dart';
 import 'package:constanza_player/presentation/widgets/artist_links_text.dart';
@@ -133,9 +134,12 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
   /// Gradient color — faithful to artwork, subtle saturation lift
   static Color _toVividGradient(Color c) {
     final hsl = HSLColor.fromColor(c);
+    final isNeutral = hsl.saturation < 0.12;
     return hsl
         .withLightness(hsl.lightness.clamp(0.25, 0.55))
-        .withSaturation((hsl.saturation * 1.1).clamp(0.25, 0.90))
+        .withSaturation(
+          isNeutral ? hsl.saturation : (hsl.saturation * 1.1).clamp(0.25, 0.90),
+        )
         .toColor();
   }
 
@@ -478,9 +482,16 @@ class _NowPlayingContent extends ConsumerWidget {
     final Color accentColor;
     if (hasVibrant) {
       final hsl = HSLColor.fromColor(rawVibrant);
+      // Capas neutras (branco/cinza) mantêm o tom neutro; forçar saturação
+      // mínima transformava cinza em vermelho/rosa.
+      final isNeutral = hsl.saturation < 0.12;
       accentColor = hsl
-          .withLightness(hsl.lightness.clamp(0.55, 0.75))
-          .withSaturation((hsl.saturation * 1.3).clamp(0.50, 1.0))
+          .withLightness(hsl.lightness.clamp(0.55, isNeutral ? 0.90 : 0.75))
+          .withSaturation(
+            isNeutral
+                ? hsl.saturation
+                : (hsl.saturation * 1.3).clamp(0.50, 1.0),
+          )
           .toColor();
     } else {
       accentColor = colors.primary;

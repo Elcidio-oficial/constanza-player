@@ -325,15 +325,26 @@ ArtworkPalette? _computePaletteInIsolate(Uint8List rgbaBytes) {
   final gSums = List<int>.filled(hBins * sBins * lBins, 0);
   final bSums = List<int>.filled(hBins * sBins * lBins, 0);
   final satSums = List<double>.filled(hBins * sBins * lBins, 0);
+  // Total por matiz: uma área grande da capa costuma se espalhar por vários
+  // buckets de sat/lum; ranquear pela matiz inteira evita que um detalhe
+  // pequeno, porém concentrado, "vença" a cor que domina a imagem.
+  final hueCounts = List<int>.filled(hBins, 0);
+
+  var total = 0;
+  var chromatic = 0;
+  var lumSum = 0.0;
 
   for (int i = 0; i < rgbaBytes.length; i += 4) {
+    if (rgbaBytes[i + 3] < 128) continue; // pixels transparentes
     final r = rgbaBytes[i], g = rgbaBytes[i + 1], b = rgbaBytes[i + 2];
-    final c = Color.fromARGB(255, r, g, b);
-    final hsl = HSLColor.fromColor(c);
+    final hsl = HSLColor.fromColor(Color.fromARGB(255, r, g, b));
+    total++;
+    lumSum += hsl.lightness;
     // Filter achromatic / near-black / near-white
-    if (hsl.saturation < 0.10 || hsl.lightness < 0.05 || hsl.lightness > 0.95) {
+    if (hsl.saturation < 0.12 || hsl.lightness < 0.06 || hsl.lightness > 0.94) {
       continue;
     }
+    chromatic++;
 
     final hi = (hsl.hue / 30.0).floor().clamp(0, hBins - 1);
     final si = (hsl.saturation * sBins).floor().clamp(0, sBins - 1);
@@ -341,30 +352,54 @@ ArtworkPalette? _computePaletteInIsolate(Uint8List rgbaBytes) {
     final idx = hi * sBins * lBins + si * lBins + li;
 
     counts[idx]++;
+    hueCounts[hi]++;
     rSums[idx] += r;
     gSums[idx] += g;
     bSums[idx] += b;
     satSums[idx] += hsl.saturation;
   }
 
-  // ── Rank buckets by pixel count ──
-  final indices = List.generate(counts.length, (i) => i);
-  indices.sort((a, b) => counts[b].compareTo(counts[a]));
+  if (total == 0) return null;
 
-  // ── Pick top 3 buckets with hue separation ≥ 40° ──
+  // ── Capa monocromática (branca, preta, cinza) ──
+  // Antes retornava null e a tela mantinha a paleta da música ANTERIOR.
+  if (chromatic < total * 0.06) {
+    final avgL = lumSum / total;
+    Color gray(double l) => HSLColor.fromAHSL(1, 0, 0, l).toColor();
+    return ArtworkPalette(
+      dominant: gray((avgL * 0.45).clamp(0.10, 0.30)),
+      vibrant: gray(avgL > 0.5 ? 0.88 : 0.72),
+      muted: gray(0.32),
+      secondary: gray((avgL * 0.6).clamp(0.18, 0.45)),
+      tertiary: gray(0.14),
+    );
+  }
+
+  // ── Rank hues by total coverage; representante = bucket mais cheio ──
+  final hueOrder = List.generate(hBins, (i) => i)
+    ..sort((a, b) => hueCounts[b].compareTo(hueCounts[a]));
+
   final picked = <Color>[];
   final pickedHues = <double>[];
-  final pickedSats = <double>[];
+  final pickedScores = <double>[];
 
-  for (final idx in indices) {
+  for (final hi in hueOrder) {
     if (picked.length >= 3) break;
-    if (counts[idx] == 0) break;
+    final share = hueCounts[hi] / chromatic;
+    if (share < 0.03) break;
 
-    final avgR = rSums[idx] ~/ counts[idx];
-    final avgG = gSums[idx] ~/ counts[idx];
-    final avgB = bSums[idx] ~/ counts[idx];
-    final avgSat = satSums[idx] / counts[idx];
-    final avgColor = Color.fromARGB(255, avgR, avgG, avgB);
+    var best = -1;
+    for (var k = hi * sBins * lBins; k < (hi + 1) * sBins * lBins; k++) {
+      if (counts[k] > 0 && (best < 0 || counts[k] > counts[best])) best = k;
+    }
+    if (best < 0) continue;
+
+    final avgColor = Color.fromARGB(
+      255,
+      rSums[best] ~/ counts[best],
+      gSums[best] ~/ counts[best],
+      bSums[best] ~/ counts[best],
+    );
     final avgHue = HSLColor.fromColor(avgColor).hue;
 
     bool tooClose = false;
@@ -379,35 +414,41 @@ ArtworkPalette? _computePaletteInIsolate(Uint8List rgbaBytes) {
 
     picked.add(avgColor);
     pickedHues.add(avgHue);
-    pickedSats.add(avgSat);
+    // Vívida = saturada E presente na capa; destaques minúsculos não contam.
+    final avgSat = satSums[best] / counts[best];
+    pickedScores.add(share < 0.15 ? 0 : avgSat * math.sqrt(share));
   }
 
   if (picked.isEmpty) return null;
+  final realCount = picked.length;
 
-  // Fill missing with hue-shifted variants
+  // Fill missing with tonal variants of the main colour (não inventa matizes
+  // que a capa não tem).
   while (picked.length < 3) {
     final base = HSLColor.fromColor(picked.first);
-    final shift = picked.length == 1 ? 120.0 : 240.0;
     picked.add(
       base
-          .withHue((base.hue + shift) % 360)
-          .withSaturation((base.saturation * 0.85).clamp(0.3, 1.0))
+          .withLightness(
+            (base.lightness + (picked.length == 1 ? 0.18 : -0.18)).clamp(
+              0.12,
+              0.80,
+            ),
+          )
           .toColor(),
     );
-    pickedSats.add(base.saturation * 0.85);
+    pickedScores.add(0);
   }
 
   // ── Assign roles ──
-  // dominant = largest bucket (already picked[0]), darkened
-  // vibrant = bucket with highest average saturation
+  // dominant = most covered hue, darkened
+  // vibrant = best saturation × coverage score
   // muted = remaining
   final primary = picked[0];
   final hslPrimary = HSLColor.fromColor(primary);
 
-  // Find most vibrant among the 3
   int vibrantIdx = 0;
-  for (int i = 1; i < picked.length; i++) {
-    if (pickedSats[i] > pickedSats[vibrantIdx]) vibrantIdx = i;
+  for (int i = 1; i < realCount; i++) {
+    if (pickedScores[i] > pickedScores[vibrantIdx]) vibrantIdx = i;
   }
   final vibrantColor = picked[vibrantIdx];
 
@@ -416,23 +457,20 @@ ArtworkPalette? _computePaletteInIsolate(Uint8List rgbaBytes) {
     (i) => i != 0 && i != vibrantIdx,
     orElse: () => vibrantIdx == 0 ? 1 : 0,
   );
+  final hslMuted = HSLColor.fromColor(picked[mutedIdx]);
 
   return ArtworkPalette(
     dominant: hslPrimary
         .withLightness((hslPrimary.lightness * 0.45).clamp(0.12, 0.38))
-        .withSaturation((hslPrimary.saturation * 1.3).clamp(0.30, 1.0))
+        .withSaturation((hslPrimary.saturation * 1.15).clamp(0.0, 1.0))
         .toColor(),
     vibrant: vibrantColor,
-    muted: HSLColor.fromColor(picked[mutedIdx])
-        .withLightness(
-          HSLColor.fromColor(picked[mutedIdx]).lightness.clamp(0.20, 0.45),
-        )
-        .withSaturation(
-          HSLColor.fromColor(picked[mutedIdx]).saturation.clamp(0.15, 0.60),
-        )
+    muted: hslMuted
+        .withLightness(hslMuted.lightness.clamp(0.20, 0.45))
+        .withSaturation(hslMuted.saturation.clamp(0.0, 0.60))
         .toColor(),
-    secondary: picked.length > 1 ? picked[1] : null,
-    tertiary: picked.length > 2 ? picked[2] : null,
+    secondary: picked[1],
+    tertiary: picked[2],
   );
 }
 

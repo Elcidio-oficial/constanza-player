@@ -127,10 +127,20 @@
   "settingsLanguageSystem": "System default",
   "settingsLanguageEnglish": "English",
   "settingsLanguagePortuguese": "Portuguese",
-  "settingsMadeBy": "Made with ♡ by {author}",
-  "@settingsMadeBy": {
-    "placeholders": { "author": { "type": "String" } }
+  "settingsDeveloper": "Developer",
+  "settingsDeveloperDesc": "Who makes the app and how to get in touch",
+  "devTitle": "Developer",
+  "devRole": "Developer of {app}",
+  "@devRole": {
+    "placeholders": { "app": { "type": "String" } }
   },
+  "devContact": "Contact",
+  "devEmail": "Email",
+  "devWebsite": "Website",
+  "devApp": "App",
+  "devReportIssue": "Report a problem",
+  "devReportIssueDesc": "Open an issue on GitHub",
+  "devLinkError": "Couldn't open the link",
 
   "permissionTitle": "Access to your music",
   "permissionDescription": "Constanza needs permission to find and play music stored on your device.",

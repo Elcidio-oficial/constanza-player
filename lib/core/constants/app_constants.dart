@@ -5,8 +5,19 @@ abstract final class AppConstants {
   // ============================================================
   static const String appName = 'Constanza Músicas';
   static const String appTagline = 'Sua música. Seu silêncio. Seu momento.';
-  static const String appVersion = '1.3.3';
+  static const String appVersion = '1.5.0';
   static const String appAuthor = 'Elcídio Crisanto';
+
+  // ============================================================
+  // DESENVOLVEDOR — exibido em Configurações → Desenvolvedor
+  // ============================================================
+  /// Foto opcional; sem o arquivo, a tela mostra as iniciais.
+  static const String developerPhotoAsset = 'assets/developer/photo.jpg';
+  static const String developerEmail = 'elcidiocrisanto100@gmail.com';
+  static const String developerGithubUrl = 'https://github.com/Elcidio-oficial';
+  static const String developerWebsiteUrl = 'https://elcidio-oficial.github.io';
+  static const String issuesUrl =
+      'https://github.com/Elcidio-oficial/constanza-player/issues';
 
   /// Política de privacidade hospedada via GitHub Pages no próprio repo.
   /// Para alterar: ver PRIVACY.md na raiz + Settings → Pages no GitHub.

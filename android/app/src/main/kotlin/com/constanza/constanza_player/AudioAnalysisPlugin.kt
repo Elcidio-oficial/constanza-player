@@ -92,6 +92,11 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         /** Segundos de áudio analisados. 60 s = estatísticas mais robustas. */
         private const val ANALYSIS_DURATION_SEC = 60
 
+        // ── Waveform ──────────────────────────────────────────────────
+        private const val WAVEFORM_DEFAULT_BINS = 96
+        /** Janela de RMS da forma de onda (segundos). */
+        private const val WAVEFORM_WINDOW_SEC = 0.25
+
         // ── BPM ───────────────────────────────────────────────────────
         /** Frame 4096 → resolução espectral de ~10 Hz @44100 (melhor que 2048). */
         private const val BPM_FRAME_SIZE = 4096
@@ -220,8 +225,172 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     }
                 }
             }
+            "waveform" -> {
+                val uri = call.argument<String>("uri")
+                val bins = call.argument<Int>("bins") ?: WAVEFORM_DEFAULT_BINS
+                if (uri == null || bins !in 8..512) {
+                    result.error("INVALID_ARGS", "uri and bins (8..512) required", null)
+                    return
+                }
+                // Job e mutex próprios: a forma de onda é pedida a cada troca
+                // de música e não deve esperar (nem cancelar) a análise BPM/Key.
+                activeWaveformJob?.cancel()
+                activeWaveformJob = scope.launch {
+                    try {
+                        val levels = waveformMutex.withLock { computeWaveform(uri, bins) }
+                        withContext(Dispatchers.Main) { result.success(levels) }
+                    } catch (e: CancellationException) {
+                        withContext(Dispatchers.Main) { result.success(null) }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Waveform failed for $uri", e)
+                        withContext(Dispatchers.Main) {
+                            result.error("WAVEFORM_ERROR", e.message ?: "Unknown error", null)
+                        }
+                    }
+                }
+            }
             else -> result.notImplemented()
         }
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // WAVEFORM — níveis reais de volume ao longo da música
+    // ════════════════════════════════════════════════════════════
+
+    private val waveformMutex = Mutex()
+    private var activeWaveformJob: Job? = null
+
+    /**
+     * Decodifica a música inteira em streaming e devolve [bins] níveis em
+     * 0.12..1.0. Memória constante: guarda só o RMS de cada janela de
+     * [WAVEFORM_WINDOW_SEC] (~1000 floats numa música de 4 min), nunca o PCM.
+     */
+    private suspend fun computeWaveform(uri: String, bins: Int): List<Double> {
+        val ctx = context ?: throw IllegalStateException("No context")
+        val extractor = MediaExtractor()
+        var codec: MediaCodec? = null
+        try {
+            if (uri.startsWith("content://")) {
+                extractor.setDataSource(ctx, android.net.Uri.parse(uri), null)
+            } else {
+                extractor.setDataSource(uri)
+            }
+            var audioTrack = -1
+            for (i in 0 until extractor.trackCount) {
+                val mime = extractor.getTrackFormat(i).getString(MediaFormat.KEY_MIME)
+                if (mime?.startsWith("audio/") == true) { audioTrack = i; break }
+            }
+            if (audioTrack < 0) throw IllegalArgumentException("No audio track found")
+            extractor.selectTrack(audioTrack)
+            val format = extractor.getTrackFormat(audioTrack)
+            val mime = format.getString(MediaFormat.KEY_MIME)
+                ?: throw IllegalArgumentException("No mime type")
+
+            codec = MediaCodec.createDecoderByType(mime)
+            codec.configure(format, null, null, 0)
+            codec.start()
+
+            var channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+            var sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+            var isFloat = false
+            var windowFrames = (sampleRate * WAVEFORM_WINDOW_SEC).toInt().coerceAtLeast(1)
+
+            var windows = FloatArray(1024)
+            var windowCount = 0
+            var sumSq = 0.0
+            var frames = 0
+
+            val bufferInfo = MediaCodec.BufferInfo()
+            var inputDone = false
+            var outputDone = false
+            val timeoutUs = 10_000L
+
+            while (!outputDone) {
+                coroutineContext.ensureActive()
+                if (!inputDone) {
+                    val inputIdx = codec.dequeueInputBuffer(timeoutUs)
+                    if (inputIdx >= 0) {
+                        val inputBuf = codec.getInputBuffer(inputIdx)
+                        val size = if (inputBuf == null) -1 else extractor.readSampleData(inputBuf, 0)
+                        if (size < 0) {
+                            codec.queueInputBuffer(inputIdx, 0, 0, 0,
+                                MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                            inputDone = true
+                        } else {
+                            codec.queueInputBuffer(inputIdx, 0, size, extractor.sampleTime, 0)
+                            extractor.advance()
+                        }
+                    }
+                }
+
+                val outputIdx = codec.dequeueOutputBuffer(bufferInfo, timeoutUs)
+                if (outputIdx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                    val out = codec.outputFormat
+                    channelCount = out.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                    sampleRate = out.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                    isFloat = out.containsKey(MediaFormat.KEY_PCM_ENCODING) &&
+                        out.getInteger(MediaFormat.KEY_PCM_ENCODING) ==
+                        android.media.AudioFormat.ENCODING_PCM_FLOAT
+                    windowFrames = (sampleRate * WAVEFORM_WINDOW_SEC).toInt().coerceAtLeast(1)
+                    continue
+                }
+                if (outputIdx < 0) continue
+                if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
+                    outputDone = true
+                }
+                val outputBuf = codec.getOutputBuffer(outputIdx)
+                if (outputBuf != null && bufferInfo.size > 0) {
+                    outputBuf.position(bufferInfo.offset)
+                    outputBuf.limit(bufferInfo.offset + bufferInfo.size)
+                    outputBuf.order(ByteOrder.LITTLE_ENDIAN)
+                    val floats = if (isFloat) outputBuf.asFloatBuffer() else null
+                    val shorts = if (isFloat) null else outputBuf.asShortBuffer()
+                    val total = floats?.remaining() ?: shorts!!.remaining()
+                    var i = 0
+                    while (i + channelCount <= total) {
+                        var mono = 0f
+                        for (ch in 0 until channelCount) {
+                            mono += floats?.get(i + ch) ?: (shorts!!.get(i + ch) / 32768f)
+                        }
+                        mono /= channelCount
+                        sumSq += mono * mono
+                        if (++frames >= windowFrames) {
+                            if (windowCount == windows.size) windows = windows.copyOf(windows.size * 2)
+                            windows[windowCount++] = sqrt(sumSq / frames).toFloat()
+                            sumSq = 0.0
+                            frames = 0
+                        }
+                        i += channelCount
+                    }
+                }
+                codec.releaseOutputBuffer(outputIdx, false)
+            }
+            if (frames > 0) {
+                if (windowCount == windows.size) windows = windows.copyOf(windowCount + 1)
+                windows[windowCount++] = sqrt(sumSq / frames).toFloat()
+            }
+            return resampleLevels(windows, windowCount, bins)
+        } finally {
+            try { codec?.stop() } catch (_: Exception) {}
+            try { codec?.release() } catch (_: Exception) {}
+            extractor.release()
+        }
+    }
+
+    /** Reduz [count] janelas a [bins] níveis (pico do bin) normalizados. */
+    private fun resampleLevels(windows: FloatArray, count: Int, bins: Int): List<Double> {
+        if (count == 0) return List(bins) { 0.5 }
+        val out = DoubleArray(bins)
+        for (b in 0 until bins) {
+            val start = (b.toLong() * count / bins).toInt()
+            val end = max(start + 1, ((b + 1).toLong() * count / bins).toInt()).coerceAtMost(count)
+            var peak = 0f
+            for (j in start until end) peak = max(peak, windows[j])
+            out[b] = peak.toDouble()
+        }
+        val maxLevel = out.maxOrNull()?.takeIf { it > 1e-6 } ?: return List(bins) { 0.5 }
+        // Raiz quadrada aproxima a percepção de volume e evita barras "achatadas".
+        return out.map { 0.12 + 0.88 * sqrt(it / maxLevel) }
     }
 
     // ════════════════════════════════════════════════════════════
