@@ -130,114 +130,120 @@ class HomePage extends ConsumerWidget {
     }
 
     if (libraryState.status == LibraryStatus.noPermission) {
-      return SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.folder_off_rounded,
-              size: 64,
-              color: colors.onSurface.withValues(alpha: 0.15),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l10n.permissionMissing,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.6),
-                fontWeight: FontWeight.w400,
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.folder_off_rounded,
+                size: 64,
+                color: colors.onSurface.withValues(alpha: 0.15),
               ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.permissionMissingDesc,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.35),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                l10n.permissionMissing,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w400,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton.tonal(
-              onPressed: () =>
-                  ref.read(libraryProvider.notifier).retryPermission(),
-              child: Text(l10n.permissionAllow),
-            ),
-          ],
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                l10n.permissionMissingDesc,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.35),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              FilledButton.tonal(
+                onPressed: () =>
+                    ref.read(libraryProvider.notifier).retryPermission(),
+                child: Text(l10n.permissionAllow),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     if (libraryState.status == LibraryStatus.needsFolderSetup) {
-      return SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.folder_open_rounded,
-              size: 64,
-              color: colors.onSurface.withValues(alpha: 0.15),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l10n.libraryNeedsFolderSetup,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.6),
-                fontWeight: FontWeight.w400,
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.folder_open_rounded,
+                size: 64,
+                color: colors.onSurface.withValues(alpha: 0.15),
               ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.libraryNeedsFolderSetupDesc,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.35),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                l10n.libraryNeedsFolderSetup,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w400,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton.tonal(
-              onPressed: () => context.push('/folders'),
-              child: Text(l10n.libraryFolderPicker),
-            ),
-          ],
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                l10n.libraryNeedsFolderSetupDesc,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.35),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              FilledButton.tonal(
+                onPressed: () => context.push('/folders'),
+                child: Text(l10n.libraryFolderPicker),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     if (libraryState.status == LibraryStatus.empty ||
         (!libraryState.isLoading && songs.isEmpty)) {
-      return SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.music_off_rounded,
-              size: 64,
-              color: colors.onSurface.withValues(alpha: 0.15),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l10n.libraryEmpty,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.6),
-                fontWeight: FontWeight.w400,
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.music_off_rounded,
+                size: 64,
+                color: colors.onSurface.withValues(alpha: 0.15),
               ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              l10n.libraryEmptyDesc,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.35),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                l10n.libraryEmpty,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w400,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton.tonal(
-              onPressed: () => ref.read(libraryProvider.notifier).rescan(),
-              child: Text(AppLocalizations.of(context).settingsRescan),
-            ),
-          ],
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                l10n.libraryEmptyDesc,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.35),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              FilledButton.tonal(
+                onPressed: () => ref.read(libraryProvider.notifier).rescan(),
+                child: Text(AppLocalizations.of(context).settingsRescan),
+              ),
+            ],
+          ),
         ),
       );
     }

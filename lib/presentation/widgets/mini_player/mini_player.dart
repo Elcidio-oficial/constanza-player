@@ -271,7 +271,8 @@ class _MiniPlayPause extends ConsumerWidget {
         ),
         child: Icon(
           isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-          color: Colors.white,
+          // Sem capa o fundo é colors.primary (branco no tema escuro).
+          color: artworkColor != null ? Colors.white : colors.onPrimary,
           size: 22,
         ),
       ),

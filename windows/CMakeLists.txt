@@ -39,6 +39,10 @@ add_definitions(-DUNICODE -D_UNICODE)
 # que não passam pela função APPLY_STANDARD_SETTINGS.
 add_compile_options(/FS)
 
+# O MSVC do Visual Studio 18 transforma em erro (STL1011) o uso de
+# <experimental/coroutine>, ainda usado pelo permission_handler_windows.
+add_compile_definitions(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+
 # Compilation settings that should be applied to most targets.
 #
 # Be cautious about adding new options here, as plugins use this function by
@@ -63,6 +67,22 @@ add_subdirectory("runner")
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
 include(flutter/generated_plugins.cmake)
+
+# O CMake 4 (Visual Studio 18) recusa extrair tar "através de symlink", e os
+# plugins são acessados por .plugin_symlinks. audiotags e smtc_windows extraem
+# DLLs pré-compiladas assim e ficam sem elas; extraímos pelo caminho real.
+set(PLUGIN_SYMLINKS_DIR "${FLUTTER_MANAGED_DIR}/ephemeral/.plugin_symlinks")
+file(REAL_PATH "${PLUGIN_SYMLINKS_DIR}/audiotags/windows" AUDIOTAGS_DIR)
+if(NOT EXISTS "${AUDIOTAGS_DIR}/audiotags.dll")
+  file(ARCHIVE_EXTRACT INPUT "${AUDIOTAGS_DIR}/windows.tar.gz"
+    DESTINATION "${AUDIOTAGS_DIR}")
+endif()
+file(REAL_PATH "${PLUGIN_SYMLINKS_DIR}/smtc_windows/windows" SMTC_DIR)
+file(GLOB SMTC_ARCHIVES "${SMTC_DIR}/smtc_windows-v*.tar.gz")
+foreach(SMTC_ARCHIVE ${SMTC_ARCHIVES})
+  string(REGEX REPLACE "\\.tar\\.gz$" "" SMTC_LIB_ROOT "${SMTC_ARCHIVE}")
+  file(ARCHIVE_EXTRACT INPUT "${SMTC_ARCHIVE}" DESTINATION "${SMTC_LIB_ROOT}")
+endforeach()
 
 
 # === Installation ===
