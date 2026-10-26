@@ -55,8 +55,8 @@ class _LyricsMiniPlayer extends ConsumerWidget {
                         song.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.1,
@@ -68,7 +68,7 @@ class _LyricsMiniPlayer extends ConsumerWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.55),
+                          color: Theme.of(context).colorScheme.fadedText(0.55),
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
                         ),
@@ -83,7 +83,9 @@ class _LyricsMiniPlayer extends ConsumerWidget {
                       : Icons.favorite_border_rounded,
                   color: isFavorite
                       ? accent
-                      : Colors.white.withValues(alpha: 0.75),
+                      : Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.75),
                   size: 22,
                   onTap: () =>
                       ref.read(playerProvider.notifier).toggleFavorite(),
@@ -96,7 +98,9 @@ class _LyricsMiniPlayer extends ConsumerWidget {
               data: SliderThemeData(
                 trackHeight: 3,
                 activeTrackColor: accent,
-                inactiveTrackColor: Colors.white.withValues(alpha: 0.15),
+                inactiveTrackColor: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.15),
                 thumbColor: accent,
                 overlayColor: accent.withValues(alpha: 0.15),
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
@@ -126,7 +130,7 @@ class _LyricsMiniPlayer extends ConsumerWidget {
                   Text(
                     fmt(position),
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.55),
+                      color: Theme.of(context).colorScheme.fadedText(0.55),
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       fontFeatures: const [FontFeature.tabularFigures()],
@@ -135,7 +139,7 @@ class _LyricsMiniPlayer extends ConsumerWidget {
                   Text(
                     '-${fmt(remaining.isNegative ? Duration.zero : remaining)}',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.55),
+                      color: Theme.of(context).colorScheme.fadedText(0.55),
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       fontFeatures: const [FontFeature.tabularFigures()],
@@ -153,14 +157,16 @@ class _LyricsMiniPlayer extends ConsumerWidget {
                   icon: Icons.shuffle_rounded,
                   color: shuffleOn
                       ? accent
-                      : Colors.white.withValues(alpha: 0.75),
+                      : Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.75),
                   size: 22,
                   onTap: () =>
                       ref.read(playerProvider.notifier).toggleShuffle(),
                 ),
                 _MiniIconBtn(
                   icon: Icons.skip_previous_rounded,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   size: 30,
                   onTap: () => ref.read(playerProvider.notifier).previous(),
                 ),
@@ -172,13 +178,15 @@ class _LyricsMiniPlayer extends ConsumerWidget {
                 ),
                 _MiniIconBtn(
                   icon: Icons.skip_next_rounded,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   size: 30,
                   onTap: () => ref.read(playerProvider.notifier).next(),
                 ),
                 _MiniIconBtn(
                   icon: Icons.graphic_eq_rounded,
-                  color: Colors.white.withValues(alpha: 0.75),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.75),
                   size: 22,
                   onTap: () {
                     HapticFeedback.selectionClick();

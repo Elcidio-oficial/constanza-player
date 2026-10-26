@@ -249,36 +249,53 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                   ),
                 const SizedBox(width: AppSpacing.xs),
               ],
-              flexibleSpace: FlexibleSpaceBar(
-                expandedTitleScale: 1.0,
-                titlePadding: const EdgeInsets.only(
-                  left: AppSpacing.md,
-                  bottom: 14,
-                ),
-                title: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context).librarySectionLibrary,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.fadedText(0.35),
-                        letterSpacing: 1.2,
-                        fontSize: 9,
-                      ),
+              // Recuo do título acompanha o colapso: aberto alinha à margem;
+              // fechado desvia da seta de voltar (antes ficava por baixo dela).
+              flexibleSpace: LayoutBuilder(
+                builder: (context, constraints) {
+                  final s = context
+                      .dependOnInheritedWidgetOfExactType<
+                        FlexibleSpaceBarSettings
+                      >();
+                  final range = s == null ? 0.0 : s.maxExtent - s.minExtent;
+                  final t = range <= 0
+                      ? 1.0
+                      : ((constraints.maxHeight - s!.minExtent) / range).clamp(
+                          0.0,
+                          1.0,
+                        );
+                  return FlexibleSpaceBar(
+                    expandedTitleScale: 1.0,
+                    titlePadding: EdgeInsets.only(
+                      left: AppSpacing.md + (1 - t) * 44,
+                      bottom: 14 - (1 - t) * 6,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      AppLocalizations.of(context).foldersTitle,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: colors.onSurface,
-                        fontWeight: FontWeight.w200,
-                        fontSize: 22,
-                        letterSpacing: -0.5,
-                      ),
+                    title: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context).librarySectionLibrary,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: colors.fadedText(0.35),
+                            letterSpacing: 1.2,
+                            fontSize: 9,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          AppLocalizations.of(context).foldersTitle,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: colors.onSurface,
+                            fontWeight: FontWeight.w200,
+                            fontSize: 22,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
 

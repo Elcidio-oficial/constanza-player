@@ -32,10 +32,16 @@ class _QueueSheet extends ConsumerWidget {
             maxHeight: MediaQuery.sizeOf(context).height * 0.65,
           ),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.75),
+            color: Theme.of(
+              context,
+            ).colorScheme.surface.withValues(alpha: 0.88),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+              top: BorderSide(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.08),
+              ),
             ),
           ),
           child: Column(
@@ -47,7 +53,9 @@ class _QueueSheet extends ConsumerWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(2),
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
               ),
               const SizedBox(height: 16),
@@ -59,8 +67,8 @@ class _QueueSheet extends ConsumerWidget {
                     const SizedBox(width: 10),
                     Text(
                       l10n.carModeQueueTitle,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -69,7 +77,7 @@ class _QueueSheet extends ConsumerWidget {
                     Text(
                       '${upcoming.length}',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.35),
+                        color: Theme.of(context).colorScheme.fadedText(0.35),
                         fontSize: 14,
                       ),
                     ),
@@ -83,7 +91,7 @@ class _QueueSheet extends ConsumerWidget {
                   child: Text(
                     l10n.carModeQueueEmpty,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.35),
+                      color: Theme.of(context).colorScheme.fadedText(0.35),
                       fontSize: 14,
                     ),
                   ),
@@ -112,8 +120,8 @@ class _QueueSheet extends ConsumerWidget {
                         ),
                         title: Text(
                           s.title,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -123,7 +131,7 @@ class _QueueSheet extends ConsumerWidget {
                         subtitle: Text(
                           s.artist,
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.4),
+                            color: Theme.of(context).colorScheme.fadedText(0.4),
                             fontSize: 12,
                           ),
                           maxLines: 1,
@@ -132,7 +140,9 @@ class _QueueSheet extends ConsumerWidget {
                         trailing: Text(
                           '${i + 1}',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.25),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.fadedText(0.25),
                             fontSize: 13,
                           ),
                         ),

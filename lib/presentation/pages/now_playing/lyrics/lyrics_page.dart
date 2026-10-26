@@ -277,15 +277,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
   Widget build(BuildContext context) {
     final baseTheme = Theme.of(context);
     final baseColors = baseTheme.colorScheme;
-    final colors = baseColors.brightness == Brightness.dark
-        ? baseColors
-        : ColorScheme.dark(
-            primary: baseColors.primary,
-            onPrimary: baseColors.onPrimary,
-            secondary: baseColors.secondary,
-            tertiary: baseColors.tertiary,
-            error: baseColors.error,
-          );
+    final colors = baseColors;
     final theme = baseTheme.copyWith(colorScheme: colors);
     final lyrics = ref.watch(lyricsProvider);
     final position = ref.watch(playerProvider.select((s) => s.position));
@@ -382,7 +374,12 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
         child: Stack(
           children: [
             _BlurredArtworkBg(songId: songId, opacity: 0.35),
-            Container(color: Colors.black.withValues(alpha: 0.5)),
+            // Véu sobre a capa desfocada: escuro no escuro, claro no claro.
+            Container(
+              color: colors.brightness == Brightness.light
+                  ? colors.surface.withValues(alpha: 0.78)
+                  : Colors.black.withValues(alpha: 0.5),
+            ),
             Scaffold(
               backgroundColor: Colors.transparent,
               // Mini-player só em portrait — landscape já mostra controles no pane

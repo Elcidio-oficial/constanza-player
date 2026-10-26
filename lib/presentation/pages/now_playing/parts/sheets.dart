@@ -7,16 +7,14 @@ class _EqBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final baseColors = Theme.of(context).colorScheme;
-    final colors = baseColors.brightness == Brightness.dark
-        ? baseColors
-        : ColorScheme.dark(primary: baseColors.primary);
+    final colors = baseColors;
     final theme = Theme.of(context);
     final audioState = ref.watch(audioSettingsProvider);
     final notifier = ref.read(audioSettingsProvider.notifier);
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: colors.surfaceContainer,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppSpacing.radiusXl),
         ),
@@ -33,7 +31,7 @@ class _EqBottomSheet extends ConsumerWidget {
               width: 32,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: colors.onSurface.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -48,14 +46,14 @@ class _EqBottomSheet extends ConsumerWidget {
                     size: 22,
                     color: audioState.eqEnabled
                         ? colors.primary
-                        : Colors.white.withValues(alpha: 0.4),
+                        : colors.fadedText(0.4),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       AppLocalizations.of(context).npEqualizer,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
+                        color: colors.onSurface,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -64,8 +62,8 @@ class _EqBottomSheet extends ConsumerWidget {
                     value: audioState.eqEnabled,
                     onChanged: (_) => notifier.toggleEq(),
                     activeTrackColor: colors.primary,
-                    inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
-                    thumbColor: WidgetStatePropertyAll(Colors.white),
+                    inactiveTrackColor: colors.onSurface.withValues(alpha: 0.1),
+                    thumbColor: WidgetStatePropertyAll(colors.onSurface),
                   ),
                 ],
               ),
@@ -103,14 +101,16 @@ class _EqBottomSheet extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: selected
                                     ? colors.primary
-                                    : Colors.white.withValues(alpha: 0.06),
+                                    : colors.onSurface.withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(
                                   AppSpacing.radiusFull,
                                 ),
                                 border: Border.all(
                                   color: selected
                                       ? colors.primary
-                                      : Colors.white.withValues(alpha: 0.12),
+                                      : colors.onSurface.withValues(
+                                          alpha: 0.12,
+                                        ),
                                 ),
                               ),
                               child: Text(
@@ -118,7 +118,7 @@ class _EqBottomSheet extends ConsumerWidget {
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: selected
                                       ? colors.onPrimary
-                                      : Colors.white.withValues(alpha: 0.6),
+                                      : colors.fadedText(0.6),
                                   fontWeight: selected
                                       ? FontWeight.w600
                                       : FontWeight.w400,
@@ -142,12 +142,12 @@ class _EqBottomSheet extends ConsumerWidget {
                         vertical: AppSpacing.sm,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.04),
+                        color: colors.onSurface.withValues(alpha: 0.04),
                         borderRadius: BorderRadius.circular(
                           AppSpacing.radiusMd,
                         ),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.06),
+                          color: colors.onSurface.withValues(alpha: 0.06),
                         ),
                       ),
                       child: Row(
@@ -159,21 +159,25 @@ class _EqBottomSheet extends ConsumerWidget {
                               Text(
                                 '+12',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.2),
+                                  color: colors.onSurface.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   fontSize: 8,
                                 ),
                               ),
                               Text(
                                 '0',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.3),
+                                  color: colors.fadedText(0.3),
                                   fontSize: 8,
                                 ),
                               ),
                               Text(
                                 '-12',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.2),
+                                  color: colors.onSurface.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   fontSize: 8,
                                 ),
                               ),
@@ -196,9 +200,9 @@ class _EqBottomSheet extends ConsumerWidget {
                                                 enabledThumbRadius: 6,
                                               ),
                                           activeTrackColor: colors.primary,
-                                          inactiveTrackColor: Colors.white
+                                          inactiveTrackColor: colors.onSurface
                                               .withValues(alpha: 0.08),
-                                          thumbColor: Colors.white,
+                                          thumbColor: colors.onSurface,
                                           overlayShape:
                                               const RoundSliderOverlayShape(
                                                 overlayRadius: 12,
@@ -218,7 +222,7 @@ class _EqBottomSheet extends ConsumerWidget {
                                   Text(
                                     kBandLabels[i],
                                     style: TextStyle(
-                                      color: Colors.white.withValues(
+                                      color: colors.onSurface.withValues(
                                         alpha: 0.35,
                                       ),
                                       fontSize: 8,
@@ -290,6 +294,7 @@ class _MiniEffectSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -299,17 +304,14 @@ class _MiniEffectSlider extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
+                color: colors.fadedText(0.5),
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Text(
               value == 0 ? 'Off' : value.round().toString(),
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.3),
-                fontSize: 10,
-              ),
+              style: TextStyle(color: colors.fadedText(0.3), fontSize: 10),
             ),
           ],
         ),
@@ -319,8 +321,8 @@ class _MiniEffectSlider extends StatelessWidget {
             trackHeight: 2,
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
             activeTrackColor: color,
-            inactiveTrackColor: Colors.white.withValues(alpha: 0.08),
-            thumbColor: Colors.white,
+            inactiveTrackColor: colors.onSurface.withValues(alpha: 0.08),
+            thumbColor: colors.onSurface,
             overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
           ),
           child: Slider(value: value, min: 0, max: max, onChanged: onChanged),
@@ -370,15 +372,13 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final baseColors = Theme.of(context).colorScheme;
-    final colors = baseColors.brightness == Brightness.dark
-        ? baseColors
-        : ColorScheme.dark(primary: baseColors.primary);
+    final colors = baseColors;
     final theme = Theme.of(context);
     final isCustom = (_currentSpeed - 1.0).abs() > 0.01;
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: colors.surfaceContainer,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppSpacing.radiusXl),
         ),
@@ -395,7 +395,7 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
               width: 32,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: colors.onSurface.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -404,7 +404,7 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
             Text(
               '${_currentSpeed.toStringAsFixed(_currentSpeed == _currentSpeed.roundToDouble() ? 1 : 2)}x',
               style: theme.textTheme.displaySmall?.copyWith(
-                color: isCustom ? colors.primary : Colors.white,
+                color: isCustom ? colors.primary : colors.onSurface,
                 fontWeight: FontWeight.w300,
                 letterSpacing: -1,
               ),
@@ -413,7 +413,7 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
             Text(
               AppLocalizations.of(context).npSpeedTitle,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.white.withValues(alpha: 0.35),
+                color: colors.fadedText(0.35),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -429,8 +429,10 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
                         enabledThumbRadius: 8,
                       ),
                       activeTrackColor: colors.primary,
-                      inactiveTrackColor: Colors.white.withValues(alpha: 0.08),
-                      thumbColor: Colors.white,
+                      inactiveTrackColor: colors.onSurface.withValues(
+                        alpha: 0.08,
+                      ),
+                      thumbColor: colors.onSurface,
                       overlayColor: colors.primary.withValues(alpha: 0.2),
                       overlayShape: const RoundSliderOverlayShape(
                         overlayRadius: 18,
@@ -454,14 +456,14 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
                         Text(
                           '0.5x',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.25),
+                            color: colors.fadedText(0.25),
                             fontSize: 10,
                           ),
                         ),
                         Text(
                           '2.0x',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.25),
+                            color: colors.fadedText(0.25),
                             fontSize: 10,
                           ),
                         ),
@@ -494,7 +496,7 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
                       decoration: BoxDecoration(
                         color: selected
                             ? colors.primary
-                            : Colors.white.withValues(alpha: 0.06),
+                            : colors.onSurface.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(
                           AppSpacing.radiusFull,
                         ),
@@ -502,8 +504,8 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
                           color: selected
                               ? colors.primary
                               : isNormal
-                              ? Colors.white.withValues(alpha: 0.2)
-                              : Colors.white.withValues(alpha: 0.08),
+                              ? colors.onSurface.withValues(alpha: 0.2)
+                              : colors.onSurface.withValues(alpha: 0.08),
                         ),
                       ),
                       child: Text(
@@ -511,7 +513,7 @@ class _SpeedBottomSheetState extends ConsumerState<_SpeedBottomSheet> {
                         style: theme.textTheme.labelMedium?.copyWith(
                           color: selected
                               ? colors.onPrimary
-                              : Colors.white.withValues(alpha: 0.6),
+                              : colors.fadedText(0.6),
                           fontWeight: selected || isNormal
                               ? FontWeight.w600
                               : FontWeight.w400,

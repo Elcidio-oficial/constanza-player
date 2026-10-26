@@ -1,4 +1,6 @@
 import 'dart:ui';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
+import 'package:constanza_player/core/theme/app_theme.dart';
 import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -75,13 +77,6 @@ class _CarModePageState extends ConsumerState<CarModePage>
     // Reforço: pede ao SO para não dormir; o canal nativo aplica
     // FLAG_KEEP_SCREEN_ON, que mantém a tela acesa enquanto a página existir.
     WidgetsBinding.instance.addPostFrameCallback((_) => _keepScreenOn(true));
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.transparent,
-      ),
-    );
   }
 
   @override
@@ -124,85 +119,107 @@ class _CarModePageState extends ConsumerState<CarModePage>
     final isLandscape =
         MediaQuery.orientationOf(context) == Orientation.landscape;
     final view = ref.watch(themeProvider.select((s) => s.carModeView));
+    // Segue o tema do app. Exceção: tela escurecida (condução noturna) com o
+    // app em claro usa o tema escuro, senão o texto escuro some no véu preto.
+    final appTheme = Theme.of(context);
+    final theme = appTheme.colorScheme.isLight && _dimmed
+        ? AppTheme.dark(
+            accentColor: ref.watch(themeProvider.select((s) => s.accentColor)),
+          )
+        : appTheme;
+    final colors = theme.colorScheme;
+    final light = colors.isLight;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
+      value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        statusBarIconBrightness: light ? Brightness.dark : Brightness.light,
+        statusBarBrightness: light ? Brightness.light : Brightness.dark,
+        systemNavigationBarIconBrightness: light
+            ? Brightness.dark
+            : Brightness.light,
       ),
-      child: Scaffold(
-        backgroundColor: const Color(0xFF080808),
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            // ── Blurred artwork background ────────────────────────
-            _ArtworkBackground(
-              songId: song?.numericId ?? 0,
-              fade: _artworkFade,
-            ),
-
-            // ── Dim overlay ──────────────────────────────────────
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 400),
-              color: _dimmed
-                  ? Colors.black.withValues(alpha: 0.82)
-                  : Colors.black.withValues(alpha: 0.55),
-            ),
-
-            // ── Content ──────────────────────────────────────────
-            GestureDetector(
-              onHorizontalDragEnd: (details) {
-                final v = details.primaryVelocity ?? 0;
-                if (v < -400) {
-                  ref.read(playerProvider.notifier).next();
-                } else if (v > 400) {
-                  ref.read(playerProvider.notifier).previous();
-                }
-              },
-              child: SafeArea(
-                child: view == CarModeView.lyrics
-                    ? _LyricsLayout(
-                        player: player,
-                        song: song,
-                        accent: softAccent,
-                        volume: _volume,
-                        dimmed: _dimmed,
-                        bannerCtrl: _bannerCtrl,
-                        currentView: view,
-                        onDim: () => setState(() => _dimmed = !_dimmed),
-                        onVolume: _adjustVolume,
-                        onQueue: () => _showQueue(context, player, accent),
-                      )
-                    : isLandscape
-                    ? _LandscapeLayout(
-                        player: player,
-                        song: song,
-                        accent: softAccent,
-                        volume: _volume,
-                        dimmed: _dimmed,
-                        artworkFade: _artworkFade,
-                        bannerCtrl: _bannerCtrl,
-                        currentView: view,
-                        onDim: () => setState(() => _dimmed = !_dimmed),
-                        onVolume: _adjustVolume,
-                        onQueue: () => _showQueue(context, player, accent),
-                      )
-                    : _PortraitLayout(
-                        player: player,
-                        song: song,
-                        accent: softAccent,
-                        volume: _volume,
-                        dimmed: _dimmed,
-                        artworkFade: _artworkFade,
-                        bannerCtrl: _bannerCtrl,
-                        currentView: view,
-                        onDim: () => setState(() => _dimmed = !_dimmed),
-                        onVolume: _adjustVolume,
-                        onQueue: () => _showQueue(context, player, accent),
-                      ),
+      child: Theme(
+        data: theme,
+        child: Scaffold(
+          backgroundColor: colors.isLight
+              ? colors.surface
+              : const Color(0xFF080808),
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              // ── Blurred artwork background ────────────────────────
+              _ArtworkBackground(
+                songId: song?.numericId ?? 0,
+                fade: _artworkFade,
               ),
-            ),
-          ],
+
+              // ── Dim overlay ──────────────────────────────────────
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                color: _dimmed
+                    ? Colors.black.withValues(alpha: 0.82)
+                    : colors.isLight
+                    ? colors.surface.withValues(alpha: 0.80)
+                    : Colors.black.withValues(alpha: 0.55),
+              ),
+
+              // ── Content ──────────────────────────────────────────
+              GestureDetector(
+                onHorizontalDragEnd: (details) {
+                  final v = details.primaryVelocity ?? 0;
+                  if (v < -400) {
+                    ref.read(playerProvider.notifier).next();
+                  } else if (v > 400) {
+                    ref.read(playerProvider.notifier).previous();
+                  }
+                },
+                child: SafeArea(
+                  child: view == CarModeView.lyrics
+                      ? _LyricsLayout(
+                          player: player,
+                          song: song,
+                          accent: softAccent,
+                          volume: _volume,
+                          dimmed: _dimmed,
+                          bannerCtrl: _bannerCtrl,
+                          currentView: view,
+                          onDim: () => setState(() => _dimmed = !_dimmed),
+                          onVolume: _adjustVolume,
+                          onQueue: () => _showQueue(context, player, accent),
+                        )
+                      : isLandscape
+                      ? _LandscapeLayout(
+                          player: player,
+                          song: song,
+                          accent: softAccent,
+                          volume: _volume,
+                          dimmed: _dimmed,
+                          artworkFade: _artworkFade,
+                          bannerCtrl: _bannerCtrl,
+                          currentView: view,
+                          onDim: () => setState(() => _dimmed = !_dimmed),
+                          onVolume: _adjustVolume,
+                          onQueue: () => _showQueue(context, player, accent),
+                        )
+                      : _PortraitLayout(
+                          player: player,
+                          song: song,
+                          accent: softAccent,
+                          volume: _volume,
+                          dimmed: _dimmed,
+                          artworkFade: _artworkFade,
+                          bannerCtrl: _bannerCtrl,
+                          currentView: view,
+                          onDim: () => setState(() => _dimmed = !_dimmed),
+                          onVolume: _adjustVolume,
+                          onQueue: () => _showQueue(context, player, accent),
+                        ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

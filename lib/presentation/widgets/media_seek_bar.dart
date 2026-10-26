@@ -274,9 +274,10 @@ class _MediaSeekBarState extends State<MediaSeekBar>
         trackHeight: 3,
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
-        activeTrackColor: Colors.white,
-        inactiveTrackColor: Colors.white.withValues(alpha: 0.20),
-        thumbColor: Colors.white,
+        // Neutro (cor do texto), não branco fixo: no tema claro sumia.
+        activeTrackColor: neutral,
+        inactiveTrackColor: neutral.withValues(alpha: 0.20),
+        thumbColor: neutral,
       ),
       _ => base,
     };

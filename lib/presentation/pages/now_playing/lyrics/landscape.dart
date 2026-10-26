@@ -28,7 +28,7 @@ class _LyricsLandscapeBody extends ConsumerWidget {
         Container(
           width: 1,
           margin: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-          color: Colors.white.withValues(alpha: 0.06),
+          color: colors.onSurface.withValues(alpha: 0.06),
         ),
         // ── Painel direito: letras ──
         Expanded(flex: 7, child: lyricsContent),
@@ -128,7 +128,7 @@ class _LyricsSidePanel extends ConsumerWidget {
                 maxLines: isTight ? 1 : 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
+                  color: colors.onSurface,
                   fontWeight: FontWeight.w700,
                   height: 1.2,
                 ),
@@ -140,7 +140,7 @@ class _LyricsSidePanel extends ConsumerWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.55),
+                  color: colors.fadedText(0.55),
                 ),
               ),
               SizedBox(height: gapTitleSlider),
@@ -149,7 +149,7 @@ class _LyricsSidePanel extends ConsumerWidget {
                 data: SliderThemeData(
                   trackHeight: 3,
                   activeTrackColor: accent,
-                  inactiveTrackColor: Colors.white.withValues(alpha: 0.15),
+                  inactiveTrackColor: colors.onSurface.withValues(alpha: 0.15),
                   thumbColor: accent,
                   overlayColor: accent.withValues(alpha: 0.15),
                   thumbShape: const RoundSliderThumbShape(
@@ -184,7 +184,7 @@ class _LyricsSidePanel extends ConsumerWidget {
                     Text(
                       fmt(position),
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.55),
+                        color: colors.fadedText(0.55),
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         fontFeatures: const [FontFeature.tabularFigures()],
@@ -193,7 +193,7 @@ class _LyricsSidePanel extends ConsumerWidget {
                     Text(
                       '-${fmt(remaining.isNegative ? Duration.zero : remaining)}',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.55),
+                        color: colors.fadedText(0.55),
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         fontFeatures: const [FontFeature.tabularFigures()],
@@ -211,14 +211,14 @@ class _LyricsSidePanel extends ConsumerWidget {
                     icon: Icons.shuffle_rounded,
                     color: shuffleOn
                         ? accent
-                        : Colors.white.withValues(alpha: 0.75),
+                        : colors.onSurface.withValues(alpha: 0.75),
                     size: 22,
                     onTap: () =>
                         ref.read(playerProvider.notifier).toggleShuffle(),
                   ),
                   _MiniIconBtn(
                     icon: Icons.skip_previous_rounded,
-                    color: Colors.white,
+                    color: colors.onSurface,
                     size: 30,
                     onTap: () => ref.read(playerProvider.notifier).previous(),
                   ),
@@ -230,7 +230,7 @@ class _LyricsSidePanel extends ConsumerWidget {
                   ),
                   _MiniIconBtn(
                     icon: Icons.skip_next_rounded,
-                    color: Colors.white,
+                    color: colors.onSurface,
                     size: 30,
                     onTap: () => ref.read(playerProvider.notifier).next(),
                   ),
@@ -240,7 +240,7 @@ class _LyricsSidePanel extends ConsumerWidget {
                         : Icons.favorite_border_rounded,
                     color: isFavorite
                         ? accent
-                        : Colors.white.withValues(alpha: 0.75),
+                        : colors.onSurface.withValues(alpha: 0.75),
                     size: 22,
                     onTap: () =>
                         ref.read(playerProvider.notifier).toggleFavorite(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:constanza_player/core/theme/app_colors.dart';
 import 'package:constanza_player/core/theme/app_typography.dart';
@@ -114,6 +115,20 @@ abstract final class AppTheme {
 
       // ── AppBar ──────────────────────────────────────────
       appBarTheme: AppBarTheme(
+        // Explícito: com fundo transparente o Flutter estima "escuro" e põe
+        // ícones brancos na barra de estado, mesmo no tema claro.
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarContrastEnforced: false,
+          statusBarIconBrightness: brightness == Brightness.light
+              ? Brightness.dark
+              : Brightness.light,
+          statusBarBrightness: brightness,
+          systemNavigationBarIconBrightness: brightness == Brightness.light
+              ? Brightness.dark
+              : Brightness.light,
+        ),
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,

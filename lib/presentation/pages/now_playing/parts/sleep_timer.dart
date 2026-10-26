@@ -76,16 +76,14 @@ class _SleepTimerBottomSheetState
     final s = ref.watch(audioSettingsProvider);
     final notifier = ref.read(audioSettingsProvider.notifier);
     final baseColors = Theme.of(context).colorScheme;
-    final colors = baseColors.brightness == Brightness.dark
-        ? baseColors
-        : ColorScheme.dark(primary: baseColors.primary);
+    final colors = baseColors;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final active = s.hasSleepTimer;
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: colors.surfaceContainer,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppSpacing.radiusXl),
         ),
@@ -102,7 +100,7 @@ class _SleepTimerBottomSheetState
               width: 32,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: colors.onSurface.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -111,7 +109,7 @@ class _SleepTimerBottomSheetState
             Text(
               _remainingDisplay(s, l10n),
               style: theme.textTheme.displaySmall?.copyWith(
-                color: active ? colors.primary : Colors.white,
+                color: active ? colors.primary : colors.onSurface,
                 fontWeight: FontWeight.w300,
                 letterSpacing: -1,
                 fontFeatures: const [FontFeature.tabularFigures()],
@@ -121,7 +119,7 @@ class _SleepTimerBottomSheetState
             Text(
               l10n.sleepTimerSubtitle,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.white.withValues(alpha: 0.35),
+                color: colors.fadedText(0.35),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -163,7 +161,7 @@ class _SleepTimerBottomSheetState
                         Text(
                           l10n.sleepTimerFadeOut,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.white,
+                            color: colors.onSurface,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -171,7 +169,7 @@ class _SleepTimerBottomSheetState
                         Text(
                           l10n.sleepTimerFadeOutDesc,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.4),
+                            color: colors.fadedText(0.4),
                             fontSize: 11,
                           ),
                         ),
@@ -200,17 +198,17 @@ class _SleepTimerBottomSheetState
                     },
                     icon: Icon(
                       Icons.timer_off_outlined,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: colors.onSurface.withValues(alpha: 0.7),
                       size: 18,
                     ),
                     label: Text(
                       l10n.sleepTimerCancel,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
+                        color: colors.onSurface.withValues(alpha: 0.8),
                       ),
                     ),
                     style: TextButton.styleFrom(
-                      backgroundColor: Colors.white.withValues(alpha: 0.05),
+                      backgroundColor: colors.onSurface.withValues(alpha: 0.05),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
                           AppSpacing.radiusFull,
@@ -246,12 +244,12 @@ class _SleepTimerBottomSheetState
         decoration: BoxDecoration(
           color: selected
               ? colors.primary
-              : Colors.white.withValues(alpha: 0.06),
+              : colors.onSurface.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           border: Border.all(
             color: selected
                 ? colors.primary
-                : Colors.white.withValues(alpha: 0.08),
+                : colors.onSurface.withValues(alpha: 0.08),
           ),
         ),
         child: Text(
@@ -259,7 +257,7 @@ class _SleepTimerBottomSheetState
           style: theme.textTheme.labelMedium?.copyWith(
             color: selected
                 ? colors.onPrimary
-                : Colors.white.withValues(alpha: 0.7),
+                : colors.onSurface.withValues(alpha: 0.7),
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
           ),
         ),

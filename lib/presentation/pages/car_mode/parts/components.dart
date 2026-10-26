@@ -39,7 +39,7 @@ class _TopBar extends ConsumerWidget {
             children: [
               Icon(
                 Icons.directions_car_rounded,
-                color: Colors.white.withValues(alpha: 0.35),
+                color: Theme.of(context).colorScheme.fadedText(0.35),
                 size: 16,
               ),
               const SizedBox(width: 6),
@@ -47,7 +47,7 @@ class _TopBar extends ConsumerWidget {
                 (isLyrics ? l10n.carModeViewLyrics : l10n.carModeTitle)
                     .toUpperCase(),
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.35),
+                  color: Theme.of(context).colorScheme.fadedText(0.35),
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 2.4,
@@ -109,8 +109,14 @@ class _SafetyBanner extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(30),
-            color: Colors.white.withValues(alpha: 0.08),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.08),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.12),
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -118,14 +124,14 @@ class _SafetyBanner extends StatelessWidget {
             children: [
               Icon(
                 Icons.remove_red_eye_outlined,
-                color: Colors.white.withValues(alpha: 0.5),
+                color: Theme.of(context).colorScheme.fadedText(0.5),
                 size: 14,
               ),
               const SizedBox(width: 8),
               Text(
                 l10n.carModeSafetyNotice,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: Theme.of(context).colorScheme.fadedText(0.5),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -187,8 +193,8 @@ class _SongInfo extends StatelessWidget {
         children: [
           Text(
             song?.title ?? '',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 22,
               fontWeight: FontWeight.w700,
               height: 1.2,
@@ -204,7 +210,7 @@ class _SongInfo extends StatelessWidget {
               if ((song?.album ?? '').isNotEmpty) song!.album,
             ].join(' · '),
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.fadedText(0.5),
               fontSize: 14,
               fontWeight: FontWeight.w400,
             ),
@@ -252,8 +258,10 @@ class _ProgressSection extends ConsumerWidget {
             position: player.position,
             animate: player.isPlaying,
             activeColor: accent,
-            inactiveColor: Colors.white.withValues(alpha: 0.15),
-            neutralColor: Colors.white,
+            inactiveColor: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.15),
+            neutralColor: Theme.of(context).colorScheme.onSurface,
             secondaryColor: secondary,
             tertiaryColor: tertiary,
             onSeek: (v) {
@@ -271,7 +279,7 @@ class _ProgressSection extends ConsumerWidget {
                 Text(
                   player.positionFormatted,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
+                    color: Theme.of(context).colorScheme.fadedText(0.4),
                     fontSize: 12,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
@@ -279,7 +287,7 @@ class _ProgressSection extends ConsumerWidget {
                 Text(
                   player.durationFormatted,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
+                    color: Theme.of(context).colorScheme.fadedText(0.4),
                     fontSize: 12,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
@@ -317,7 +325,7 @@ class _MainControls extends ConsumerWidget {
           icon: Icons.skip_previous_rounded,
           size: btnSize,
           iconSize: compact ? 32 : 36,
-          color: Colors.white.withValues(
+          color: Theme.of(context).colorScheme.onSurface.withValues(
             alpha: player.hasPrevious ? 0.85 : 0.3,
           ),
           onTap: player.hasPrevious ? () => notifier.previous() : null,
@@ -331,7 +339,9 @@ class _MainControls extends ConsumerWidget {
               : Icons.play_arrow_rounded,
           size: playSize,
           iconSize: compact ? 42 : 48,
-          color: Colors.white,
+          color: accent.computeLuminance() > 0.179
+              ? Colors.black
+              : Colors.white,
           bgColor: accent,
           shadow: true,
           onTap: () => notifier.togglePlayPause(),
@@ -341,7 +351,9 @@ class _MainControls extends ConsumerWidget {
           icon: Icons.skip_next_rounded,
           size: btnSize,
           iconSize: compact ? 32 : 36,
-          color: Colors.white.withValues(alpha: player.hasNext ? 0.85 : 0.3),
+          color: Theme.of(context).colorScheme.onSurface.withValues(
+            alpha: player.hasNext ? 0.85 : 0.3,
+          ),
           onTap: player.hasNext ? () => notifier.next() : null,
         ),
       ],
@@ -433,7 +445,9 @@ class _VolumeRow extends StatelessWidget {
                 children: [
                   Container(
                     height: 6,
-                    color: Colors.white.withValues(alpha: 0.12),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.12),
                   ),
                   FractionallySizedBox(
                     widthFactor: volume,
@@ -462,7 +476,7 @@ class _VolumeRow extends StatelessWidget {
             child: Text(
               '$pct%',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.4),
+                color: Theme.of(context).colorScheme.fadedText(0.4),
                 fontSize: 12,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),

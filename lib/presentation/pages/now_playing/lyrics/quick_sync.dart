@@ -55,15 +55,7 @@ class _QuickSyncPageState extends ConsumerState<_QuickSyncPage> {
   Widget build(BuildContext context) {
     final baseTheme = Theme.of(context);
     final baseColors = baseTheme.colorScheme;
-    final colors = baseColors.brightness == Brightness.dark
-        ? baseColors
-        : ColorScheme.dark(
-            primary: baseColors.primary,
-            onPrimary: baseColors.onPrimary,
-            secondary: baseColors.secondary,
-            tertiary: baseColors.tertiary,
-            error: baseColors.error,
-          );
+    final colors = baseColors;
     final theme = baseTheme.copyWith(colorScheme: colors);
     final lyrics = ref.watch(lyricsProvider);
     final lineCount = lyrics.lines.length;

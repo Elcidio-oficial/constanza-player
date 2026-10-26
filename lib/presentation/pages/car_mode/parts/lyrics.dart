@@ -209,7 +209,7 @@ class _LyricsLayoutState extends ConsumerState<_LyricsLayout> {
             child: Text(
               l10n.carModeLyricsLoading,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
+                color: Theme.of(context).colorScheme.fadedText(0.5),
                 fontSize: 16,
               ),
             ),
@@ -222,7 +222,7 @@ class _LyricsLayoutState extends ConsumerState<_LyricsLayout> {
                 l10n.carModeNoLyrics,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: Theme.of(context).colorScheme.fadedText(0.5),
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                 ),
@@ -386,8 +386,8 @@ class _CarLyricsList extends StatelessWidget {
                     curve: Curves.easeOutCubic,
                     style: TextStyle(
                       color: i == currentIndex
-                          ? Colors.white
-                          : Colors.white.withValues(
+                          ? Theme.of(context).colorScheme.onSurface
+                          : Theme.of(context).colorScheme.onSurface.withValues(
                               alpha:
                                   (0.55 -
                                           (currentIndex >= 0

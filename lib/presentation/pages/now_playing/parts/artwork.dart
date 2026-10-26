@@ -146,11 +146,13 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
       return SizedBox(
         width: MediaQuery.sizeOf(context).width * 0.74,
         height: MediaQuery.sizeOf(context).width * 0.74,
-        child: const Center(
+        child: Center(
           child: Icon(
             Icons.music_note_rounded,
             size: 80,
-            color: Colors.white24,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.24),
           ),
         ),
       );

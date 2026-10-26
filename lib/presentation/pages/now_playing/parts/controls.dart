@@ -475,7 +475,7 @@ class _SecondaryActions extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: colors.surfaceContainer,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppSpacing.radiusXl),
@@ -491,7 +491,7 @@ class _SecondaryActions extends ConsumerWidget {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: colors.onSurface.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -499,7 +499,7 @@ class _SecondaryActions extends ConsumerWidget {
               Text(
                 l10n.npMoreSheetTitle,
                 style: themeData.textTheme.titleSmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.85),
+                  color: colors.onSurface.withValues(alpha: 0.85),
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -513,11 +513,11 @@ class _SecondaryActions extends ConsumerWidget {
                       Icons.equalizer_rounded,
                       color: eqOn
                           ? accentColor
-                          : Colors.white.withValues(alpha: 0.7),
+                          : colors.onSurface.withValues(alpha: 0.7),
                     ),
                     title: Text(
                       l10n.npEqualizer,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: colors.onSurface),
                     ),
                     trailing: eqOn
                         ? Icon(
@@ -544,11 +544,11 @@ class _SecondaryActions extends ConsumerWidget {
                       Icons.speed_rounded,
                       color: isCustom
                           ? accentColor
-                          : Colors.white.withValues(alpha: 0.7),
+                          : colors.onSurface.withValues(alpha: 0.7),
                     ),
                     title: Text(
                       l10n.npTabSpeed,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: colors.onSurface),
                     ),
                     trailing: isCustom
                         ? Text(

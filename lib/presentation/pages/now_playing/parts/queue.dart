@@ -325,10 +325,10 @@ class _QueueItem extends StatelessWidget {
                       color: colors.primary.withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Icon(
                         Icons.equalizer_rounded,
-                        color: Colors.white,
+                        color: colors.onPrimary,
                         size: 20,
                       ),
                     ),

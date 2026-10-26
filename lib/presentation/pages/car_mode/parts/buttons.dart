@@ -36,11 +36,14 @@ class _CarBtn extends StatelessWidget {
           shape: BoxShape.circle,
           color:
               bgColor ??
-              Colors.white.withValues(alpha: onTap != null ? 0.1 : 0.04),
+              Theme.of(context).colorScheme.onSurface.withValues(
+                alpha: onTap != null ? 0.1 : 0.04,
+              ),
           boxShadow: shadow && onTap != null
               ? [
                   BoxShadow(
-                    color: (bgColor ?? Colors.white).withValues(alpha: 0.3),
+                    color: (bgColor ?? Theme.of(context).colorScheme.onSurface)
+                        .withValues(alpha: 0.3),
                     blurRadius: 24,
                     spreadRadius: 2,
                   ),
@@ -75,8 +78,8 @@ class _GlassButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = active
-        ? (activeColor ?? Colors.white)
-        : Colors.white.withValues(alpha: 0.65);
+        ? (activeColor ?? Theme.of(context).colorScheme.onSurface)
+        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65);
 
     final btn = GestureDetector(
       onTap: onTap,
@@ -92,12 +95,18 @@ class _GlassButton extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: active
-                  ? (activeColor ?? Colors.white).withValues(alpha: 0.18)
-                  : Colors.white.withValues(alpha: 0.08),
+                  ? (activeColor ?? Theme.of(context).colorScheme.onSurface)
+                        .withValues(alpha: 0.18)
+                  : Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.08),
               border: Border.all(
                 color: active
-                    ? (activeColor ?? Colors.white).withValues(alpha: 0.35)
-                    : Colors.white.withValues(alpha: 0.1),
+                    ? (activeColor ?? Theme.of(context).colorScheme.onSurface)
+                          .withValues(alpha: 0.35)
+                    : Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.1),
               ),
             ),
             child: Icon(icon, size: iconSize, color: color),
