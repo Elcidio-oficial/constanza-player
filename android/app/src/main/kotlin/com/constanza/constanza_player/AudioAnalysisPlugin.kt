@@ -799,13 +799,18 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         val rawBpm = framesPerSecond * 60.0 / refinedLag
 
         // Step 7 — normalização de oitava
-        val bpm = when {
+        val coarseBpm = when {
             rawBpm in BPM_MIN..BPM_MAX -> rawBpm
             rawBpm * 2 in BPM_MIN..BPM_MAX -> rawBpm * 2
             rawBpm / 2 in BPM_MIN..BPM_MAX -> rawBpm / 2
             rawBpm * 2 < BPM_MIN && rawBpm * 4 in BPM_MIN..BPM_MAX -> rawBpm * 4
             else -> rawBpm.coerceIn(BPM_MIN, BPM_MAX)
         }
+
+        // Step 7b — refinamento fino. Cada passo de lag vale ~3,5 BPM perto
+        // de 136, e a parábola não basta para acertar a unidade.
+        val bpm = refineTempo(combinedOnset, framesPerSecond, coarseBpm)
+        Log.d(TAG, "BPM refine: ${"%.2f".format(coarseBpm)} → ${"%.2f".format(bpm)}")
 
         // Step 8 — confidence via SNR da ACF
         val acfSlice = harmonicAcf.slice(minLag..maxLag)
@@ -817,6 +822,53 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         Log.d(TAG, "BPM: ${bpm.roundToInt()} (raw=${rawBpm.roundToInt()}, " +
                 "conf=${"%.2f".format(confidence)})")
         return Pair(bpm, confidence)
+    }
+
+    /**
+     * Refina o andamento em ±3 % de [bpm] com passos de 0,02 BPM. Para cada
+     * candidato, alinha um pente de batidas (com meia-batida a 0,5) sobre o
+     * onset inteiro e pega a melhor fase; como o erro acumula ao longo dos
+     * 60 s, só o andamento exato mantém o pente sobre os ataques até o fim.
+     * Onset suavizado (±1 frame) para tolerar o jitter de 11 ms do hop.
+     */
+    private fun refineTempo(onset: DoubleArray, fps: Double, bpm: Double): Double {
+        val n = onset.size
+        if (n < 16) return bpm
+        val smooth = DoubleArray(n) { i ->
+            0.25 * onset[max(0, i - 1)] + 0.5 * onset[i] + 0.25 * onset[min(n - 1, i + 1)]
+        }
+        fun at(t: Double): Double {
+            val i = t.toInt()
+            if (i < 0 || i >= n - 1) return 0.0
+            val fr = t - i
+            return smooth[i] * (1 - fr) + smooth[i + 1] * fr
+        }
+
+        var bestBpm = bpm
+        var bestScore = -1.0
+        val lo = bpm * 0.97
+        val hi = bpm * 1.03
+        var cand = lo
+        while (cand <= hi) {
+            val period = fps * 60.0 / cand
+            val beats = ((n - 1) / period).toInt()
+            if (beats >= 4) {
+                // Fases a cada 0,5 frame dentro de um período.
+                var phase = 0.0
+                while (phase < period) {
+                    var s = 0.0
+                    for (k in 0 until beats) {
+                        val t = phase + k * period
+                        s += at(t) + 0.5 * at(t + period / 2)
+                    }
+                    s /= beats
+                    if (s > bestScore) { bestScore = s; bestBpm = cand }
+                    phase += 0.5
+                }
+            }
+            cand += 0.02
+        }
+        return bestBpm
     }
 
     // ════════════════════════════════════════════════════════════
