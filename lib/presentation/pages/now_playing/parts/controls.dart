@@ -27,7 +27,7 @@ class _ProgressBar extends ConsumerWidget {
       playerProvider.select((s) => s.currentSong?.uri ?? ''),
     );
     final isPlaying = ref.watch(playerProvider.select((s) => s.isPlaying));
-    final levels = ref.watch(waveformProvider(songUri)).value;
+    final waveform = ref.watch(waveformProvider(songUri)).value;
     // Remaining time as negative
     final remaining = duration - position;
     final remMin = remaining.inMinutes;
@@ -42,7 +42,8 @@ class _ProgressBar extends ConsumerWidget {
             progress: progress.clamp(0.0, 1.0),
             style: mediaBarStyle,
             seed: songId.hashCode,
-            levels: levels,
+            waveform: waveform,
+            position: position,
             animate: isPlaying,
             activeColor: accentColor,
             inactiveColor: colors.onSurface.withValues(alpha: 0.18),

@@ -13,9 +13,10 @@ abstract final class AppConstants {
   // ============================================================
   /// Foto opcional; sem o arquivo, a tela mostra as iniciais.
   static const String developerPhotoAsset = 'assets/developer/photo.jpg';
-  static const String developerEmail = 'elcidiocrisanto100@gmail.com';
+  static const String developerEmail = 'elcidio_crisanto@hotmail.com';
   static const String developerGithubUrl = 'https://github.com/Elcidio-oficial';
-  static const String developerWebsiteUrl = 'https://elcidio-oficial.github.io';
+  static const String developerWebsiteUrl =
+      'https://portofolio-elcidio.vercel.app/';
   static const String issuesUrl =
       'https://github.com/Elcidio-oficial/constanza-player/issues';
 

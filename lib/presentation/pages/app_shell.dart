@@ -177,6 +177,14 @@ class _AppShellState extends ConsumerState<AppShell>
         _lastColorSongId = songId;
         _colorDebounce?.cancel();
         final token = ++_colorExtractToken;
+        final cached = ref.read(themeProvider).useCustomNpColors
+            ? null
+            : ArtworkNotifier.cachedPalette(songId);
+        // Música já vista: cor imediata na tela, sem esperar o debounce.
+        // A extração abaixo ainda roda (sai do cache) para a notificação.
+        if (cached != null) {
+          ref.read(artworkPaletteProvider.notifier).state = cached;
+        }
         _colorDebounce = Timer(const Duration(milliseconds: 300), () {
           _extractAndSetColor(songId, token);
         });

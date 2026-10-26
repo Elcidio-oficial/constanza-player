@@ -227,7 +227,7 @@ class _ProgressSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final style = ref.watch(themeProvider.select((s) => s.mediaBarStyle));
-    final levels = ref
+    final waveform = ref
         .watch(waveformProvider(player.currentSong?.uri ?? ''))
         .value;
     // Car Mode lives on a dark backdrop — derive lively gradient stops from the
@@ -250,7 +250,8 @@ class _ProgressSection extends ConsumerWidget {
             progress: player.progress.clamp(0.0, 1.0),
             style: style,
             seed: player.currentSong?.id.hashCode ?? 0,
-            levels: levels,
+            waveform: waveform,
+            position: player.position,
             animate: player.isPlaying,
             activeColor: accent,
             inactiveColor: Colors.white.withValues(alpha: 0.15),

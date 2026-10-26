@@ -167,15 +167,14 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
       if (next != null) _applyColorsFromPalette(next);
     });
 
-    // Reseta para escuro imediatamente ao trocar de música
+    // Ao trocar de música mantém as cores atuais até a nova palette chegar
+    // (a transição é animada em _applyColors). Resetar para _kDark aqui fazia
+    // o botão de play cair em colors.primary — um flash branco a cada skip.
     ref.listen<Song?>(playerProvider.select((s) => s.currentSong), (
       prev,
       next,
     ) {
-      if (next != null && next.numericId != _lastSongId) {
-        _lastSongId = next.numericId;
-        if (prev != null) _applyColors(_kDark, _kDark, _kDark, _kDark);
-      }
+      if (next != null) _lastSongId = next.numericId;
     });
 
     // Aplica palette já disponível no primeiro build

@@ -92,10 +92,10 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         /** Segundos de áudio analisados. 60 s = estatísticas mais robustas. */
         private const val ANALYSIS_DURATION_SEC = 60
 
-        // ── Waveform ──────────────────────────────────────────────────
-        private const val WAVEFORM_DEFAULT_BINS = 96
-        /** Janela de RMS da forma de onda (segundos). */
-        private const val WAVEFORM_WINDOW_SEC = 0.25
+        // ── Envelope (barras de progresso) ────────────────────────────
+        /** Janela de RMS do envelope: 50 ms = 20 leituras/s, suficiente p/ batidas. */
+        private const val ENVELOPE_FRAME_MS = 50
+        private const val WAVEFORM_WINDOW_SEC = ENVELOPE_FRAME_MS / 1000.0
 
         // ── BPM ───────────────────────────────────────────────────────
         /** Frame 4096 → resolução espectral de ~10 Hz @44100 (melhor que 2048). */
@@ -225,20 +225,24 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     }
                 }
             }
-            "waveform" -> {
+            "envelope" -> {
                 val uri = call.argument<String>("uri")
-                val bins = call.argument<Int>("bins") ?: WAVEFORM_DEFAULT_BINS
-                if (uri == null || bins !in 8..512) {
-                    result.error("INVALID_ARGS", "uri and bins (8..512) required", null)
+                if (uri == null) {
+                    result.error("INVALID_ARGS", "uri required", null)
                     return
                 }
-                // Job e mutex próprios: a forma de onda é pedida a cada troca
+                // Job e mutex próprios: o envelope é pedido a cada troca
                 // de música e não deve esperar (nem cancelar) a análise BPM/Key.
                 activeWaveformJob?.cancel()
                 activeWaveformJob = scope.launch {
                     try {
-                        val levels = waveformMutex.withLock { computeWaveform(uri, bins) }
-                        withContext(Dispatchers.Main) { result.success(levels) }
+                        val envelope = waveformMutex.withLock { computeEnvelope(uri) }
+                        withContext(Dispatchers.Main) {
+                            result.success(mapOf(
+                                "frameMs" to ENVELOPE_FRAME_MS,
+                                "data" to envelope,
+                            ))
+                        }
                     } catch (e: CancellationException) {
                         withContext(Dispatchers.Main) { result.success(null) }
                     } catch (e: Exception) {
@@ -254,18 +258,19 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     // ════════════════════════════════════════════════════════════
-    // WAVEFORM — níveis reais de volume ao longo da música
+    // ENVELOPE — energia da música a cada ENVELOPE_FRAME_MS
     // ════════════════════════════════════════════════════════════
 
     private val waveformMutex = Mutex()
     private var activeWaveformJob: Job? = null
 
     /**
-     * Decodifica a música inteira em streaming e devolve [bins] níveis em
-     * 0.12..1.0. Memória constante: guarda só o RMS de cada janela de
-     * [WAVEFORM_WINDOW_SEC] (~1000 floats numa música de 4 min), nunca o PCM.
+     * Decodifica a música inteira em streaming e devolve o RMS de cada janela
+     * de [ENVELOPE_FRAME_MS] como bytes 0..255 (~4800 numa música de 4 min).
+     * As barras de progresso leem o byte da posição atual para pulsar no
+     * ritmo. Memória constante: o PCM nunca é guardado.
      */
-    private suspend fun computeWaveform(uri: String, bins: Int): List<Double> {
+    private suspend fun computeEnvelope(uri: String): ByteArray {
         val ctx = context ?: throw IllegalStateException("No context")
         val extractor = MediaExtractor()
         var codec: MediaCodec? = null
@@ -369,7 +374,7 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 if (windowCount == windows.size) windows = windows.copyOf(windowCount + 1)
                 windows[windowCount++] = sqrt(sumSq / frames).toFloat()
             }
-            return resampleLevels(windows, windowCount, bins)
+            return toEnvelopeBytes(windows, windowCount)
         } finally {
             try { codec?.stop() } catch (_: Exception) {}
             try { codec?.release() } catch (_: Exception) {}
@@ -377,20 +382,13 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         }
     }
 
-    /** Reduz [count] janelas a [bins] níveis (pico do bin) normalizados. */
-    private fun resampleLevels(windows: FloatArray, count: Int, bins: Int): List<Double> {
-        if (count == 0) return List(bins) { 0.5 }
-        val out = DoubleArray(bins)
-        for (b in 0 until bins) {
-            val start = (b.toLong() * count / bins).toInt()
-            val end = max(start + 1, ((b + 1).toLong() * count / bins).toInt()).coerceAtMost(count)
-            var peak = 0f
-            for (j in start until end) peak = max(peak, windows[j])
-            out[b] = peak.toDouble()
-        }
-        val maxLevel = out.maxOrNull()?.takeIf { it > 1e-6 } ?: return List(bins) { 0.5 }
+    /** Normaliza [count] janelas de RMS para bytes 0..255 (pico da música = 255). */
+    private fun toEnvelopeBytes(windows: FloatArray, count: Int): ByteArray {
+        var peak = 0f
+        for (j in 0 until count) peak = max(peak, windows[j])
+        if (peak <= 1e-6f) return ByteArray(count)
         // Raiz quadrada aproxima a percepção de volume e evita barras "achatadas".
-        return out.map { 0.12 + 0.88 * sqrt(it / maxLevel) }
+        return ByteArray(count) { j -> (sqrt(windows[j] / peak) * 255f).roundToInt().toByte() }
     }
 
     // ════════════════════════════════════════════════════════════

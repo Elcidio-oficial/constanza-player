@@ -259,6 +259,9 @@ class ArtworkNotifier extends StateNotifier<int> {
   /// A decodificação da imagem ocorre na main thread (dart:ui requer root isolate),
   /// mas o cálculo pesado do histograma é delegado a um Isolate via compute(),
   /// garantindo zero jank na UI durante trocas rápidas de faixa.
+  /// Palette já calculada para [songId], sem decodificar nada.
+  static ArtworkPalette? cachedPalette(int songId) => _paletteCache[songId];
+
   static Future<ArtworkPalette?> extractPalette(
     Uint8List bytes, {
     int? songId,

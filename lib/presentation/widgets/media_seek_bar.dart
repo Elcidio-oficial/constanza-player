@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
+import 'package:constanza_player/services/waveform_service.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // MEDIA SEEK BAR — reusable progress/seek bar shared by Now Playing & Car Mode.
@@ -34,13 +35,18 @@ class MediaSeekBar extends StatefulWidget {
     this.tertiaryColor,
     this.thumbColor = Colors.white,
     this.height = 44,
-    this.levels,
+    this.waveform,
+    this.position = Duration.zero,
     this.animate = true,
   });
 
-  /// Níveis reais de volume da música (0..1), da esquerda para a direita.
-  /// Quando null, os visualizadores usam um formato gerado a partir de [seed].
-  final List<double>? levels;
+  /// Energia real da música. Com ele os visualizadores pulsam no ritmo do que
+  /// está tocando; null → formato gerado a partir de [seed].
+  final SongWaveform? waveform;
+
+  /// Posição atual da reprodução (lida no [waveform]). Entre atualizações do
+  /// player a barra interpola pelo tempo decorrido.
+  final Duration position;
 
   /// Anima a oscilação dos visualizadores. Desligar quando pausado poupa
   /// bateria (o ticker deixa de redesenhar a 60 fps).
@@ -94,23 +100,41 @@ class _MediaSeekBarState extends State<MediaSeekBar>
   @override
   void initState() {
     super.initState();
-    _bars = widget.levels ?? _generateBars(widget.seed);
+    _bars = widget.waveform?.overview ?? _generateBars(widget.seed);
     _anim = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
-    );
+    )..addListener(_updatePulse);
+    _sincePosition.start();
     _syncAnimation();
   }
 
   @override
   void didUpdateWidget(covariant MediaSeekBar old) {
     super.didUpdateWidget(old);
-    if (old.seed != widget.seed || old.levels != widget.levels) {
-      _bars = widget.levels ?? _generateBars(widget.seed);
+    if (old.seed != widget.seed || old.waveform != widget.waveform) {
+      _bars = widget.waveform?.overview ?? _generateBars(widget.seed);
     }
+    if (old.position != widget.position) _sincePosition.reset();
     if (old.animate != widget.animate || old.style != widget.style) {
       _syncAnimation();
     }
+  }
+
+  // Tempo desde a última posição recebida: o player emite a cada ~100 ms,
+  // a barra redesenha a 60 fps.
+  final Stopwatch _sincePosition = Stopwatch();
+  double _pulse = 0;
+
+  void _updatePulse() {
+    final waveform = widget.waveform;
+    if (waveform == null) return;
+    final live = widget.animate
+        ? widget.position + _sincePosition.elapsed
+        : widget.position;
+    final target = waveform.pulseAt(live);
+    // Ataque rápido, queda lenta (como um VU): batidas "saltam" sem tremer.
+    _pulse += (target - _pulse) * (target > _pulse ? 0.55 : 0.14);
   }
 
   void _syncAnimation() {
@@ -181,6 +205,7 @@ class _MediaSeekBarState extends State<MediaSeekBar>
                   bars: _bars,
                   progress: fraction,
                   phase: _anim.value,
+                  pulse: widget.waveform == null ? null : _pulse,
                   dragging: _dragFraction != null,
                   activeColor: widget.activeColor,
                   inactiveColor: widget.inactiveColor,
@@ -275,12 +300,16 @@ class _MediaBarPainter extends CustomPainter {
     required this.inactiveColor,
     required this.secondaryColor,
     required this.tertiaryColor,
+    this.pulse,
   });
 
   final MediaBarStyle style;
   final List<double> bars;
   final double progress;
   final double phase;
+
+  /// Energia da música no instante atual (0..1); null sem envelope.
+  final double? pulse;
   final bool dragging;
   final Color activeColor;
   final Color inactiveColor;
@@ -288,12 +317,21 @@ class _MediaBarPainter extends CustomPainter {
   final Color tertiaryColor;
 
   // Amplitude sampled from the smoothed source at fractional position [i/n].
+  // Com [pulse] (energia ao vivo da música), todas as barras sobem e descem
+  // no ritmo; a variação por índice evita que pulsem como um bloco único.
   double _amp(int i, int n) {
     if (bars.isEmpty) return 0.5;
     final p = n <= 1 ? 0.0 : i / (n - 1);
     final idx = (p * (bars.length - 1)).round().clamp(0, bars.length - 1);
-    return bars[idx];
+    final base = bars[idx];
+    final live = pulse;
+    if (live == null) return base;
+    final spread = 0.70 + 0.30 * math.sin(i * 1.9 + phase * 4 * math.pi);
+    return (base * (0.28 + 0.72 * live * spread)).clamp(0.08, 1.0);
   }
+
+  // Escala das famílias de linha (sine / wave / pulse) pelo pulso ao vivo.
+  double get _lineScale => pulse == null ? 1.0 : 0.25 + 0.75 * pulse!;
 
   // Horizontal gradient colour for played pixels.
   Color _played(double t) {
@@ -548,7 +586,7 @@ class _MediaBarPainter extends CustomPainter {
     required double amp,
   }) {
     final cy = size.height / 2;
-    final maxA = size.height / 2 * amp;
+    final maxA = size.height / 2 * amp * _lineScale;
     const step = 3.0;
     final pts = <Offset>[];
     for (double x = 0; x <= size.width; x += step) {
@@ -566,7 +604,7 @@ class _MediaBarPainter extends CustomPainter {
 
   List<Offset> _ecgPoints(Size size) {
     final cy = size.height / 2;
-    final maxA = size.height / 2 * 0.82;
+    final maxA = size.height / 2 * 0.82 * _lineScale;
     const step = 2.0;
     const beatW = 120.0; // pixels per heartbeat
     final pts = <Offset>[];
@@ -655,6 +693,7 @@ class _MediaBarPainter extends CustomPainter {
       old.style != style ||
       old.progress != progress ||
       old.phase != phase ||
+      old.pulse != pulse ||
       old.dragging != dragging ||
       old.activeColor != activeColor ||
       old.inactiveColor != inactiveColor ||
