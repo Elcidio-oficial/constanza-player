@@ -423,6 +423,13 @@ class LyricsFetchService {
     );
   }
 
+  @visibleForTesting
+  static bool matchesForTest(LyricsHit hit, String title, String artist) =>
+      _matches(hit, title, artist);
+
+  @visibleForTesting
+  static String cleanForTest(String input) => _clean(input);
+
   static LyricsHit? _pickBest(List<LyricsHit> hits, Duration? duration) {
     if (hits.isEmpty) return null;
     if (duration != null) {
