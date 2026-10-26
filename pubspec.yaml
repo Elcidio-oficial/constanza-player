@@ -1,7 +1,7 @@
 name: constanza_player
 description: "Constanza MÃºsicas â€” Sua mÃºsica. Seu silÃªncio. Seu momento."
 publish_to: 'none'
-version: 1.5.4+21
+version: 1.5.5+22
 
 environment:
   sdk: ^3.10.7
@@ -136,3 +136,4 @@ flutter:
   generate: true
   assets:
     - assets/developer/
+    - assets/icon/icon.png

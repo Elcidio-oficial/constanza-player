@@ -173,7 +173,22 @@ class ShareService {
     }
     final art = await _loadArt(song.numericId);
     final pal = palette ?? await _paletteFromBytes(art, song.numericId);
-    final selected = _pickLyricsWindow(lines, highlightIndex, maxLines: 11);
+    // Índice da linha atual dentro da letra sem linhas vazias — é sobre
+    // essa lista que cada modelo recorta o seu trecho.
+    final clean = lines.where((l) => !l.isEmpty).toList();
+    if (clean.isEmpty) {
+      if (context.mounted) {
+        await shareSongs(context: context, songs: [song], palette: palette);
+      }
+      return;
+    }
+    int? hl;
+    if (highlightIndex != null &&
+        highlightIndex >= 0 &&
+        highlightIndex < lines.length) {
+      final i = clean.indexOf(lines[highlightIndex]);
+      if (i >= 0) hl = i;
+    }
     if (!context.mounted) return;
 
     await _renderAndShare(
@@ -184,8 +199,8 @@ class ShareService {
       meta: song.album.isNotEmpty ? song.album : null,
       art: art,
       palette: pal,
-      lyricsLines: selected.lines,
-      lyricsHighlight: selected.highlight,
+      lyricsLines: clean,
+      lyricsHighlight: hl,
       shareText: '🎵 ${song.title} — ${song.artist}\nvia Constanza Músicas',
     );
   }
@@ -219,20 +234,54 @@ class ShareService {
     // Cada modelo é um poster 1080×1920 completo; a tela de pré-visualização
     // mostra-os reduzidos e captura o escolhido no tamanho real.
     final templates = <_PosterTemplate>[
-      if (kind == _PosterKind.lyrics)
+      if (kind == _PosterKind.lyrics) ...[
         _PosterTemplate(
-          'Letra',
-          Icons.lyrics_rounded,
-          _LyricsPoster(
+          'Cartão',
+          Icons.style_rounded,
+          _LyricsCardPoster(
             title: title,
             subtitle: subtitle,
             palette: palette,
             artImage: artImage,
-            lines: lyricsLines ?? const [],
-            highlightIndex: lyricsHighlight,
+            window: _pickLyricsWindow(
+              lyricsLines ?? const [],
+              lyricsHighlight,
+              maxLines: 5,
+            ),
           ),
-        )
-      else ...[
+        ),
+        _PosterTemplate(
+          'Citação',
+          Icons.format_quote_rounded,
+          _LyricsQuotePoster(
+            title: title,
+            subtitle: subtitle,
+            palette: palette,
+            artImage: artImage,
+            window: _pickLyricsWindow(
+              lyricsLines ?? const [],
+              lyricsHighlight,
+              maxLines: 2,
+              highlightFirst: true,
+            ),
+          ),
+        ),
+        _PosterTemplate('Clássico', Icons.lyrics_rounded, () {
+          final w = _pickLyricsWindow(
+            lyricsLines ?? const [],
+            lyricsHighlight,
+            maxLines: 11,
+          );
+          return _LyricsPoster(
+            title: title,
+            subtitle: subtitle,
+            palette: palette,
+            artImage: artImage,
+            lines: w.lines,
+            highlightIndex: w.highlight,
+          );
+        }()),
+      ] else ...[
         _PosterTemplate(
           'Capa',
           Icons.crop_square_rounded,
@@ -273,6 +322,12 @@ class ShareService {
       ],
     ];
 
+    if (!context.mounted) {
+      artImage?.dispose();
+      return;
+    }
+    // Ícone já decodificado: aparece no primeiro frame do preview e da captura.
+    await precacheImage(const AssetImage(_appIconAsset), context);
     if (!context.mounted) {
       artImage?.dispose();
       return;
@@ -340,6 +395,8 @@ class ShareService {
     List<LyricLine> all,
     int? around, {
     int maxLines = 6,
+    // true: o trecho começa na linha atual (citação); false: centra nela.
+    bool highlightFirst = false,
   }) {
     final clean = all.where((l) => !l.isEmpty).toList();
     if (clean.isEmpty) return (lines: const [], highlight: -1);
@@ -352,7 +409,7 @@ class ShareService {
     final pivot = (around != null && around >= 0 && around < clean.length)
         ? around
         : (clean.length / 2).floor();
-    var start = pivot - (maxLines ~/ 2);
+    var start = highlightFirst ? pivot : pivot - (maxLines ~/ 2);
     if (start < 0) start = 0;
     var end = start + maxLines;
     if (end > clean.length) {
@@ -720,11 +777,15 @@ class _Art extends StatelessWidget {
           ],
         ),
       ),
-      child: Center(
-        child: Icon(
-          Icons.music_note_rounded,
-          size: 260,
-          color: Colors.white.withValues(alpha: 0.35),
+      // Nota proporcional ao tamanho: serve à capa grande e à miniatura.
+      child: FractionallySizedBox(
+        widthFactor: 0.32,
+        heightFactor: 0.32,
+        child: FittedBox(
+          child: Icon(
+            Icons.music_note_rounded,
+            color: Colors.white.withValues(alpha: 0.35),
+          ),
         ),
       ),
     );
@@ -1282,6 +1343,50 @@ class _KindPill extends StatelessWidget {
   }
 }
 
+/// Ícone oficial do app (assets/icon/icon.png) com cantos de ícone Android.
+class _AppIcon extends StatelessWidget {
+  const _AppIcon({required this.size});
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(size * 0.26);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.45),
+            blurRadius: size * 0.4,
+            offset: Offset(0, size * 0.08),
+          ),
+        ],
+      ),
+      foregroundDecoration: BoxDecoration(
+        borderRadius: radius,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.22),
+          width: 1.5,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Image.asset(
+          _appIconAsset,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          filterQuality: FilterQuality.high,
+        ),
+      ),
+    );
+  }
+}
+
+const _appIconAsset = 'assets/icon/icon.png';
+
 /// Assinatura do app no rodapé.
 class _BrandMark extends StatelessWidget {
   const _BrandMark({this.compact = false});
@@ -1289,20 +1394,7 @@ class _BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mark = Container(
-      width: compact ? 52 : 46,
-      height: compact ? 52 : 46,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(compact ? 16 : 14),
-      ),
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.headphones_rounded,
-        size: compact ? 30 : 26,
-        color: Colors.black,
-      ),
-    );
+    final mark = _AppIcon(size: compact ? 60 : 54);
     if (compact) return mark;
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -1518,6 +1610,405 @@ class _SongPoster extends StatelessWidget {
 // ============================================================
 // LYRICS POSTER — compact header + lyrics as hero
 // ============================================================
+
+typedef _LyricsWindow = ({List<LyricLine> lines, int highlight});
+
+/// Capa pequena com cantos arredondados (cabeçalhos dos posters de letra).
+class _ArtThumb extends StatelessWidget {
+  const _ArtThumb({
+    required this.image,
+    required this.palette,
+    required this.size,
+  });
+  final ui.Image? image;
+  final ArtworkPalette palette;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(size * 0.18);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: _Art(image: image, palette: palette),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// LETRA "CARTÃO" — cartão de cor sólida, letra em destaque
+// ============================================================
+
+class _LyricsCardPoster extends StatelessWidget {
+  const _LyricsCardPoster({
+    required this.title,
+    required this.subtitle,
+    required this.palette,
+    required this.artImage,
+    required this.window,
+  });
+
+  final String title;
+  final String subtitle;
+  final ArtworkPalette palette;
+  final ui.Image? artImage;
+  final _LyricsWindow window;
+
+  @override
+  Widget build(BuildContext context) {
+    // Cor do cartão: tom da capa, escuro o bastante para texto branco.
+    final hsl = HSLColor.fromColor(palette.vibrant);
+    final card = hsl
+        .withLightness(hsl.lightness.clamp(0.26, 0.34))
+        .withSaturation(hsl.saturation.clamp(0.30, 0.75))
+        .toColor();
+    final deep = HSLColor.fromColor(card).withLightness(0.14).toColor();
+    final n = window.lines.length;
+    // Menos linhas → letra maior.
+    final fontSize = n <= 2 ? 84.0 : (n <= 4 ? 72.0 : 64.0);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [card, deep],
+            ),
+          ),
+        ),
+        Positioned(
+          top: -300,
+          left: -300,
+          width: 1100,
+          height: 1100,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  Colors.white.withValues(alpha: 0.14),
+                  Colors.white.withValues(alpha: 0.0),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const _Grain(),
+
+        // Cabeçalho
+        Positioned(
+          top: 150,
+          left: 96,
+          right: 96,
+          child: Row(
+            children: [
+              _ArtThumb(image: artImage, palette: palette, size: 136),
+              const SizedBox(width: 34),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 44,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -1.0,
+                        height: 1.08,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.72),
+                        fontSize: 32,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Letra
+        Positioned(
+          top: 400,
+          bottom: 300,
+          left: 96,
+          right: 96,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < n; i++)
+                Padding(
+                  padding: EdgeInsets.only(bottom: i < n - 1 ? 26 : 0),
+                  child: Text(
+                    window.lines[i].text,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(
+                        alpha: i == window.highlight ? 1.0 : 0.58,
+                      ),
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -1.4,
+                      height: 1.18,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+
+        // Rodapé
+        Positioned(
+          left: 96,
+          right: 96,
+          bottom: 110,
+          child: Row(
+            children: [
+              const _BrandMark(),
+              const Spacer(),
+              Icon(
+                Icons.format_quote_rounded,
+                size: 56,
+                color: Colors.white.withValues(alpha: 0.35),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// LETRA "CITAÇÃO" — o verso atual como frase em destaque
+// ============================================================
+
+class _LyricsQuotePoster extends StatelessWidget {
+  const _LyricsQuotePoster({
+    required this.title,
+    required this.subtitle,
+    required this.palette,
+    required this.artImage,
+    required this.window,
+  });
+
+  final String title;
+  final String subtitle;
+  final ArtworkPalette palette;
+  final ui.Image? artImage;
+  final _LyricsWindow window;
+
+  @override
+  Widget build(BuildContext context) {
+    final base = _deepBase(palette.dominant);
+    final accent = _readableAccent(palette.vibrant);
+    final quote = window.lines.map((l) => l.text.trim()).join('\n');
+    final long = quote.length > 90;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Container(color: base),
+        if (artImage != null)
+          Opacity(
+            opacity: 0.55,
+            child: ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(
+                sigmaX: 120,
+                sigmaY: 120,
+                tileMode: TileMode.clamp,
+              ),
+              child: Transform.scale(
+                scale: 1.5,
+                child: RawImage(image: artImage, fit: BoxFit.cover),
+              ),
+            ),
+          ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                base.withValues(alpha: 0.55),
+                base.withValues(alpha: 0.80),
+                base,
+              ],
+              stops: const [0.0, 0.6, 1.0],
+            ),
+          ),
+        ),
+        const _Grain(),
+
+        Positioned(
+          top: 120,
+          left: 96,
+          right: 96,
+          child: Row(
+            children: [
+              _KindPill(label: 'LETRA', accent: accent),
+              const Spacer(),
+              const _BrandMark(compact: true),
+            ],
+          ),
+        ),
+
+        // Aspas gigantes + verso, centrados entre o topo e os créditos.
+        Positioned(
+          top: 260,
+          left: 96,
+          right: 96,
+          bottom: 520,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // O glifo tem muito ar em cima; recorta só a parte visível.
+              SizedBox(
+                height: 130,
+                child: OverflowBox(
+                  alignment: Alignment.topLeft,
+                  maxHeight: 400,
+                  child: Transform.translate(
+                    offset: const Offset(-8, -40),
+                    child: Text(
+                      '“',
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 300,
+                        fontWeight: FontWeight.w900,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Flexible(
+                child: Text(
+                  quote,
+                  maxLines: 7,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: long ? 72 : 92,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: long ? -1.6 : -2.4,
+                    height: 1.12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Créditos
+        Positioned(
+          left: 96,
+          right: 96,
+          bottom: 250,
+          child: Row(
+            children: [
+              _ArtThumb(image: artImage, palette: palette, size: 150),
+              const SizedBox(width: 36),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: accent,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 44,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -1.0,
+                        height: 1.08,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 32,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Positioned(
+          left: 96,
+          right: 96,
+          bottom: 170,
+          child: Container(
+            height: 1.5,
+            color: Colors.white.withValues(alpha: 0.12),
+          ),
+        ),
+        Positioned(
+          left: 96,
+          bottom: 100,
+          child: Text(
+            'CONSTANZA MÚSICAS',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.55),
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 4,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class _LyricsPoster extends StatelessWidget {
   const _LyricsPoster({
@@ -1992,36 +2483,7 @@ class _TopBar extends StatelessWidget {
             ],
           ),
         ),
-        // Logo mark — círculo com inicial.
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [palette.vibrant, palette.dominant],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: palette.vibrant.withValues(alpha: 0.45),
-                blurRadius: 24,
-                spreadRadius: -2,
-              ),
-            ],
-          ),
-          alignment: Alignment.center,
-          child: const Text(
-            'C',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-            ),
-          ),
-        ),
+        const _AppIcon(size: 60),
       ],
     );
   }
@@ -2126,12 +2588,8 @@ class _Branding extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.headphones_rounded,
-              size: 22,
-              color: Colors.white.withValues(alpha: 0.85),
-            ),
-            const SizedBox(width: 12),
+            const _AppIcon(size: 46),
+            const SizedBox(width: 14),
             Text(
               'Constanza Músicas',
               style: TextStyle(
