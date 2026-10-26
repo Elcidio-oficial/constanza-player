@@ -21,6 +21,17 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    // Play Store (desde 1/11/2025): todas as .so têm de estar alinhadas a 16 KB.
+    // A libaudiotags.so do pacote `audiotags` vem com 4 KB e bloqueava as
+    // atualizações. No Android ela nunca é carregada: a biblioteca usa o
+    // OnAudioQueryBackend e o audiotags só serve o WindowsFileBackend
+    // (ver media_library_backend.dart). Excluí-la só afeta o pacote Android.
+    packaging {
+        jniLibs {
+            excludes += "**/libaudiotags.so"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
