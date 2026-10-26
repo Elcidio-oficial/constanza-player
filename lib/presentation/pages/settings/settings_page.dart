@@ -1190,7 +1190,6 @@ class SettingsPage extends ConsumerWidget {
         Icons.view_column_rounded,
       ),
       (MediaBarStyle.dots, l10n.mediaBarDots, Icons.grain_rounded),
-      (MediaBarStyle.pulse, l10n.mediaBarPulse, Icons.monitor_heart_rounded),
       (MediaBarStyle.sineWave, l10n.mediaBarSineWave, Icons.waves_rounded),
       (MediaBarStyle.wave, l10n.mediaBarWave, Icons.water_rounded),
       (MediaBarStyle.mirror, l10n.mediaBarMirror, Icons.flip_rounded),

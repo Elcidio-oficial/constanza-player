@@ -27,7 +27,7 @@ class _ProgressBar extends ConsumerWidget {
       playerProvider.select((s) => s.currentSong?.uri ?? ''),
     );
     final isPlaying = ref.watch(playerProvider.select((s) => s.isPlaying));
-    final waveform = ref.watch(waveformProvider(songUri)).value;
+    final waveform = ref.watch(waveformProvider(songUri));
     // Remaining time as negative
     final remaining = duration - position;
     final remMin = remaining.inMinutes;

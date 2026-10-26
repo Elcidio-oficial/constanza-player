@@ -100,11 +100,11 @@ class _MediaSeekBarState extends State<MediaSeekBar>
   @override
   void initState() {
     super.initState();
-    _bars = widget.waveform?.overview ?? _generateBars(widget.seed);
+    _bars = _generateBars(widget.seed);
     _anim = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
-    )..addListener(_updatePulse);
+    );
     _sincePosition.start();
     _syncAnimation();
   }
@@ -112,9 +112,7 @@ class _MediaSeekBarState extends State<MediaSeekBar>
   @override
   void didUpdateWidget(covariant MediaSeekBar old) {
     super.didUpdateWidget(old);
-    if (old.seed != widget.seed || old.waveform != widget.waveform) {
-      _bars = widget.waveform?.overview ?? _generateBars(widget.seed);
-    }
+    if (old.seed != widget.seed) _bars = _generateBars(widget.seed);
     if (old.position != widget.position) _sincePosition.reset();
     if (old.animate != widget.animate || old.style != widget.style) {
       _syncAnimation();
@@ -124,17 +122,21 @@ class _MediaSeekBarState extends State<MediaSeekBar>
   // Tempo desde a última posição recebida: o player emite a cada ~100 ms,
   // a barra redesenha a 60 fps.
   final Stopwatch _sincePosition = Stopwatch();
-  double _pulse = 0;
 
-  void _updatePulse() {
+  // A batida sai do ponto de reprodução e chega às pontas da barra neste
+  // tempo — cada barra mostra o pulso de um instante um pouco anterior.
+  static const _rippleMs = 600;
+
+  /// Altura (0..1) da barra na posição horizontal [x] (0..1).
+  double Function(double x)? _liveAmp(double head) {
     final waveform = widget.waveform;
-    if (waveform == null) return;
-    final live = widget.animate
+    if (waveform == null) return null;
+    final now = widget.animate
         ? widget.position + _sincePosition.elapsed
         : widget.position;
-    final target = waveform.pulseAt(live);
-    // Ataque rápido, queda lenta (como um VU): batidas "saltam" sem tremer.
-    _pulse += (target - _pulse) * (target > _pulse ? 0.55 : 0.14);
+    return (x) => waveform.pulseAt(
+      now - Duration(milliseconds: ((x - head).abs() * _rippleMs).round()),
+    );
   }
 
   void _syncAnimation() {
@@ -205,7 +207,7 @@ class _MediaSeekBarState extends State<MediaSeekBar>
                   bars: _bars,
                   progress: fraction,
                   phase: _anim.value,
-                  pulse: widget.waveform == null ? null : _pulse,
+                  liveAmp: _liveAmp(fraction),
                   dragging: _dragFraction != null,
                   activeColor: widget.activeColor,
                   inactiveColor: widget.inactiveColor,
@@ -300,7 +302,7 @@ class _MediaBarPainter extends CustomPainter {
     required this.inactiveColor,
     required this.secondaryColor,
     required this.tertiaryColor,
-    this.pulse,
+    this.liveAmp,
   });
 
   final MediaBarStyle style;
@@ -308,30 +310,33 @@ class _MediaBarPainter extends CustomPainter {
   final double progress;
   final double phase;
 
-  /// Energia da música no instante atual (0..1); null sem envelope.
-  final double? pulse;
+  /// Pulso ao vivo da música por posição horizontal (0..1); null sem
+  /// envelope (plataformas sem suporte usam o formato de [bars]).
+  final double Function(double x)? liveAmp;
   final bool dragging;
   final Color activeColor;
   final Color inactiveColor;
   final Color secondaryColor;
   final Color tertiaryColor;
 
-  // Amplitude sampled from the smoothed source at fractional position [i/n].
-  // Com [pulse] (energia ao vivo da música), todas as barras sobem e descem
-  // no ritmo; a variação por índice evita que pulsem como um bloco único.
+  // Amplitude at fractional position [i/n]. Com [liveAmp] a altura vem só do
+  // pulso da música: batida = barra alta, parte calma = barra baixa.
   double _amp(int i, int n) {
-    if (bars.isEmpty) return 0.5;
     final p = n <= 1 ? 0.0 : i / (n - 1);
+    final live = liveAmp;
+    if (live != null) {
+      // Leve variação por barra para não parecer um bloco rígido.
+      final spread = 0.88 + 0.12 * math.sin(i * 1.9 + phase * 4 * math.pi);
+      return (0.08 + 0.92 * live(p) * spread).clamp(0.08, 1.0);
+    }
+    if (bars.isEmpty) return 0.5;
     final idx = (p * (bars.length - 1)).round().clamp(0, bars.length - 1);
-    final base = bars[idx];
-    final live = pulse;
-    if (live == null) return base;
-    final spread = 0.70 + 0.30 * math.sin(i * 1.9 + phase * 4 * math.pi);
-    return (base * (0.28 + 0.72 * live * spread)).clamp(0.08, 1.0);
+    return bars[idx];
   }
 
-  // Escala das famílias de linha (sine / wave / pulse) pelo pulso ao vivo.
-  double get _lineScale => pulse == null ? 1.0 : 0.25 + 0.75 * pulse!;
+  // Escala das famílias de linha (sineWave / wave) pelo pulso no playhead.
+  double get _lineScale =>
+      liveAmp == null ? 1.0 : 0.12 + 0.88 * liveAmp!(progress);
 
   // Horizontal gradient colour for played pixels.
   Color _played(double t) {
@@ -351,7 +356,10 @@ class _MediaBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     switch (style) {
+      // pulse foi removido; o valor só existe por compatibilidade e é
+      // migrado para waveform ao carregar o tema.
       case MediaBarStyle.waveform:
+      case MediaBarStyle.pulse:
         _bars(canvas, size, n: 46, gap: 0.42, envelope: true, wobble: true);
       case MediaBarStyle.frequencyBars:
         _bars(canvas, size, n: 64, gap: 0.55, envelope: true, wobble: true);
@@ -367,8 +375,6 @@ class _MediaBarPainter extends CustomPainter {
         _segments(canvas, size);
       case MediaBarStyle.dots:
         _dotMatrix(canvas, size);
-      case MediaBarStyle.pulse:
-        _line(canvas, size, _ecgPoints(size));
       case MediaBarStyle.sineWave:
         _line(canvas, size, _sinePoints(size, beats: 3.2, amp: 0.62));
       case MediaBarStyle.wave:
@@ -602,35 +608,6 @@ class _MediaBarPainter extends CustomPainter {
     return pts;
   }
 
-  List<Offset> _ecgPoints(Size size) {
-    final cy = size.height / 2;
-    final maxA = size.height / 2 * 0.82 * _lineScale;
-    const step = 2.0;
-    const beatW = 120.0; // pixels per heartbeat
-    final pts = <Offset>[];
-    for (double x = 0; x <= size.width; x += step) {
-      final local = (x % beatW) / beatW; // 0..1 within a beat
-      pts.add(Offset(x, cy - _ecg(local) * maxA));
-    }
-    return pts;
-  }
-
-  // Stylised single-lead ECG amplitude in [-1, 1].
-  double _ecg(double t) {
-    double bump(double c, double w, double h) {
-      final d = (t - c) / w;
-      return h * math.exp(-d * d);
-    }
-
-    var y = 0.0;
-    y += bump(0.20, 0.030, 0.18); // P wave
-    y -= bump(0.355, 0.012, 0.22); // Q
-    y += bump(0.40, 0.012, 1.0); // R spike
-    y -= bump(0.45, 0.016, 0.34); // S
-    y += bump(0.66, 0.055, 0.30); // T wave
-    return y.clamp(-1.0, 1.0);
-  }
-
   // ── Symmetric mirrored filled waveform ───────────────────────────────────────
   void _mirror(Canvas canvas, Size size) {
     const n = 72;
@@ -693,7 +670,8 @@ class _MediaBarPainter extends CustomPainter {
       old.style != style ||
       old.progress != progress ||
       old.phase != phase ||
-      old.pulse != pulse ||
+      old.liveAmp != null ||
+      liveAmp != null ||
       old.dragging != dragging ||
       old.activeColor != activeColor ||
       old.inactiveColor != inactiveColor ||

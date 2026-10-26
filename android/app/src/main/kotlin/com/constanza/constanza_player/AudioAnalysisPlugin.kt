@@ -95,7 +95,11 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         // ── Envelope (barras de progresso) ────────────────────────────
         /** Janela de RMS do envelope: 50 ms = 20 leituras/s, suficiente p/ batidas. */
         private const val ENVELOPE_FRAME_MS = 50
-        private const val WAVEFORM_WINDOW_SEC = ENVELOPE_FRAME_MS / 1000.0
+        /** RMS que vira 255. Fixo (não pelo pico) para poder enviar em pedaços. */
+        private const val ENVELOPE_REF_RMS = 0.5
+        /** 2 s por pedaço; os 2 primeiros têm 0,5 s para a barra reagir logo. */
+        private const val ENVELOPE_CHUNK_FRAMES = 40
+        private const val ENVELOPE_FIRST_CHUNK_FRAMES = 10
 
         // ── BPM ───────────────────────────────────────────────────────
         /** Frame 4096 → resolução espectral de ~10 Hz @44100 (melhor que 2048). */
@@ -227,8 +231,10 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             }
             "envelope" -> {
                 val uri = call.argument<String>("uri")
-                if (uri == null) {
-                    result.error("INVALID_ARGS", "uri required", null)
+                val requestId = call.argument<Int>("id")
+                val startMs = (call.argument<Int>("startMs") ?: 0).coerceAtLeast(0)
+                if (uri == null || requestId == null) {
+                    result.error("INVALID_ARGS", "uri and id required", null)
                     return
                 }
                 // Job e mutex próprios: o envelope é pedido a cada troca
@@ -236,19 +242,29 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 activeWaveformJob?.cancel()
                 activeWaveformJob = scope.launch {
                     try {
-                        val envelope = waveformMutex.withLock { computeEnvelope(uri) }
+                        val frames = waveformMutex.withLock {
+                            computeEnvelope(uri, startMs) { start, bytes ->
+                                withContext(Dispatchers.Main) {
+                                    channel.invokeMethod("envelopeChunk", mapOf(
+                                        "id" to requestId,
+                                        "start" to start,
+                                        "data" to bytes,
+                                    ))
+                                }
+                            }
+                        }
                         withContext(Dispatchers.Main) {
                             result.success(mapOf(
                                 "frameMs" to ENVELOPE_FRAME_MS,
-                                "data" to envelope,
+                                "frames" to frames,
                             ))
                         }
                     } catch (e: CancellationException) {
-                        withContext(Dispatchers.Main) { result.success(null) }
+                        withContext(Dispatchers.Main + NonCancellable) { result.success(null) }
                     } catch (e: Exception) {
-                        Log.e(TAG, "Waveform failed for $uri", e)
+                        Log.e(TAG, "Envelope failed for $uri", e)
                         withContext(Dispatchers.Main) {
-                            result.error("WAVEFORM_ERROR", e.message ?: "Unknown error", null)
+                            result.error("ENVELOPE_ERROR", e.message ?: "Unknown error", null)
                         }
                     }
                 }
@@ -265,12 +281,19 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private var activeWaveformJob: Job? = null
 
     /**
-     * Decodifica a música inteira em streaming e devolve o RMS de cada janela
-     * de [ENVELOPE_FRAME_MS] como bytes 0..255 (~4800 numa música de 4 min).
-     * As barras de progresso leem o byte da posição atual para pulsar no
-     * ritmo. Memória constante: o PCM nunca é guardado.
+     * Decodifica a música em streaming e envia, em pedaços, o RMS de cada
+     * janela de [ENVELOPE_FRAME_MS] como bytes 0..255 (escala fixa, então
+     * partes baixas da música ficam baixas mesmo antes do fim da leitura).
+     *
+     * Começa em [startMs] (onde a reprodução está) para as barras pulsarem
+     * em ~100 ms, segue até o fim e depois lê 0..startMs. Memória constante:
+     * o PCM nunca é guardado. Retorna o total de quadros.
      */
-    private suspend fun computeEnvelope(uri: String): ByteArray {
+    private suspend fun computeEnvelope(
+        uri: String,
+        startMs: Int,
+        emit: suspend (start: Int, bytes: ByteArray) -> Unit,
+    ): Int {
         val ctx = context ?: throw IllegalStateException("No context")
         val extractor = MediaExtractor()
         var codec: MediaCodec? = null
@@ -295,86 +318,16 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             codec.configure(format, null, null, 0)
             codec.start()
 
-            var channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
-            var sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
-            var isFloat = false
-            var windowFrames = (sampleRate * WAVEFORM_WINDOW_SEC).toInt().coerceAtLeast(1)
-
-            var windows = FloatArray(1024)
-            var windowCount = 0
-            var sumSq = 0.0
-            var frames = 0
-
-            val bufferInfo = MediaCodec.BufferInfo()
-            var inputDone = false
-            var outputDone = false
-            val timeoutUs = 10_000L
-
-            while (!outputDone) {
-                coroutineContext.ensureActive()
-                if (!inputDone) {
-                    val inputIdx = codec.dequeueInputBuffer(timeoutUs)
-                    if (inputIdx >= 0) {
-                        val inputBuf = codec.getInputBuffer(inputIdx)
-                        val size = if (inputBuf == null) -1 else extractor.readSampleData(inputBuf, 0)
-                        if (size < 0) {
-                            codec.queueInputBuffer(inputIdx, 0, 0, 0,
-                                MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                            inputDone = true
-                        } else {
-                            codec.queueInputBuffer(inputIdx, 0, size, extractor.sampleTime, 0)
-                            extractor.advance()
-                        }
-                    }
-                }
-
-                val outputIdx = codec.dequeueOutputBuffer(bufferInfo, timeoutUs)
-                if (outputIdx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                    val out = codec.outputFormat
-                    channelCount = out.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
-                    sampleRate = out.getInteger(MediaFormat.KEY_SAMPLE_RATE)
-                    isFloat = out.containsKey(MediaFormat.KEY_PCM_ENCODING) &&
-                        out.getInteger(MediaFormat.KEY_PCM_ENCODING) ==
-                        android.media.AudioFormat.ENCODING_PCM_FLOAT
-                    windowFrames = (sampleRate * WAVEFORM_WINDOW_SEC).toInt().coerceAtLeast(1)
-                    continue
-                }
-                if (outputIdx < 0) continue
-                if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
-                    outputDone = true
-                }
-                val outputBuf = codec.getOutputBuffer(outputIdx)
-                if (outputBuf != null && bufferInfo.size > 0) {
-                    outputBuf.position(bufferInfo.offset)
-                    outputBuf.limit(bufferInfo.offset + bufferInfo.size)
-                    outputBuf.order(ByteOrder.LITTLE_ENDIAN)
-                    val floats = if (isFloat) outputBuf.asFloatBuffer() else null
-                    val shorts = if (isFloat) null else outputBuf.asShortBuffer()
-                    val total = floats?.remaining() ?: shorts!!.remaining()
-                    var i = 0
-                    while (i + channelCount <= total) {
-                        var mono = 0f
-                        for (ch in 0 until channelCount) {
-                            mono += floats?.get(i + ch) ?: (shorts!!.get(i + ch) / 32768f)
-                        }
-                        mono /= channelCount
-                        sumSq += mono * mono
-                        if (++frames >= windowFrames) {
-                            if (windowCount == windows.size) windows = windows.copyOf(windows.size * 2)
-                            windows[windowCount++] = sqrt(sumSq / frames).toFloat()
-                            sumSq = 0.0
-                            frames = 0
-                        }
-                        i += channelCount
-                    }
-                }
-                codec.releaseOutputBuffer(outputIdx, false)
+            val pcm = PcmFormat(
+                channels = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT),
+                sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE),
+            )
+            val startUs = startMs * 1000L
+            var maxFrame = decodeRange(codec, extractor, pcm, startUs, Long.MAX_VALUE, emit)
+            if (startUs > 0) {
+                maxFrame = max(maxFrame, decodeRange(codec, extractor, pcm, 0L, startUs, emit))
             }
-            if (frames > 0) {
-                if (windowCount == windows.size) windows = windows.copyOf(windowCount + 1)
-                windows[windowCount++] = sqrt(sumSq / frames).toFloat()
-            }
-            return toEnvelopeBytes(windows, windowCount)
+            return maxFrame + 1
         } finally {
             try { codec?.stop() } catch (_: Exception) {}
             try { codec?.release() } catch (_: Exception) {}
@@ -382,13 +335,125 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         }
     }
 
-    /** Normaliza [count] janelas de RMS para bytes 0..255 (pico da música = 255). */
-    private fun toEnvelopeBytes(windows: FloatArray, count: Int): ByteArray {
-        var peak = 0f
-        for (j in 0 until count) peak = max(peak, windows[j])
-        if (peak <= 1e-6f) return ByteArray(count)
-        // Raiz quadrada aproxima a percepção de volume e evita barras "achatadas".
-        return ByteArray(count) { j -> (sqrt(windows[j] / peak) * 255f).roundToInt().toByte() }
+    private class PcmFormat(var channels: Int, var sampleRate: Int, var isFloat: Boolean = false)
+
+    /** Decodifica [fromUs, toUs) e emite os quadros; retorna o maior índice visto. */
+    private suspend fun decodeRange(
+        codec: MediaCodec,
+        extractor: MediaExtractor,
+        pcm: PcmFormat,
+        fromUs: Long,
+        toUs: Long,
+        emit: suspend (start: Int, bytes: ByteArray) -> Unit,
+    ): Int {
+        extractor.seekTo(fromUs, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
+        codec.flush()
+
+        val frameUs = ENVELOPE_FRAME_MS * 1000L
+        var chunkStart = -1
+        val chunk = ByteArray(ENVELOPE_CHUNK_FRAMES)
+        var chunkLen = 0
+        var chunksSent = 0
+        var curFrame = -1
+        var sumSq = 0.0
+        var count = 0
+        var maxFrame = -1
+
+        suspend fun flushChunk() {
+            if (chunkLen == 0) return
+            emit(chunkStart, chunk.copyOf(chunkLen))
+            chunksSent++
+            chunkStart = -1
+            chunkLen = 0
+        }
+
+        suspend fun closeFrame() {
+            if (curFrame < 0 || count == 0) return
+            val rms = sqrt(sumSq / count)
+            // Escala fixa: RMS 0.5 (≈ volume máximo de um master moderno) = 255.
+            val byte = (sqrt(rms / ENVELOPE_REF_RMS).coerceAtMost(1.0) * 255).roundToInt()
+            if (chunkStart >= 0 && curFrame != chunkStart + chunkLen) flushChunk()
+            if (chunkStart < 0) chunkStart = curFrame
+            chunk[chunkLen++] = byte.toByte()
+            maxFrame = max(maxFrame, curFrame)
+            // Primeiros pedaços pequenos: a barra começa a pulsar logo.
+            val limit = if (chunksSent < 2) ENVELOPE_FIRST_CHUNK_FRAMES else ENVELOPE_CHUNK_FRAMES
+            if (chunkLen >= limit) flushChunk()
+            sumSq = 0.0
+            count = 0
+        }
+
+        val bufferInfo = MediaCodec.BufferInfo()
+        var inputDone = false
+        var done = false
+        val timeoutUs = 10_000L
+
+        while (!done) {
+            coroutineContext.ensureActive()
+            if (!inputDone) {
+                val inputIdx = codec.dequeueInputBuffer(timeoutUs)
+                if (inputIdx >= 0) {
+                    val inputBuf = codec.getInputBuffer(inputIdx)
+                    val size = if (inputBuf == null) -1 else extractor.readSampleData(inputBuf, 0)
+                    if (size < 0 || extractor.sampleTime >= toUs) {
+                        codec.queueInputBuffer(inputIdx, 0, 0, 0,
+                            MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                        inputDone = true
+                    } else {
+                        codec.queueInputBuffer(inputIdx, 0, size, extractor.sampleTime, 0)
+                        extractor.advance()
+                    }
+                }
+            }
+
+            val outputIdx = codec.dequeueOutputBuffer(bufferInfo, timeoutUs)
+            if (outputIdx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                val out = codec.outputFormat
+                pcm.channels = out.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                pcm.sampleRate = out.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                pcm.isFloat = out.containsKey(MediaFormat.KEY_PCM_ENCODING) &&
+                    out.getInteger(MediaFormat.KEY_PCM_ENCODING) ==
+                    android.media.AudioFormat.ENCODING_PCM_FLOAT
+                continue
+            }
+            if (outputIdx < 0) continue
+            if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) done = true
+
+            val outputBuf = codec.getOutputBuffer(outputIdx)
+            if (outputBuf != null && bufferInfo.size > 0 && bufferInfo.presentationTimeUs < toUs) {
+                outputBuf.position(bufferInfo.offset)
+                outputBuf.limit(bufferInfo.offset + bufferInfo.size)
+                outputBuf.order(ByteOrder.LITTLE_ENDIAN)
+                val floats = if (pcm.isFloat) outputBuf.asFloatBuffer() else null
+                val shorts = if (pcm.isFloat) null else outputBuf.asShortBuffer()
+                val total = floats?.remaining() ?: shorts!!.remaining()
+                val ch = pcm.channels
+                // Índice do quadro pelo timestamp do buffer: funciona após seek.
+                val usPerSample = 1_000_000.0 / pcm.sampleRate
+                var i = 0
+                var k = 0
+                while (i + ch <= total) {
+                    val frame = ((bufferInfo.presentationTimeUs + k * usPerSample) / frameUs).toInt()
+                    if (frame != curFrame) {
+                        closeFrame()
+                        curFrame = frame
+                    }
+                    var mono = 0f
+                    for (c in 0 until ch) {
+                        mono += floats?.get(i + c) ?: (shorts!!.get(i + c) / 32768f)
+                    }
+                    mono /= ch
+                    sumSq += mono * mono
+                    count++
+                    i += ch
+                    k++
+                }
+            }
+            codec.releaseOutputBuffer(outputIdx, false)
+        }
+        closeFrame()
+        flushChunk()
+        return maxFrame
     }
 
     // ════════════════════════════════════════════════════════════

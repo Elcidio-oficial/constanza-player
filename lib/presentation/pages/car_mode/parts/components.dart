@@ -227,9 +227,7 @@ class _ProgressSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final style = ref.watch(themeProvider.select((s) => s.mediaBarStyle));
-    final waveform = ref
-        .watch(waveformProvider(player.currentSong?.uri ?? ''))
-        .value;
+    final waveform = ref.watch(waveformProvider(player.currentSong?.uri ?? ''));
     // Car Mode lives on a dark backdrop — derive lively gradient stops from the
     // accent so visualizer styles read well without a full palette.
     final hsl = HSLColor.fromColor(accent);

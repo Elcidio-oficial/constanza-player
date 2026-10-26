@@ -38,6 +38,7 @@ enum MediaBarStyle {
   equalizer,
   segments,
   dots,
+  // Removido da UI; mantido só para não deslocar os índices salvos.
   pulse,
   sineWave,
   wave,
@@ -170,7 +171,7 @@ class ThemeState {
     MediaBarStyle.equalizer => l10n.mediaBarEqualizer,
     MediaBarStyle.segments => l10n.mediaBarSegments,
     MediaBarStyle.dots => l10n.mediaBarDots,
-    MediaBarStyle.pulse => l10n.mediaBarPulse,
+    MediaBarStyle.pulse => l10n.mediaBarWaveform,
     MediaBarStyle.sineWave => l10n.mediaBarSineWave,
     MediaBarStyle.wave => l10n.mediaBarWave,
     MediaBarStyle.mirror => l10n.mediaBarMirror,
@@ -243,10 +244,12 @@ class ThemeState {
             MiniPlayerStyle.values.length - 1,
           )],
       mediaBarStyle:
-          MediaBarStyle.values[(json['mediaBarStyle'] as int? ?? 0).clamp(
-            0,
-            MediaBarStyle.values.length - 1,
-          )],
+          switch (MediaBarStyle.values[(json['mediaBarStyle'] as int? ?? 0)
+              .clamp(0, MediaBarStyle.values.length - 1)]) {
+            // Estilo removido: quem o usava passa para o visualizador padrão.
+            MediaBarStyle.pulse => MediaBarStyle.waveform,
+            final style => style,
+          },
       nowPlayingColorStyle:
           NowPlayingColorStyle.values[(json['nowPlayingColorStyle'] as int? ??
                   1)
