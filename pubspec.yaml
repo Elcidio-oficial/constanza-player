@@ -109,8 +109,8 @@ msix_config:
   publisher: CN=Constanza, O=Constanza, C=BR
   identity_name: com.constanza.constanzaPlayer
   # MSIX exige versão de 4 partes (x.y.z.w). Mantemos sincronizado com a
-  # versão do app (1.3.4) + revisão 0.
-  msix_version: 1.3.4.0
+  # versão do app (1.5.0) + revisão 0.
+  msix_version: 1.5.0.0
   logo_path: assets/icon/icon.png
   # internetClient: busca de letras (lrclib) e capas.
   # broadFileSystemAccess: sem isto o AppContainer do MSIX bloqueia a
@@ -125,7 +125,8 @@ msix_config:
   # Certificado auto-assinado determinístico (gerado por certs/make_cert.ps1).
   # Subject DEVE bater com `publisher` acima, senão a instalação falha.
   certificate_path: certs/constanza.pfx
-  certificate_password: constanza123
+  # Senha NÃO fica no repo: passar na hora do build, ex.:
+  #   dart run msix:create --certificate-password $env:CONSTANZA_PFX_PASSWORD
   # Não tenta instalar o cert via prompt interativo (quebra em CI/terminal
   # não-interativo). A instalação do .cer é passo manual documentado.
   install_certificate: false

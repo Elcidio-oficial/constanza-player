@@ -5,7 +5,10 @@ $ErrorActionPreference = 'Stop'
 $subject = 'CN=Constanza, O=Constanza, C=BR'
 $pfxPath = Join-Path $PSScriptRoot 'constanza.pfx'
 $cerPath = Join-Path $PSScriptRoot 'constanza.cer'
-$password = 'constanza123'
+$password = $env:CONSTANZA_PFX_PASSWORD
+if ([string]::IsNullOrEmpty($password)) {
+  throw 'Defina CONSTANZA_PFX_PASSWORD antes de rodar este script.'
+}
 
 $existing = Get-ChildItem Cert:\CurrentUser\My |
   Where-Object { $_.Subject -eq $subject } |
