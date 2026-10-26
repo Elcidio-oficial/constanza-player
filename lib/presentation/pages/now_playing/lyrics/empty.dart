@@ -56,7 +56,7 @@ class _EmptyLyrics extends StatelessWidget {
               Text(
                 l10n.lyricsSearchingOnline,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.55),
+                  color: colors.fadedText(0.55),
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
@@ -82,7 +82,7 @@ class _EmptyLyrics extends StatelessWidget {
                   Text(
                     l10n.lyricsNotFoundTitle,
                     style: theme.textTheme.titleLarge?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.35),
+                      color: colors.fadedText(0.35),
                       fontWeight: FontWeight.w700,
                     ),
                     textAlign: TextAlign.center,
@@ -109,7 +109,7 @@ class _EmptyLyrics extends StatelessWidget {
                   Text(
                     l10n.lyricsEmpty,
                     style: theme.textTheme.titleLarge?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.3),
+                      color: colors.fadedText(0.3),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -162,12 +162,12 @@ class _EmptyLyrics extends StatelessWidget {
                   icon: Icon(
                     Icons.download_rounded,
                     size: 16,
-                    color: colors.onSurface.withValues(alpha: 0.35),
+                    color: colors.fadedText(0.35),
                   ),
                   label: Text(
                     l10n.lyricsLrc,
                     style: theme.textTheme.labelMedium?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.35),
+                      color: colors.fadedText(0.35),
                     ),
                   ),
                 ),
@@ -177,12 +177,12 @@ class _EmptyLyrics extends StatelessWidget {
                   icon: Icon(
                     Icons.content_paste_rounded,
                     size: 16,
-                    color: colors.onSurface.withValues(alpha: 0.35),
+                    color: colors.fadedText(0.35),
                   ),
                   label: Text(
                     l10n.lyricsPaste,
                     style: theme.textTheme.labelMedium?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.35),
+                      color: colors.fadedText(0.35),
                     ),
                   ),
                 ),

@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -261,7 +262,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                     Text(
                       AppLocalizations.of(context).librarySectionLibrary,
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.35),
+                        color: colors.fadedText(0.35),
                         letterSpacing: 1.2,
                         fontSize: 9,
                       ),
@@ -315,7 +316,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                         child: Text(
                           AppLocalizations.of(context).foldersInfoBanner,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.6),
+                            color: colors.fadedText(0.6),
                             fontSize: 11,
                             height: 1.4,
                           ),
@@ -339,7 +340,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                       Text(
                         AppLocalizations.of(context).foldersDiscovering,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.4),
+                          color: colors.fadedText(0.4),
                         ),
                       ),
                     ],
@@ -362,7 +363,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                       Text(
                         AppLocalizations.of(context).foldersNoneFound,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.35),
+                          color: colors.fadedText(0.35),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
@@ -395,7 +396,7 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
                       _selectedFolders.length,
                     ),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                     ),
                   ),
                 ),
@@ -593,7 +594,7 @@ class _FolderTile extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: isSelected
                           ? colors.onSurface
-                          : colors.onSurface.withValues(alpha: 0.45),
+                          : colors.fadedText(0.45),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -602,7 +603,7 @@ class _FolderTile extends StatelessWidget {
                   Text(
                     folderPath == 'Pasta desconhecida' ? '' : folderPath,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.35),
+                      color: colors.fadedText(0.35),
                       fontSize: 10,
                     ),
                     maxLines: 1,
@@ -617,7 +618,7 @@ class _FolderTile extends StatelessWidget {
                         size: 11,
                         color: isSelected
                             ? colors.primary.withValues(alpha: 0.7)
-                            : colors.onSurface.withValues(alpha: 0.3),
+                            : colors.fadedText(0.3),
                       ),
                       const SizedBox(width: 3),
                       Text(
@@ -631,7 +632,7 @@ class _FolderTile extends StatelessWidget {
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: isSelected
                               ? colors.primary.withValues(alpha: 0.7)
-                              : colors.onSurface.withValues(alpha: 0.35),
+                              : colors.fadedText(0.35),
                           fontSize: 10,
                         ),
                       ),
@@ -650,7 +651,7 @@ class _FolderTile extends StatelessWidget {
                 child: Icon(
                   Icons.chevron_right_rounded,
                   size: 22,
-                  color: colors.onSurface.withValues(alpha: 0.25),
+                  color: colors.fadedText(0.25),
                 ),
               ),
             ),
@@ -683,7 +684,7 @@ class _FolderMosaic extends StatelessWidget {
         ),
         child: Icon(
           Icons.folder_rounded,
-          color: colors.onSurface.withValues(alpha: 0.3),
+          color: colors.fadedText(0.3),
           size: 26,
         ),
       );
@@ -861,7 +862,7 @@ class _FolderSongsSelectionPageState extends State<_FolderSongsSelectionPage> {
             Text(
               '$_includedCount / ${widget.songs.length} incluída${widget.songs.length != 1 ? 's' : ''}',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.45),
+                color: colors.fadedText(0.45),
                 fontSize: 11,
               ),
             ),
@@ -930,13 +931,13 @@ class _FolderSongsSelectionPageState extends State<_FolderSongsSelectionPage> {
                   fontWeight: FontWeight.w600,
                   color: _folderSelected
                       ? colors.primary
-                      : colors.onSurface.withValues(alpha: 0.5),
+                      : colors.fadedText(0.5),
                 ),
               ),
               subtitle: Text(
                 widget.folderPath,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
+                  color: colors.fadedText(0.35),
                   fontSize: 10,
                 ),
                 maxLines: 1,
@@ -963,7 +964,7 @@ class _FolderSongsSelectionPageState extends State<_FolderSongsSelectionPage> {
                   child: Text(
                     'MÚSICAS',
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.3),
+                      color: colors.fadedText(0.3),
                       letterSpacing: 1.2,
                       fontSize: 9,
                     ),
@@ -983,7 +984,7 @@ class _FolderSongsSelectionPageState extends State<_FolderSongsSelectionPage> {
                     child: Text(
                       'Nenhuma música nesta pasta',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.35),
+                        color: colors.fadedText(0.35),
                       ),
                     ),
                   )
@@ -1108,7 +1109,7 @@ class _SongCheckTile extends StatelessWidget {
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: effectivelyIncluded
                           ? colors.onSurface
-                          : colors.onSurface.withValues(alpha: 0.35),
+                          : colors.fadedText(0.35),
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
@@ -1118,7 +1119,7 @@ class _SongCheckTile extends StatelessWidget {
                   Text(
                     '${song.artist} · ${song.album}',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1130,7 +1131,7 @@ class _SongCheckTile extends StatelessWidget {
             Text(
               song.durationFormatted,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.3),
+                color: colors.fadedText(0.3),
               ),
             ),
           ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -175,7 +176,7 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
           Text(
             AppLocalizations.of(context).duplicatesScanning,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.6),
+              color: colors.fadedText(0.6),
             ),
           ),
         ],
@@ -205,7 +206,7 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
             Text(
               AppLocalizations.of(context).duplicatesLibraryOrganized,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.5),
+                color: colors.fadedText(0.5),
               ),
               textAlign: TextAlign.center,
             ),
@@ -411,7 +412,7 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.6),
+                        color: colors.fadedText(0.6),
                       ),
                     ),
                     Row(
@@ -528,7 +529,7 @@ class _DuplicatesPageState extends ConsumerState<DuplicatesPage> {
         overflow: TextOverflow.ellipsis,
         style: theme.textTheme.labelSmall?.copyWith(
           fontSize: 10,
-          color: textColor ?? colors.onSurface.withValues(alpha: 0.55),
+          color: textColor ?? colors.fadedText(0.55),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 
 /// Mostra um bottom sheet premium para escolher o número de colunas
@@ -87,7 +88,7 @@ class _ColumnsPickerSheetState extends State<_ColumnsPickerSheet> {
           Text(
             'Escolha quantas colunas exibir',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.55),
+              color: colors.fadedText(0.55),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -191,7 +192,7 @@ class _OptionTile extends StatelessWidget {
                     Text(
                       hint,
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.5),
+                        color: colors.fadedText(0.5),
                       ),
                     ),
                   ],
@@ -204,7 +205,7 @@ class _OptionTile extends StatelessWidget {
               else
                 Icon(
                   Icons.radio_button_unchecked_rounded,
-                  color: colors.onSurface.withValues(alpha: 0.25),
+                  color: colors.fadedText(0.25),
                 ),
             ],
           ),

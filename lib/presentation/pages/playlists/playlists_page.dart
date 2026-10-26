@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -77,7 +78,7 @@ class PlaylistsPage extends ConsumerWidget {
                   Text(
                     l10n.playlistsMyPlaylists,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.35),
+                      color: colors.fadedText(0.35),
                       letterSpacing: 1.5,
                     ),
                   ),
@@ -95,7 +96,7 @@ class PlaylistsPage extends ConsumerWidget {
                       child: Text(
                         '${userPlaylists.length}',
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.35),
+                          color: colors.fadedText(0.35),
                           fontSize: 10,
                         ),
                       ),
@@ -154,9 +155,7 @@ class PlaylistsPage extends ConsumerWidget {
               autofocus: true,
               decoration: InputDecoration(
                 hintText: l10n.playlistsNamePlaceholder,
-                hintStyle: TextStyle(
-                  color: colors.onSurface.withValues(alpha: 0.3),
-                ),
+                hintStyle: TextStyle(color: colors.fadedText(0.3)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   borderSide: BorderSide(color: colors.outline),
@@ -173,9 +172,7 @@ class PlaylistsPage extends ConsumerWidget {
               maxLines: 2,
               decoration: InputDecoration(
                 hintText: l10n.playlistsDescriptionPlaceholder,
-                hintStyle: TextStyle(
-                  color: colors.onSurface.withValues(alpha: 0.25),
-                ),
+                hintStyle: TextStyle(color: colors.fadedText(0.25)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   borderSide: BorderSide(
@@ -195,7 +192,7 @@ class PlaylistsPage extends ConsumerWidget {
             onPressed: () => ctx.pop(),
             child: Text(
               l10n.commonCancel,
-              style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
+              style: TextStyle(color: colors.fadedText(0.5)),
             ),
           ),
           TextButton(
@@ -385,7 +382,7 @@ class PlaylistDetailPage extends ConsumerWidget {
                       Text(
                         currentPlaylist.description!,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.5),
+                          color: colors.fadedText(0.5),
                           fontStyle: FontStyle.italic,
                         ),
                         maxLines: 2,
@@ -403,7 +400,7 @@ class PlaylistDetailPage extends ConsumerWidget {
                         if (favCount > 0) '$favCount ♥',
                       ].join(' · '),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                     // Ouvindo agora badge
@@ -508,7 +505,7 @@ class PlaylistDetailPage extends ConsumerWidget {
                         Text(
                           emptyMessage,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.4),
+                            color: colors.fadedText(0.4),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -647,7 +644,7 @@ class PlaylistDetailPage extends ConsumerWidget {
                             Text(
                               '${AppLocalizations.of(context).playlistsCount(songs.length)} · $durationLabel',
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.onSurface.withValues(alpha: 0.5),
+                                color: colors.fadedText(0.5),
                               ),
                             ),
                           ],
@@ -833,7 +830,7 @@ class PlaylistDetailPage extends ConsumerWidget {
             onPressed: () => ctx.pop(),
             child: Text(
               AppLocalizations.of(context).commonCancel,
-              style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
+              style: TextStyle(color: colors.fadedText(0.5)),
             ),
           ),
           TextButton(
@@ -878,9 +875,7 @@ class PlaylistDetailPage extends ConsumerWidget {
               autofocus: true,
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context).playlistsNameField,
-                labelStyle: TextStyle(
-                  color: colors.onSurface.withValues(alpha: 0.5),
-                ),
+                labelStyle: TextStyle(color: colors.fadedText(0.5)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
@@ -898,9 +893,7 @@ class PlaylistDetailPage extends ConsumerWidget {
                 labelText: AppLocalizations.of(
                   context,
                 ).playlistsDescriptionField,
-                labelStyle: TextStyle(
-                  color: colors.onSurface.withValues(alpha: 0.4),
-                ),
+                labelStyle: TextStyle(color: colors.fadedText(0.4)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   borderSide: BorderSide(
@@ -920,7 +913,7 @@ class PlaylistDetailPage extends ConsumerWidget {
             onPressed: () => ctx.pop(),
             child: Text(
               AppLocalizations.of(context).commonCancel,
-              style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
+              style: TextStyle(color: colors.fadedText(0.5)),
             ),
           ),
           TextButton(

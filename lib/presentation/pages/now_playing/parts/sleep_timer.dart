@@ -289,7 +289,7 @@ class _SleepTimerCircle extends StatelessWidget {
       return Icon(
         Icons.bedtime_rounded,
         size: 10,
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+        color: Theme.of(context).colorScheme.fadedText(0.4),
       );
     }
 

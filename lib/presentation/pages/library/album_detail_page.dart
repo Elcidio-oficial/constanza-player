@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
@@ -123,7 +124,7 @@ class AlbumDetailPage extends ConsumerWidget {
                     ArtistLinksText(
                       artist: album.artist,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.6),
+                        color: colors.fadedText(0.6),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -136,7 +137,7 @@ class AlbumDetailPage extends ConsumerWidget {
                         if (durationLabel.isNotEmpty) durationLabel,
                       ].join(' · '),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                     // Ouvindo agora badge
@@ -240,7 +241,7 @@ class AlbumDetailPage extends ConsumerWidget {
                       Text(
                         l10n.albumDetailNoSongs,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.3),
+                          color: colors.fadedText(0.3),
                         ),
                       ),
                     ],
@@ -336,7 +337,7 @@ class AlbumDetailPage extends ConsumerWidget {
                             Text(
                               album.artist,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.onSurface.withValues(alpha: 0.5),
+                                color: colors.fadedText(0.5),
                               ),
                             ),
                           ],
@@ -480,14 +481,14 @@ class AlbumDetailPage extends ConsumerWidget {
                       child: Icon(
                         Icons.queue_music_rounded,
                         size: 20,
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                     title: Text(p.name, style: theme.textTheme.titleSmall),
                     subtitle: Text(
                       l10n.playlistsCount(p.songCount),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                     onTap: () {

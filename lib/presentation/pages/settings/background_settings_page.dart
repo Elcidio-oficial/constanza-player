@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -64,7 +65,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
             Text(
               l10n.bgSettingsGradientsHeader,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.35),
+                color: colors.fadedText(0.35),
                 letterSpacing: 1.5,
               ),
             ),
@@ -144,7 +145,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
             Text(
               l10n.bgSettingsCustomImageHeader,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.35),
+                color: colors.fadedText(0.35),
                 letterSpacing: 1.5,
               ),
             ),
@@ -230,7 +231,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
                       Icon(
                         Icons.add_photo_alternate_outlined,
                         size: 24,
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       Text(
@@ -238,7 +239,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
                             ? l10n.bgSettingsChangeImage
                             : l10n.bgSettingsPickFromGallery,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.5),
+                          color: colors.fadedText(0.5),
                         ),
                       ),
                     ],
@@ -253,7 +254,7 @@ class BackgroundSettingsPage extends ConsumerWidget {
               Text(
                 l10n.bgSettingsAdjustments,
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
+                  color: colors.fadedText(0.35),
                   letterSpacing: 1.5,
                 ),
               ),
@@ -384,13 +385,13 @@ class _OptionTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           border: Border.all(
             color: isSelected
-                ? colors.onSurface.withValues(alpha: 0.3)
+                ? colors.fadedText(0.3)
                 : colors.outline.withValues(alpha: 0.15),
           ),
         ),
         child: Row(
           children: [
-            Icon(icon, color: colors.onSurface.withValues(alpha: 0.5)),
+            Icon(icon, color: colors.fadedText(0.5)),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Column(
@@ -400,7 +401,7 @@ class _OptionTile extends StatelessWidget {
                   Text(
                     subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                     ),
                   ),
                 ],
@@ -453,7 +454,7 @@ class _SliderSetting extends StatelessWidget {
             Text(
               displayValue,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.4),
+                color: colors.fadedText(0.4),
               ),
             ),
           ],

@@ -16,7 +16,7 @@ class _SmartPlaylistTile extends ConsumerWidget {
     'fav' => colors.error,
     'recent' => colors.primary,
     'most' => Colors.amber.shade600,
-    _ => colors.onSurface.withValues(alpha: 0.5),
+    _ => colors.fadedText(0.5),
   };
 
   @override
@@ -77,7 +77,7 @@ class _SmartPlaylistTile extends ConsumerWidget {
             ? l10n.playlistsEmptyNoSongs
             : '${l10n.playlistsCount(songs.length)} · $durationStr',
         style: theme.textTheme.bodySmall?.copyWith(
-          color: colors.onSurface.withValues(alpha: 0.35),
+          color: colors.fadedText(0.35),
         ),
       ),
       trailing: Icon(
@@ -155,7 +155,7 @@ class _PlaylistThumbnail extends StatelessWidget {
       child: Icon(
         Icons.music_note_rounded,
         size: size * 0.5,
-        color: colors.onSurface.withValues(alpha: 0.25),
+        color: colors.fadedText(0.25),
       ),
     );
   }

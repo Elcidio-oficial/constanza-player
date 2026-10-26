@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/constants/app_constants.dart';
@@ -64,7 +65,7 @@ class AlbumCard extends ConsumerWidget {
             Text(
               album.artist,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.4),
+                color: colors.fadedText(0.4),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

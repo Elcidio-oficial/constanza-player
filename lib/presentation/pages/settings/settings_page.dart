@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -79,6 +80,11 @@ class SettingsPage extends ConsumerWidget {
           _SettingsGroup(
             colors: colors,
             children: [
+              _ThemeModeSelector(
+                mode: themeState.themeMode,
+                onChanged: ref.read(themeProvider.notifier).setThemeMode,
+              ),
+              _divider(colors),
               _SettingsTile(
                 icon: Icons.wallpaper_outlined,
                 title: l10n.settingsAppBackground,
@@ -513,7 +519,7 @@ class SettingsPage extends ConsumerWidget {
                 Text(
                   AppConstants.appName,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.25),
+                    color: colors.fadedText(0.25),
                     letterSpacing: 2,
                   ),
                 ),
@@ -615,9 +621,7 @@ class SettingsPage extends ConsumerWidget {
           Icon(
             icon,
             size: 22,
-            color: selected
-                ? colors.onSurface
-                : colors.onSurface.withValues(alpha: 0.4),
+            color: selected ? colors.onSurface : colors.fadedText(0.4),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -802,7 +806,7 @@ class SettingsPage extends ConsumerWidget {
                       min == 0 ? Icons.timer_off_rounded : Icons.timer_rounded,
                       color: isSelected
                           ? colors.onSurface
-                          : colors.onSurface.withValues(alpha: 0.4),
+                          : colors.fadedText(0.4),
                     ),
                     title: Text(
                       label,
@@ -888,14 +892,14 @@ class SettingsPage extends ConsumerWidget {
             Text(
               'v${AppConstants.appVersion}',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.4),
+                color: colors.fadedText(0.4),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
               '"${l10n.aboutDialogTagline}"',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.5),
+                color: colors.fadedText(0.5),
                 fontStyle: FontStyle.italic,
               ),
               textAlign: TextAlign.center,
@@ -904,14 +908,14 @@ class SettingsPage extends ConsumerWidget {
             Text(
               l10n.aboutDialogMadeBy,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.3),
+                color: colors.fadedText(0.3),
               ),
             ),
             const SizedBox(height: AppSpacing.xxs),
             Text(
               AppConstants.appAuthor,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.6),
+                color: colors.fadedText(0.6),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1023,7 +1027,7 @@ class SettingsPage extends ConsumerWidget {
                 Text(
                   l10n.npColorSheetSubtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.4),
+                    color: colors.fadedText(0.4),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -1245,9 +1249,7 @@ class SettingsPage extends ConsumerWidget {
           Icon(
             icon,
             size: 22,
-            color: isSelected
-                ? colors.onSurface
-                : colors.onSurface.withValues(alpha: 0.4),
+            color: isSelected ? colors.onSurface : colors.fadedText(0.4),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(

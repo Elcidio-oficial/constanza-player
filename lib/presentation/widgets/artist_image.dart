@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/presentation/providers/artist_image_provider.dart';
@@ -105,7 +106,7 @@ class _LetterAvatar extends StatelessWidget {
         child: Text(
           letter,
           style: theme.textTheme.titleMedium?.copyWith(
-            color: colors.onSurface.withValues(alpha: 0.3),
+            color: colors.fadedText(0.3),
             fontWeight: FontWeight.w300,
             fontSize: (size * 0.4).clamp(14.0, 56.0),
           ),

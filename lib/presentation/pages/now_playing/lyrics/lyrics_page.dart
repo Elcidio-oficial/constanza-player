@@ -411,7 +411,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
                     Text(
                       currentSong.artist,
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                         fontWeight: FontWeight.w400,
                       ),
                       maxLines: 1,
@@ -523,7 +523,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
                   subtitle: Text(
                     l10n.lyricsSearchOnlineDescription,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                     ),
                   ),
                   onTap: () {
@@ -554,7 +554,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
                     subtitle: Text(
                       l10n.lyricsQuickSyncDescription,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                     onTap: () {
@@ -587,7 +587,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
                   subtitle: Text(
                     AppLocalizations.of(context).lyricsSharePosterDesc,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                     ),
                   ),
                   onTap: () {
@@ -696,9 +696,7 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             Text(
               l10n.lyricsImportHint,
               style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                color: Theme.of(
-                  ctx,
-                ).colorScheme.onSurface.withValues(alpha: 0.4),
+                color: Theme.of(ctx).colorScheme.fadedText(0.4),
               ),
             ),
             const SizedBox(height: 8),
@@ -747,9 +745,9 @@ class _LyricsPageState extends ConsumerState<_LyricsPage> {
             children: [
               Text(
                 l10n.lyricsPasteHint,
-                style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                  color: dc.onSurface.withValues(alpha: 0.4),
-                ),
+                style: Theme.of(
+                  ctx,
+                ).textTheme.bodySmall?.copyWith(color: dc.fadedText(0.4)),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -1057,7 +1055,7 @@ class _ManualSearchSheetState extends State<_ManualSearchSheet> {
                     Text(
                       l10n.lyricsManualSearchHint,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: c.onSurface.withValues(alpha: 0.45),
+                        color: c.fadedText(0.45),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -1112,7 +1110,7 @@ class _ManualSearchSheetState extends State<_ManualSearchSheet> {
                     child: Text(
                       l10n.lyricsResultsCount(_results.length),
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: c.onSurface.withValues(alpha: 0.4),
+                        color: c.fadedText(0.4),
                       ),
                     ),
                   ),
@@ -1126,7 +1124,7 @@ class _ManualSearchSheetState extends State<_ManualSearchSheet> {
                         child: Text(
                           l10n.lyricsNoResults,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: c.onSurface.withValues(alpha: 0.4),
+                            color: c.fadedText(0.4),
                           ),
                         ),
                       )

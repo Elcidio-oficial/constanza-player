@@ -101,7 +101,7 @@ class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
                   ? l10n.diagnosticsCount(_count)
                   : l10n.diagnosticsNone,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.5),
+                color: colors.fadedText(0.5),
               ),
               textAlign: TextAlign.center,
             ),
@@ -109,7 +109,7 @@ class _DiagnosticsSheetState extends State<_DiagnosticsSheet> {
             Text(
               l10n.diagnosticsExplanation,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.45),
+                color: colors.fadedText(0.45),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),

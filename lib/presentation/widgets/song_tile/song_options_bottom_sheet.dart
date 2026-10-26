@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -95,7 +96,7 @@ class SongOptionsBottomSheet extends ConsumerWidget {
                           Text(
                             song.artist,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.5),
+                              color: colors.fadedText(0.5),
                             ),
                           ),
                         ],

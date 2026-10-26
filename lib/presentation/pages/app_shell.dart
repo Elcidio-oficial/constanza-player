@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -477,9 +478,7 @@ class _PremiumNavBar extends ConsumerWidget {
                     child: Icon(
                       active ? item.activeIcon : item.icon,
                       size: active ? 24 : 22,
-                      color: active
-                          ? colors.primary
-                          : colors.onSurface.withValues(alpha: 0.35),
+                      color: active ? colors.primary : colors.fadedText(0.35),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -488,9 +487,7 @@ class _PremiumNavBar extends ConsumerWidget {
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontSize: 9,
                       fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                      color: active
-                          ? colors.onSurface
-                          : colors.onSurface.withValues(alpha: 0.3),
+                      color: active ? colors.onSurface : colors.fadedText(0.3),
                     ),
                   ),
                 ],

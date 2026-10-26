@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -179,7 +180,7 @@ class ArtistDetailPage extends ConsumerWidget {
                       ' · $durationLabel'
                       '${favCount > 0 ? ' · $favCount ♥' : ''}',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -249,14 +250,14 @@ class ArtistDetailPage extends ConsumerWidget {
                       Text(
                         l10n.artistDetailMostPlayed,
                         style: theme.textTheme.titleSmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.5),
+                          color: colors.fadedText(0.5),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                       Text(
                         '${artistTopSongs.length}',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.25),
+                          color: colors.fadedText(0.25),
                         ),
                       ),
                     ],
@@ -304,14 +305,14 @@ class ArtistDetailPage extends ConsumerWidget {
                       Text(
                         l10n.artistDetailAlbums,
                         style: theme.textTheme.titleSmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.5),
+                          color: colors.fadedText(0.5),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                       Text(
                         '${artistAlbums.length}',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.25),
+                          color: colors.fadedText(0.25),
                         ),
                       ),
                     ],
@@ -414,14 +415,14 @@ class ArtistDetailPage extends ConsumerWidget {
                     Text(
                       l10n.artistDetailSongs,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.5),
+                        color: colors.fadedText(0.5),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
                     Text(
                       '${artistSongs.length}',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.25),
+                        color: colors.fadedText(0.25),
                       ),
                     ),
                   ],
@@ -514,7 +515,7 @@ class ArtistDetailPage extends ConsumerWidget {
                                 ? artist.name[0].toUpperCase()
                                 : '?',
                             style: theme.textTheme.titleMedium?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.4),
+                              color: colors.fadedText(0.4),
                               fontWeight: FontWeight.w300,
                             ),
                           ),
@@ -534,7 +535,7 @@ class ArtistDetailPage extends ConsumerWidget {
                             Text(
                               l10n.librarySongCount(artistSongs.length),
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.onSurface.withValues(alpha: 0.5),
+                                color: colors.fadedText(0.5),
                               ),
                             ),
                           ],
@@ -678,14 +679,14 @@ class ArtistDetailPage extends ConsumerWidget {
                       child: Icon(
                         Icons.queue_music_rounded,
                         size: 20,
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                     title: Text(p.name, style: theme.textTheme.titleSmall),
                     subtitle: Text(
                       l10n.librarySongCount(p.songCount),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                     onTap: () {
@@ -827,7 +828,7 @@ class _ArtistHeaderBackground extends ConsumerWidget {
                   child: Text(
                     artist.name.isNotEmpty ? artist.name[0].toUpperCase() : '?',
                     style: theme.textTheme.displayLarge?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.25),
+                      color: colors.fadedText(0.25),
                       fontWeight: FontWeight.w200,
                       fontSize: 56,
                     ),

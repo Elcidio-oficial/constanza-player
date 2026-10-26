@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -67,7 +68,7 @@ class ProfileHeader extends ConsumerWidget {
                   Text(
                     _greeting(context),
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.45),
+                      color: colors.fadedText(0.45),
                       letterSpacing: 1.4,
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
@@ -87,7 +88,7 @@ class ProfileHeader extends ConsumerWidget {
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: profile.hasName
                           ? colors.onSurface
-                          : colors.onSurface.withValues(alpha: 0.45),
+                          : colors.fadedText(0.45),
                       fontWeight: FontWeight.w300,
                       fontSize: 22,
                       letterSpacing: -0.3,
@@ -119,7 +120,7 @@ class ProfileHeader extends ConsumerWidget {
               child: Icon(
                 Icons.edit_rounded,
                 size: 16,
-                color: colors.onSurface.withValues(alpha: 0.55),
+                color: colors.fadedText(0.55),
               ),
             ),
           ],

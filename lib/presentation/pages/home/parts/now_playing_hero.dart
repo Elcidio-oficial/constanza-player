@@ -31,26 +31,32 @@ class _NowPlayingHero extends StatelessWidget {
         onTap: onTap,
         child: Container(
           clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colors.primary.withValues(alpha: 0.15),
-                colors.primaryContainer.withValues(alpha: 0.08),
-                colors.surface.withValues(alpha: 0.4),
-              ],
-            ),
-            border: Border.all(color: colors.primary.withValues(alpha: 0.12)),
-            boxShadow: [
-              BoxShadow(
-                color: colors.primary.withValues(alpha: 0.08),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
+          decoration: colors.isLight
+              ? colors.lightCard(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                )
+              : BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colors.primary.withValues(alpha: 0.15),
+                      colors.primaryContainer.withValues(alpha: 0.08),
+                      colors.surface.withValues(alpha: 0.4),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: colors.primary.withValues(alpha: 0.12),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.primary.withValues(alpha: 0.08),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
           child: Column(
             children: [
               Padding(
@@ -124,7 +130,7 @@ class _NowPlayingHero extends StatelessWidget {
                           Text(
                             song.artist,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.5),
+                              color: colors.fadedText(0.5),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

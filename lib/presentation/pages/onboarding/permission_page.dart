@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/services/permission_service.dart';
@@ -235,7 +236,7 @@ class _PermissionPageState extends State<PermissionPage>
                     child: Text(
                       l10n.permissionDescription,
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.55),
+                        color: colors.fadedText(0.55),
                         height: 1.5,
                       ),
                       textAlign: TextAlign.center,

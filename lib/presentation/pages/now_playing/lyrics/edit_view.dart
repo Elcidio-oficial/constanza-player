@@ -23,7 +23,7 @@ class _EditViewState extends ConsumerState<_EditView> {
         child: Text(
           l10n.lyricsEditEmptyHint,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: colors.onSurface.withValues(alpha: 0.4),
+            color: colors.fadedText(0.4),
           ),
           textAlign: TextAlign.center,
         ),
@@ -43,14 +43,14 @@ class _EditViewState extends ConsumerState<_EditView> {
               Icon(
                 Icons.info_outline_rounded,
                 size: 14,
-                color: colors.onSurface.withValues(alpha: 0.3),
+                color: colors.fadedText(0.3),
               ),
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
                   l10n.lyricsEditTip,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.35),
+                    color: colors.fadedText(0.35),
                   ),
                 ),
               ),
@@ -159,9 +159,7 @@ class _EditLineItemState extends State<_EditLineItem> {
               child: Text(
                 widget.line.formattedTimestamp,
                 style: t.textTheme.labelSmall?.copyWith(
-                  color: widget.line.isSynced
-                      ? c.primary
-                      : c.onSurface.withValues(alpha: 0.3),
+                  color: widget.line.isSynced ? c.primary : c.fadedText(0.3),
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
@@ -185,7 +183,7 @@ class _EditLineItemState extends State<_EditLineItem> {
             icon: Icon(
               Icons.remove_circle_outline,
               size: 18,
-              color: c.onSurface.withValues(alpha: 0.3),
+              color: c.fadedText(0.3),
             ),
             onPressed: widget.onDelete,
             padding: EdgeInsets.zero,

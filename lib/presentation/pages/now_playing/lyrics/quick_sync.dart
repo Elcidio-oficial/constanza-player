@@ -170,7 +170,7 @@ class _QuickSyncPageState extends ConsumerState<_QuickSyncPage> {
                             color: isCurrent
                                 ? colors.onSurface
                                 : isDone
-                                ? colors.onSurface.withValues(alpha: 0.5)
+                                ? colors.fadedText(0.5)
                                 : colors.onSurface.withValues(alpha: 0.2),
                             fontWeight: isCurrent
                                 ? FontWeight.w700
@@ -209,7 +209,7 @@ class _QuickSyncPageState extends ConsumerState<_QuickSyncPage> {
                   Text(
                     l10n.lyricsQuickSyncTapHint,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.25),
+                      color: colors.fadedText(0.25),
                     ),
                     textAlign: TextAlign.center,
                   ),

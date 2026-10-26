@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -147,18 +148,16 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               ),
               decoration: InputDecoration(
                 hintText: l10n.searchHint,
-                hintStyle: TextStyle(
-                  color: colors.onSurface.withValues(alpha: 0.3),
-                ),
+                hintStyle: TextStyle(color: colors.fadedText(0.3)),
                 prefixIcon: Icon(
                   Icons.search_rounded,
-                  color: colors.onSurface.withValues(alpha: 0.4),
+                  color: colors.fadedText(0.4),
                 ),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
                         icon: Icon(
                           Icons.close_rounded,
-                          color: colors.onSurface.withValues(alpha: 0.4),
+                          color: colors.fadedText(0.4),
                         ),
                         onPressed: () {
                           _searchController.clear();
@@ -275,7 +274,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 ? 'Nenhum resultado'
                 : '$totalCount resultado${totalCount != 1 ? 's' : ''}',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.3),
+              color: colors.fadedText(0.3),
             ),
           ),
         ),
@@ -303,7 +302,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         Text(
           'Explore sua biblioteca',
           style: theme.textTheme.titleSmall?.copyWith(
-            color: colors.onSurface.withValues(alpha: 0.35),
+            color: colors.fadedText(0.35),
           ),
           textAlign: TextAlign.center,
         ),
@@ -331,7 +330,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 Text(
                   'BUSCAS RECENTES',
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.35),
+                    color: colors.fadedText(0.35),
                     letterSpacing: 1.5,
                   ),
                 ),
@@ -340,7 +339,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   child: Text(
                     'Limpar',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.35),
+                      color: colors.fadedText(0.35),
                     ),
                   ),
                 ),
@@ -357,12 +356,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               leading: Icon(
                 Icons.history_rounded,
                 size: 20,
-                color: colors.onSurface.withValues(alpha: 0.3),
+                color: colors.fadedText(0.3),
               ),
               title: Text(
                 query,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.6),
+                  color: colors.fadedText(0.6),
                 ),
               ),
               trailing: Row(
@@ -439,7 +438,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             Text(
               'Nenhum resultado para "$_query"',
               style: theme.textTheme.titleSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.4),
+                color: colors.fadedText(0.4),
               ),
               textAlign: TextAlign.center,
             ),
@@ -447,7 +446,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             Text(
               'Verifique a ortografia ou tente outro termo',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.25),
+                color: colors.fadedText(0.25),
               ),
             ),
           ],
@@ -654,7 +653,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       subtitle: Text(
         parts.join(' · '),
         style: theme.textTheme.bodySmall?.copyWith(
-          color: colors.onSurface.withValues(alpha: 0.45),
+          color: colors.fadedText(0.45),
         ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -700,7 +699,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       subtitle: Text(
         parts.join(' · '),
         style: theme.textTheme.bodySmall?.copyWith(
-          color: colors.onSurface.withValues(alpha: 0.45),
+          color: colors.fadedText(0.45),
         ),
       ),
       trailing: Icon(
@@ -741,7 +740,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           Text(
             title,
             style: theme.textTheme.titleSmall?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.6),
+              color: colors.fadedText(0.6),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -755,7 +754,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             child: Text(
               '$count',
               style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.35),
+                color: colors.fadedText(0.35),
                 fontSize: 10,
               ),
             ),
@@ -837,9 +836,7 @@ class _FilterChip extends StatelessWidget {
             Text(
               label,
               style: theme.textTheme.labelMedium?.copyWith(
-                color: active
-                    ? colors.primary
-                    : colors.onSurface.withValues(alpha: 0.5),
+                color: active ? colors.primary : colors.fadedText(0.5),
                 fontWeight: active ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
@@ -856,9 +853,7 @@ class _FilterChip extends StatelessWidget {
                 child: Text(
                   count > 99 ? '99+' : '$count',
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: active
-                        ? colors.primary
-                        : colors.onSurface.withValues(alpha: 0.35),
+                    color: active ? colors.primary : colors.fadedText(0.35),
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
                   ),

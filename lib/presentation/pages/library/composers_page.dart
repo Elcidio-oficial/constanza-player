@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -48,14 +49,14 @@ class ComposersPage extends ConsumerWidget {
                     Text(
                       'Nenhum compositor encontrado',
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       'Informação disponível nos metadados ID3',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.25),
+                        color: colors.fadedText(0.25),
                       ),
                     ),
                   ],
@@ -98,7 +99,7 @@ class ComposersPage extends ConsumerWidget {
                     subtitle: Text(
                       '${songs.length} música${songs.length != 1 ? 's' : ''}',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                     trailing: Icon(

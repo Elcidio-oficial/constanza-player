@@ -117,7 +117,7 @@ class _PremiumSongCard extends StatelessWidget {
                   child: Text(
                     song.artist,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                       fontSize: 10,
                     ),
                     maxLines: 1,

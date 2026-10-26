@@ -26,14 +26,14 @@ class _EmptyPlaylists extends StatelessWidget {
           Text(
             l10n.playlistsEmptyCreated,
             style: theme.textTheme.titleSmall?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.4),
+              color: colors.fadedText(0.4),
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             l10n.playlistsEmptyCreateFirst,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.25),
+              color: colors.fadedText(0.25),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -53,7 +53,7 @@ class _EmptyPlaylists extends StatelessWidget {
               child: Text(
                 l10n.playlistsEmptyNewAction,
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.6),
+                  color: colors.fadedText(0.6),
                 ),
               ),
             ),

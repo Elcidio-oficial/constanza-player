@@ -148,7 +148,7 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
             Text(
               AppLocalizations.of(context).backupDescription,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.5),
+                color: colors.fadedText(0.5),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -167,7 +167,7 @@ class _BackupSheetState extends ConsumerState<_BackupSheet> {
             Text(
               AppLocalizations.of(context).backupNote,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.35),
+                color: colors.fadedText(0.35),
               ),
               textAlign: TextAlign.center,
             ),

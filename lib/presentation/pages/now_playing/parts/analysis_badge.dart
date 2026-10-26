@@ -40,14 +40,14 @@ class _AnalysisBadge extends ConsumerWidget {
               height: 10,
               child: CircularProgressIndicator(
                 strokeWidth: 1.5,
-                color: colors.onSurface.withValues(alpha: 0.25),
+                color: colors.fadedText(0.25),
               ),
             ),
             const SizedBox(width: 6),
             Text(
               AppLocalizations.of(context).npAnalyzeLoading,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.3),
+                color: colors.fadedText(0.3),
                 fontSize: 10,
               ),
             ),
@@ -77,13 +77,13 @@ class _AnalysisBadge extends ConsumerWidget {
               Icon(
                 Icons.refresh_rounded,
                 size: 12,
-                color: colors.onSurface.withValues(alpha: 0.3),
+                color: colors.fadedText(0.3),
               ),
               const SizedBox(width: 4),
               Text(
                 AppLocalizations.of(context).npAnalyzeRetry,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.3),
+                  color: colors.fadedText(0.3),
                   fontSize: 10,
                 ),
               ),
@@ -298,7 +298,7 @@ class _AnalysisBadge extends ConsumerWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: colors.onSurface.withValues(alpha: 0.35),
+            color: colors.fadedText(0.35),
             fontSize: 9,
             fontWeight: FontWeight.w500,
           ),

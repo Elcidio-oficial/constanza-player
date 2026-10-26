@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:constanza_player/core/theme/app_colors.dart';
 import 'package:constanza_player/core/theme/app_typography.dart';
 
@@ -15,20 +16,24 @@ abstract final class AppTheme {
         seedColor: accentColor,
         brightness: Brightness.light,
       );
-      colorScheme = base.copyWith(
-        // Neutraliza APENAS as superfícies (background), nunca o onSurface.
-        // onSurface = cor do texto — se neutralizado erroneamente, o texto
-        // fica branco sobre branco (light) ou preto sobre preto (dark).
-        surface: _neutralize(base.surface, Brightness.light),
-        surfaceContainer: _neutralize(base.surfaceContainer, Brightness.light),
-        surfaceContainerLow: _neutralize(
-          base.surfaceContainerLow,
-          Brightness.light,
-        ),
-        surfaceContainerHigh: _neutralize(
-          base.surfaceContainerHigh,
-          Brightness.light,
-        ),
+      // Superfícies, texto e contornos ficam na base neutra "papel"; do
+      // preset vêm só os papéis de destaque. Superfícies tingidas pelo
+      // fromSeed ficam com aspeto sujo no claro.
+      colorScheme = AppColors.lightScheme().copyWith(
+        primary: base.primary,
+        onPrimary: base.onPrimary,
+        primaryContainer: base.primaryContainer,
+        onPrimaryContainer: base.onPrimaryContainer,
+        secondary: base.secondary,
+        onSecondary: base.onSecondary,
+        secondaryContainer: base.secondaryContainer,
+        onSecondaryContainer: base.onSecondaryContainer,
+        tertiary: base.tertiary,
+        onTertiary: base.onTertiary,
+        tertiaryContainer: base.tertiaryContainer,
+        onTertiaryContainer: base.onTertiaryContainer,
+        inversePrimary: base.inversePrimary,
+        surfaceTint: base.surfaceTint,
       );
     } else {
       colorScheme = AppColors.lightScheme();
@@ -131,10 +136,7 @@ abstract final class AppTheme {
           if (states.contains(WidgetState.selected)) {
             return IconThemeData(color: colorScheme.primary, size: 24);
           }
-          return IconThemeData(
-            color: colorScheme.onSurface.withValues(alpha: 0.5),
-            size: 22,
-          );
+          return IconThemeData(color: colorScheme.fadedText(0.5), size: 22);
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
@@ -144,7 +146,7 @@ abstract final class AppTheme {
             );
           }
           return textTheme.labelSmall?.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.5),
+            color: colorScheme.fadedText(0.5),
           );
         }),
       ),
@@ -247,7 +249,7 @@ abstract final class AppTheme {
           ),
         ),
         hintStyle: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onSurface.withValues(alpha: 0.3),
+          color: colorScheme.fadedText(0.3),
         ),
       ),
 

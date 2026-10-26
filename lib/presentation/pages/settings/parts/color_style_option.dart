@@ -38,7 +38,7 @@ class _ColorStyleOption extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           border: Border.all(
             color: isSelected
-                ? colors.onSurface.withValues(alpha: 0.6)
+                ? colors.fadedText(0.6)
                 : colors.outline.withValues(alpha: 0.12),
             width: isSelected ? 1.5 : 1.0,
           ),
@@ -124,7 +124,7 @@ class _ColorStyleOption extends StatelessWidget {
                         size: 18,
                         color: isSelected
                             ? colors.onSurface
-                            : colors.onSurface.withValues(alpha: 0.5),
+                            : colors.fadedText(0.5),
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       Text(
@@ -142,7 +142,7 @@ class _ColorStyleOption extends StatelessWidget {
                   Text(
                     description,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                       fontSize: 11,
                     ),
                   ),

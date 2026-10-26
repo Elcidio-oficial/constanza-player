@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -172,7 +173,7 @@ class _SongTileState extends ConsumerState<SongTile> {
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: isPlaying
                                   ? colors.tertiary.withValues(alpha: 0.7)
-                                  : colors.onSurface.withValues(alpha: 0.45),
+                                  : colors.fadedText(0.45),
                             ),
                             suffix: ' · ${song.album}',
                             maxLines: 1,
@@ -184,7 +185,7 @@ class _SongTileState extends ConsumerState<SongTile> {
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: isPlaying
                                   ? colors.tertiary.withValues(alpha: 0.7)
-                                  : colors.onSurface.withValues(alpha: 0.45),
+                                  : colors.fadedText(0.45),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -197,7 +198,7 @@ class _SongTileState extends ConsumerState<SongTile> {
                   Text(
                     song.durationFormatted,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.3),
+                      color: colors.fadedText(0.3),
                     ),
                   ),
 
@@ -212,7 +213,7 @@ class _SongTileState extends ConsumerState<SongTile> {
                       child: Icon(
                         Icons.more_vert_rounded,
                         size: 20,
-                        color: colors.onSurface.withValues(alpha: 0.3),
+                        color: colors.fadedText(0.3),
                       ),
                     ),
                   ),

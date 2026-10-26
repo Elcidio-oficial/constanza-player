@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
@@ -59,7 +60,7 @@ class HistoryPage extends ConsumerWidget {
                     Text(
                       AppLocalizations.of(context).historyEmpty,
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                   ],
@@ -106,7 +107,7 @@ class HistoryPage extends ConsumerWidget {
                           child: Text(
                             _formatDate(time, l10n),
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.35),
+                              color: colors.fadedText(0.35),
                               letterSpacing: 1.0,
                             ),
                           ),
@@ -142,13 +143,13 @@ class HistoryPage extends ConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.4),
+                            color: colors.fadedText(0.4),
                           ),
                         ),
                         trailing: Text(
                           timeLabel,
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.3),
+                            color: colors.fadedText(0.3),
                           ),
                         ),
                         onTap: song != null

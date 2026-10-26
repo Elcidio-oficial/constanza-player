@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:constanza_player/core/constants/app_constants.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -36,7 +37,7 @@ class DeveloperPage extends StatelessWidget {
             l10n.devRole(AppConstants.appName),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.6),
+              color: colors.fadedText(0.6),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -92,7 +93,7 @@ class DeveloperPage extends StatelessWidget {
             '${AppConstants.appName} · v${AppConstants.appVersion}',
             textAlign: TextAlign.center,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.3),
+              color: colors.fadedText(0.3),
             ),
           ),
         ],
@@ -154,7 +155,7 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         text.toUpperCase(),
         style: theme.textTheme.labelSmall?.copyWith(
-          color: colors.onSurface.withValues(alpha: 0.45),
+          color: colors.fadedText(0.45),
           letterSpacing: 1.2,
         ),
       ),

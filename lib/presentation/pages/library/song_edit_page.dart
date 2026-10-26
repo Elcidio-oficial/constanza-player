@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -549,7 +550,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
                     child: Text(
                       subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.5),
+                        color: colors.fadedText(0.5),
                         fontSize: 11,
                       ),
                     ),
@@ -660,7 +661,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.5),
+                      color: colors.fadedText(0.5),
                     ),
                   ),
                 ),
@@ -694,11 +695,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
       color: colors.outline.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
     ),
-    child: Icon(
-      Icons.album_rounded,
-      size: 22,
-      color: colors.onSurface.withValues(alpha: 0.3),
-    ),
+    child: Icon(Icons.album_rounded, size: 22, color: colors.fadedText(0.3)),
   );
 
   // ── Edit fields ──
@@ -758,7 +755,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
         Text(
           l10n.songEditFileInfo,
           style: theme.textTheme.titleSmall?.copyWith(
-            color: colors.onSurface.withValues(alpha: 0.6),
+            color: colors.fadedText(0.6),
           ),
         ),
         const SizedBox(height: AppSpacing.xs),
@@ -822,7 +819,7 @@ class _SongEditPageState extends ConsumerState<SongEditPage> {
           child: Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.45),
+              color: colors.fadedText(0.45),
               fontWeight: FontWeight.w500,
             ),
           ),

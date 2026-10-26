@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/constants/app_constants.dart';
@@ -29,7 +30,7 @@ class MiniPlayer extends ConsumerWidget {
           .withSaturation((hsl.saturation * 0.8).clamp(0.2, 0.7))
           .toColor();
     }
-    return colors.onSurface.withValues(alpha: 0.5);
+    return colors.fadedText(0.5);
   }
 
   static Color _playBtnColor(
@@ -141,7 +142,7 @@ class MiniPlayer extends ConsumerWidget {
                         Text(
                           song?.artist ?? 'Sua música. Seu momento.',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.4),
+                            color: colors.fadedText(0.4),
                             fontSize: 11,
                           ),
                           maxLines: 1,

@@ -68,7 +68,7 @@ class _ProgressBar extends ConsumerWidget {
                 Text(
                   positionFormatted,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.4),
+                    color: colors.fadedText(0.4),
                     fontWeight: FontWeight.w500,
                     fontSize: 11,
                   ),
@@ -76,7 +76,7 @@ class _ProgressBar extends ConsumerWidget {
                 Text(
                   remStr,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.4),
+                    color: colors.fadedText(0.4),
                     fontWeight: FontWeight.w500,
                     fontSize: 11,
                   ),
@@ -176,9 +176,7 @@ class _MainControls extends ConsumerWidget {
         child: Icon(
           icon,
           size: size,
-          color: active
-              ? (activeColor ?? accentColor)
-              : colors.onSurface.withValues(alpha: 0.35),
+          color: active ? (activeColor ?? accentColor) : colors.fadedText(0.35),
         ),
       ),
     );
@@ -295,9 +293,7 @@ class _FavoriteBtn extends ConsumerWidget {
             isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
             key: ValueKey(isFav),
             size: 26,
-            color: isFav
-                ? Colors.redAccent
-                : colors.onSurface.withValues(alpha: 0.4),
+            color: isFav ? Colors.redAccent : colors.fadedText(0.4),
           ),
         ),
       ),
@@ -426,18 +422,14 @@ class _SecondaryActions extends ConsumerWidget {
             Icon(
               icon,
               size: 21,
-              color: active
-                  ? accentColor
-                  : colors.onSurface.withValues(alpha: 0.4),
+              color: active ? accentColor : colors.fadedText(0.4),
             ),
             const SizedBox(height: 3),
             Text(
               label,
               style: theme.textTheme.labelSmall?.copyWith(
                 fontSize: 10,
-                color: active
-                    ? accentColor
-                    : colors.onSurface.withValues(alpha: 0.3),
+                color: active ? accentColor : colors.fadedText(0.3),
               ),
             ),
           ],

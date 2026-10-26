@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -93,14 +94,14 @@ class PlaylistSelectorBottomSheet extends ConsumerWidget {
                     child: Icon(
                       Icons.queue_music_rounded,
                       size: 20,
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                     ),
                   ),
                   title: Text(p.name, style: theme.textTheme.titleSmall),
                   subtitle: Text(
                     l10n.playlistsCount(p.songCount),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                     ),
                   ),
                   onTap: () {

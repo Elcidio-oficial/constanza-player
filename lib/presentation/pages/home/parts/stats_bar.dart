@@ -113,7 +113,7 @@ class _StatItem extends StatelessWidget {
         Text(
           label,
           style: theme.textTheme.labelSmall?.copyWith(
-            color: colors.onSurface.withValues(alpha: 0.35),
+            color: colors.fadedText(0.35),
             fontSize: 9,
           ),
         ),

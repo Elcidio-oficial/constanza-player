@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:constanza_player/core/constants/app_constants.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 
@@ -227,7 +228,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                       'Músicas',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         letterSpacing: 4,
-                        color: colors.onSurface.withValues(alpha: 0.5),
+                        color: colors.fadedText(0.5),
                         fontWeight: FontWeight.w300,
                       ),
                     ),
@@ -247,7 +248,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                           child: Container(
                             height: 1.5,
                             decoration: BoxDecoration(
-                              color: colors.onSurface.withValues(alpha: 0.3),
+                              color: colors.fadedText(0.3),
                               borderRadius: BorderRadius.circular(1),
                             ),
                           ),

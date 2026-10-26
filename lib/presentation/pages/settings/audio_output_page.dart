@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/services.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 
@@ -107,7 +108,7 @@ class _AudioOutputPageState extends State<AudioOutputPage> {
                           Icon(
                             Icons.info_outline_rounded,
                             size: 20,
-                            color: colors.onSurface.withValues(alpha: 0.4),
+                            color: colors.fadedText(0.4),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -116,7 +117,7 @@ class _AudioOutputPageState extends State<AudioOutputPage> {
                               'sistema Android. Conecte fones ou colunas Bluetooth '
                               'para alternar automaticamente.',
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.onSurface.withValues(alpha: 0.45),
+                                color: colors.fadedText(0.45),
                                 height: 1.4,
                               ),
                             ),
@@ -162,7 +163,7 @@ class _AudioOutputPageState extends State<AudioOutputPage> {
                         device.type.icon,
                         color: isActive
                             ? colors.primary
-                            : colors.onSurface.withValues(alpha: 0.6),
+                            : colors.fadedText(0.6),
                       ),
                     ),
                     title: Text(
@@ -174,7 +175,7 @@ class _AudioOutputPageState extends State<AudioOutputPage> {
                     subtitle: Text(
                       device.type.label,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.5),
+                        color: colors.fadedText(0.5),
                       ),
                     ),
                     trailing: isActive

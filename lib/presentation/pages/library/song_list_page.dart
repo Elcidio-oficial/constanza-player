@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
 import 'package:constanza_player/core/utils/background_helper.dart';
@@ -40,7 +41,7 @@ class SongListPage extends ConsumerWidget {
             IconButton(
               icon: Icon(
                 Icons.shuffle_rounded,
-                color: colors.onSurface.withValues(alpha: 0.5),
+                color: colors.fadedText(0.5),
                 size: 22,
               ),
               onPressed: songs.isEmpty
@@ -57,7 +58,7 @@ class SongListPage extends ConsumerWidget {
                 child: Text(
                   l10n.songListNoSongs,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.35),
+                    color: colors.fadedText(0.35),
                   ),
                 ),
               )
@@ -77,7 +78,7 @@ class SongListPage extends ConsumerWidget {
                         Text(
                           l10n.librarySongCount(songs.length),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.35),
+                            color: colors.fadedText(0.35),
                           ),
                         ),
                         GestureDetector(

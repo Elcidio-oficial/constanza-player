@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -436,7 +437,7 @@ class _ArtistCardState extends State<_ArtistCard> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.55),
+                color: colors.fadedText(0.55),
               ),
             ),
           ],
@@ -472,9 +473,9 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(
             AppLocalizations.of(context).artistsNoneFound,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.4),
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: colors.fadedText(0.4)),
           ),
         ],
       ),

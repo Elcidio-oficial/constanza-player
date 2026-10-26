@@ -21,25 +21,31 @@ class _QuickChip extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colors.primary.withValues(alpha: 0.10),
-              colors.onSurface.withValues(alpha: 0.04),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          border: Border.all(color: colors.primary.withValues(alpha: 0.18)),
-          boxShadow: [
-            BoxShadow(
-              color: colors.primary.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+        decoration: colors.isLight
+            ? colors.lightCard(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              )
+            : BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    colors.primary.withValues(alpha: 0.10),
+                    colors.onSurface.withValues(alpha: 0.04),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                border: Border.all(
+                  color: colors.primary.withValues(alpha: 0.18),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -102,7 +108,7 @@ class _SectionHeader extends StatelessWidget {
                 child: Text(
                   title,
                   style: theme.textTheme.titleSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.55),
+                    color: colors.fadedText(0.55),
                     fontWeight: FontWeight.w500,
                   ),
                 ),

@@ -56,7 +56,7 @@ class _UserPlaylistTile extends ConsumerWidget {
             Text(
               livePlaylist.description!,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.5),
+                color: colors.fadedText(0.5),
                 fontStyle: FontStyle.italic,
               ),
               maxLines: 1,
@@ -65,7 +65,7 @@ class _UserPlaylistTile extends ConsumerWidget {
           Text(
             parts.join(' · '),
             style: theme.textTheme.bodySmall?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.4),
+              color: colors.fadedText(0.4),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -140,7 +140,7 @@ class _UserPlaylistTile extends ConsumerWidget {
                             Text(
                               l10n.playlistsCount(playlist.songCount),
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.onSurface.withValues(alpha: 0.5),
+                                color: colors.fadedText(0.5),
                               ),
                             ),
                           ],
@@ -242,7 +242,7 @@ class _UserPlaylistTile extends ConsumerWidget {
             onPressed: () => ctx.pop(),
             child: Text(
               l10n.commonCancel,
-              style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
+              style: TextStyle(color: colors.fadedText(0.5)),
             ),
           ),
           TextButton(
@@ -283,9 +283,7 @@ class _UserPlaylistTile extends ConsumerWidget {
               autofocus: true,
               decoration: InputDecoration(
                 labelText: l10n.playlistsNameField,
-                labelStyle: TextStyle(
-                  color: colors.onSurface.withValues(alpha: 0.5),
-                ),
+                labelStyle: TextStyle(color: colors.fadedText(0.5)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
@@ -301,9 +299,7 @@ class _UserPlaylistTile extends ConsumerWidget {
               maxLines: 2,
               decoration: InputDecoration(
                 labelText: l10n.playlistsDescriptionField,
-                labelStyle: TextStyle(
-                  color: colors.onSurface.withValues(alpha: 0.4),
-                ),
+                labelStyle: TextStyle(color: colors.fadedText(0.4)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   borderSide: BorderSide(
@@ -323,7 +319,7 @@ class _UserPlaylistTile extends ConsumerWidget {
             onPressed: () => ctx.pop(),
             child: Text(
               l10n.commonCancel,
-              style: TextStyle(color: colors.onSurface.withValues(alpha: 0.5)),
+              style: TextStyle(color: colors.fadedText(0.5)),
             ),
           ),
           TextButton(

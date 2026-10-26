@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -75,7 +76,7 @@ class StatisticsPage extends ConsumerWidget {
             Text(
               'BIBLIOTECA',
               style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.4),
+                color: colors.fadedText(0.4),
                 letterSpacing: 1.2,
               ),
             ),
@@ -141,7 +142,7 @@ class StatisticsPage extends ConsumerWidget {
             Text(
               'REPRODUCAO',
               style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.4),
+                color: colors.fadedText(0.4),
                 letterSpacing: 1.2,
               ),
             ),
@@ -176,7 +177,7 @@ class StatisticsPage extends ConsumerWidget {
                       Text(
                         'reproducoes totais',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.4),
+                          color: colors.fadedText(0.4),
                         ),
                       ),
                     ],
@@ -190,7 +191,7 @@ class StatisticsPage extends ConsumerWidget {
               Text(
                 'MAIS TOCADAS',
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.4),
+                  color: colors.fadedText(0.4),
                   letterSpacing: 1.2,
                 ),
               ),
@@ -228,7 +229,7 @@ class StatisticsPage extends ConsumerWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                     ),
                   ),
                   trailing: Text(
@@ -247,7 +248,7 @@ class StatisticsPage extends ConsumerWidget {
               Text(
                 'GENEROS MAIS OUVIDOS',
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.4),
+                  color: colors.fadedText(0.4),
                   letterSpacing: 1.2,
                 ),
               ),
@@ -271,7 +272,7 @@ class StatisticsPage extends ConsumerWidget {
                           Text(
                             '${e.value} musicas',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.4),
+                              color: colors.fadedText(0.4),
                             ),
                           ),
                         ],
@@ -356,7 +357,7 @@ class _StatCard extends StatelessWidget {
                 Text(
                   label,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.4),
+                    color: colors.fadedText(0.4),
                     fontSize: 10,
                   ),
                 ),

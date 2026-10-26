@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/services/permission_service.dart';
 import 'package:go_router/go_router.dart';
@@ -350,7 +351,7 @@ class _WelcomePage extends StatelessWidget {
             l10n.onboardingBrandSub,
             style: theme.textTheme.titleMedium?.copyWith(
               letterSpacing: 3,
-              color: colors.onSurface.withValues(alpha: 0.4),
+              color: colors.fadedText(0.4),
               fontWeight: FontWeight.w300,
             ),
           ),
@@ -360,7 +361,7 @@ class _WelcomePage extends StatelessWidget {
           Text(
             l10n.onboardingTagline,
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.55),
+              color: colors.fadedText(0.55),
               height: 1.6,
             ),
             textAlign: TextAlign.center,
@@ -411,7 +412,7 @@ class _FeaturesPage extends StatelessWidget {
           Text(
             l10n.onboardingFeaturesSubtitle,
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.5),
+              color: colors.fadedText(0.5),
             ),
             textAlign: TextAlign.center,
           ),
@@ -508,7 +509,7 @@ class _FeatureCard extends StatelessWidget {
                 Text(
                   subtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.5),
+                    color: colors.fadedText(0.5),
                   ),
                 ),
               ],
@@ -586,7 +587,7 @@ class _PermissionRequestPage extends StatelessWidget {
           Text(
             l10n.permissionDescription,
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.55),
+              color: colors.fadedText(0.55),
               height: 1.5,
             ),
             textAlign: TextAlign.center,
@@ -613,7 +614,7 @@ class _PermissionRequestPage extends StatelessWidget {
                   child: Text(
                     l10n.onboardingPrivacy,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.55),
+                      color: colors.fadedText(0.55),
                       height: 1.4,
                     ),
                   ),

@@ -52,7 +52,7 @@ enum CarModeView { player, lyrics }
 
 class ThemeState {
   const ThemeState({
-    this.themeMode = ThemeMode.dark,
+    this.themeMode = ThemeMode.system,
     this.accentColor,
     this.backgroundType = BackgroundType.none,
     this.gradientPresetId,
@@ -214,8 +214,12 @@ class ThemeState {
   /// Deserializa de JSON map.
   factory ThemeState.fromJson(Map<String, dynamic> json) {
     return ThemeState(
-      // Always dark mode — light mode removed
-      themeMode: ThemeMode.dark,
+      // Sem valor salvo (instalação nova) → segue o sistema.
+      themeMode:
+          ThemeMode.values[(json['themeMode'] as int? ?? 0).clamp(
+            0,
+            ThemeMode.values.length - 1,
+          )],
       accentColor: SettingsStorageService.intToColor(
         json['accentColor'] as int?,
       ),

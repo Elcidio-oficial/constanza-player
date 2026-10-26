@@ -40,7 +40,7 @@ class _UpNextPreview extends ConsumerWidget {
                 child: Text(
                   'A SEGUIR',
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.35),
+                    color: colors.fadedText(0.35),
                     letterSpacing: 1.2,
                     fontSize: 8,
                     fontWeight: FontWeight.w600,
@@ -71,7 +71,7 @@ class _UpNextPreview extends ConsumerWidget {
                     Text(
                       nextSong.artist,
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.3),
+                        color: colors.fadedText(0.3),
                         fontSize: 10,
                       ),
                       maxLines: 1,
@@ -83,7 +83,7 @@ class _UpNextPreview extends ConsumerWidget {
               Icon(
                 Icons.skip_next_rounded,
                 size: 18,
-                color: colors.onSurface.withValues(alpha: 0.3),
+                color: colors.fadedText(0.3),
               ),
             ],
           ),
@@ -192,7 +192,7 @@ class _QueuePage extends ConsumerWidget {
               child: Text(
                 AppLocalizations.of(context).npQueueEmpty,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.4),
+                  color: colors.fadedText(0.4),
                 ),
               ),
             )
@@ -353,7 +353,7 @@ class _QueueItem extends StatelessWidget {
                   Text(
                     song.artist,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.45),
+                      color: colors.fadedText(0.45),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -364,7 +364,7 @@ class _QueueItem extends StatelessWidget {
             Text(
               song.durationFormatted,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.3),
+                color: colors.fadedText(0.3),
               ),
             ),
           ],

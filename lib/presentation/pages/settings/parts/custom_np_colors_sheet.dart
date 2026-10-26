@@ -69,7 +69,7 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
             Text(
               l10n.customNpSubtitle,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.4),
+                color: colors.fadedText(0.4),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -85,7 +85,7 @@ class _CustomNpColorsSheetState extends ConsumerState<_CustomNpColorsSheet> {
                     ? l10n.customNpToggleOnDesc
                     : l10n.customNpToggleOffDesc,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.4),
+                  color: colors.fadedText(0.4),
                 ),
               ),
               value: themeState.useCustomNpColors,

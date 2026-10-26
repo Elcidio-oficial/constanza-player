@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -114,14 +115,14 @@ class HomePage extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(
-              color: colors.onSurface.withValues(alpha: 0.5),
+              color: colors.fadedText(0.5),
               strokeWidth: 2,
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
               l10n.libraryLoading,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.4),
+                color: colors.fadedText(0.4),
               ),
             ),
           ],
@@ -145,7 +146,7 @@ class HomePage extends ConsumerWidget {
               Text(
                 l10n.permissionMissing,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.6),
+                  color: colors.fadedText(0.6),
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -153,7 +154,7 @@ class HomePage extends ConsumerWidget {
               Text(
                 l10n.permissionMissingDesc,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
+                  color: colors.fadedText(0.35),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -185,7 +186,7 @@ class HomePage extends ConsumerWidget {
               Text(
                 l10n.libraryNeedsFolderSetup,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.6),
+                  color: colors.fadedText(0.6),
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -193,7 +194,7 @@ class HomePage extends ConsumerWidget {
               Text(
                 l10n.libraryNeedsFolderSetupDesc,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
+                  color: colors.fadedText(0.35),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -225,7 +226,7 @@ class HomePage extends ConsumerWidget {
               Text(
                 l10n.libraryEmpty,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.6),
+                  color: colors.fadedText(0.6),
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -233,7 +234,7 @@ class HomePage extends ConsumerWidget {
               Text(
                 l10n.libraryEmptyDesc,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.35),
+                  color: colors.fadedText(0.35),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -431,28 +432,37 @@ class HomePage extends ConsumerWidget {
                   horizontal: AppSpacing.md,
                   vertical: AppSpacing.md,
                 ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      colors.primary.withValues(alpha: 0.22),
-                      colors.tertiary.withValues(alpha: 0.12),
-                      colors.primary.withValues(alpha: 0.06),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  border: Border.all(
-                    color: colors.primary.withValues(alpha: 0.2),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.15),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
+                decoration: colors.isLight
+                    ? colors.lightCard(
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusLg,
+                        ),
+                        tint: 0.04,
+                      )
+                    : BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            colors.primary.withValues(alpha: 0.22),
+                            colors.tertiary.withValues(alpha: 0.12),
+                            colors.primary.withValues(alpha: 0.06),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusLg,
+                        ),
+                        border: Border.all(
+                          color: colors.primary.withValues(alpha: 0.2),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.primary.withValues(alpha: 0.15),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
                 child: Row(
                   children: [
                     Container(
@@ -497,7 +507,7 @@ class HomePage extends ConsumerWidget {
                               durationLabel,
                             ),
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.45),
+                              color: colors.fadedText(0.45),
                             ),
                           ),
                         ],
@@ -801,7 +811,7 @@ class HomePage extends ConsumerWidget {
                           Text(
                             album.artist,
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.35),
+                              color: colors.fadedText(0.35),
                               fontSize: 10,
                             ),
                             maxLines: 1,
@@ -851,7 +861,7 @@ class HomePage extends ConsumerWidget {
                           Text(
                             artist.name,
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.55),
+                              color: colors.fadedText(0.55),
                               fontSize: 10,
                             ),
                             maxLines: 1,

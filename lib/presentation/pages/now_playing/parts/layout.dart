@@ -158,7 +158,7 @@ class _Header extends ConsumerWidget {
                 Text(
                   'TOCANDO AGORA',
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.45),
+                    color: colors.fadedText(0.45),
                     letterSpacing: 2.5,
                     fontSize: 9,
                     fontWeight: FontWeight.w600,
@@ -194,7 +194,7 @@ class _Header extends ConsumerWidget {
                             Text(
                               audioState.sleepTimerLabel,
                               style: theme.textTheme.labelSmall?.copyWith(
-                                color: colors.onSurface.withValues(alpha: 0.35),
+                                color: colors.fadedText(0.35),
                                 fontSize: 9,
                               ),
                             ),
@@ -230,10 +230,7 @@ class _Header extends ConsumerWidget {
             ),
           ),
           IconButton(
-            icon: Icon(
-              Icons.more_vert_rounded,
-              color: colors.onSurface.withValues(alpha: 0.6),
-            ),
+            icon: Icon(Icons.more_vert_rounded, color: colors.fadedText(0.6)),
             onPressed: () => _showSongMenu(context, ref),
           ),
         ],
@@ -304,7 +301,7 @@ class _Header extends ConsumerWidget {
                             Text(
                               currentSong.artist,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.onSurface.withValues(alpha: 0.5),
+                                color: colors.fadedText(0.5),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -600,7 +597,7 @@ class _Header extends ConsumerWidget {
                     child: Text(
                       AppLocalizations.of(context).npNoPlaylistsCreated,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.4),
+                        color: colors.fadedText(0.4),
                       ),
                     ),
                   )
@@ -609,13 +606,13 @@ class _Header extends ConsumerWidget {
                     (p) => ListTile(
                       leading: Icon(
                         Icons.queue_music_rounded,
-                        color: colors.onSurface.withValues(alpha: 0.5),
+                        color: colors.fadedText(0.5),
                       ),
                       title: Text(p.name),
                       subtitle: Text(
                         '${p.songCount} músicas',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.4),
+                          color: colors.fadedText(0.4),
                         ),
                       ),
                       onTap: () {

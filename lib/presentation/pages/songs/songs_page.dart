@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
@@ -139,7 +140,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                       IconButton(
                         icon: Icon(
                           Icons.shuffle_rounded,
-                          color: colors.onSurface.withValues(alpha: 0.6),
+                          color: colors.fadedText(0.6),
                           size: 22,
                         ),
                         onPressed: songs.isEmpty
@@ -155,7 +156,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                       IconButton(
                         icon: Icon(
                           Icons.tune_rounded,
-                          color: colors.onSurface.withValues(alpha: 0.6),
+                          color: colors.fadedText(0.6),
                           size: 22,
                         ),
                         onPressed: () => _showViewOptionsSheet(context, ref),
@@ -177,7 +178,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                           Text(
                             l10n.librarySectionLibrary,
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.35),
+                              color: colors.fadedText(0.35),
                               letterSpacing: 1.2,
                               fontSize: 9,
                             ),
@@ -203,7 +204,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                   child: Text(
                     l10n.libraryNoSongs,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.35),
+                      color: colors.fadedText(0.35),
                     ),
                   ),
                 ),
@@ -226,7 +227,7 @@ class _SongsPageState extends ConsumerState<SongsPage> {
                           durationLabel,
                         ),
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.4),
+                          color: colors.fadedText(0.4),
                         ),
                       ),
                       if (!_selectMode)
@@ -415,7 +416,7 @@ class _SelectableSongTile extends StatelessWidget {
                   Text(
                     '${song.artist} · ${song.album}',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.45),
+                      color: colors.fadedText(0.45),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -426,7 +427,7 @@ class _SelectableSongTile extends StatelessWidget {
             Text(
               song.durationFormatted,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.3),
+                color: colors.fadedText(0.3),
               ),
             ),
           ],
@@ -675,7 +676,7 @@ class _MultiAddToPlaylistSheet extends ConsumerWidget {
               child: Text(
                 AppLocalizations.of(context).playlistsNoUserPlaylists,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.4),
+                  color: colors.fadedText(0.4),
                 ),
               ),
             )
@@ -808,13 +809,13 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                 subtitle: Text(
                   AppLocalizations.of(context).libraryAlbumArtDesc,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.4),
+                    color: colors.fadedText(0.4),
                   ),
                 ),
                 secondary: Icon(
                   Icons.image_outlined,
                   size: 22,
-                  color: colors.onSurface.withValues(alpha: 0.5),
+                  color: colors.fadedText(0.5),
                 ),
                 value: themeState.showAlbumArtInList,
                 onChanged: (_) =>
@@ -838,9 +839,7 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                   leading: Icon(
                     Icons.filter_list_rounded,
                     size: 22,
-                    color: filterEnabled
-                        ? activeColor
-                        : colors.onSurface.withValues(alpha: 0.5),
+                    color: filterEnabled ? activeColor : colors.fadedText(0.5),
                   ),
                   title: Text(
                     AppLocalizations.of(context).libraryFilterShortTracks,
@@ -853,7 +852,7 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                           ).libraryFilterShortTracksHidden(minDur)
                         : AppLocalizations.of(context).libraryFilterDisabled,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.4),
+                      color: colors.fadedText(0.4),
                     ),
                   ),
                   children: [
@@ -866,7 +865,7 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: filterEnabled
                                   ? activeColor
-                                  : colors.onSurface.withValues(alpha: 0.4),
+                                  : colors.fadedText(0.4),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -900,7 +899,7 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                             '120s',
                             textAlign: TextAlign.end,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.35),
+                              color: colors.fadedText(0.35),
                             ),
                           ),
                         ),
@@ -924,7 +923,7 @@ class _ViewOptionsSheetState extends ConsumerState<_ViewOptionsSheet> {
                     size: 22,
                     color: order == current
                         ? (accentColor ?? colors.primary)
-                        : colors.onSurface.withValues(alpha: 0.5),
+                        : colors.fadedText(0.5),
                   ),
                   title: Text(
                     _labelFor(order, context),
@@ -986,7 +985,7 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) => Text(
     text,
     style: theme.textTheme.labelSmall?.copyWith(
-      color: colors.onSurface.withValues(alpha: 0.35),
+      color: colors.fadedText(0.35),
       letterSpacing: 1.5,
     ),
   );
@@ -1031,7 +1030,7 @@ class _DensityChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           border: Border.all(
             color: selected
-                ? colors.onSurface.withValues(alpha: 0.4)
+                ? colors.fadedText(0.4)
                 : colors.outline.withValues(alpha: 0.1),
             width: selected ? 1.5 : 1,
           ),
@@ -1042,17 +1041,13 @@ class _DensityChip extends StatelessWidget {
             Icon(
               icon,
               size: 20,
-              color: selected
-                  ? colors.onSurface
-                  : colors.onSurface.withValues(alpha: 0.4),
+              color: selected ? colors.onSurface : colors.fadedText(0.4),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: selected
-                    ? colors.onSurface
-                    : colors.onSurface.withValues(alpha: 0.4),
+                color: selected ? colors.onSurface : colors.fadedText(0.4),
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                 fontSize: 10,
               ),

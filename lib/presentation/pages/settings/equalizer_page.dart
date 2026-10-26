@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/l10n/gen/app_localizations.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
@@ -64,7 +65,7 @@ class EqualizerPage extends ConsumerWidget {
                 Text(
                   l10n.eqPresets,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.35),
+                    color: colors.fadedText(0.35),
                     letterSpacing: 1.5,
                   ),
                 ),
@@ -106,7 +107,7 @@ class EqualizerPage extends ConsumerWidget {
                               style: theme.textTheme.labelMedium?.copyWith(
                                 color: isSelected
                                     ? Colors.white
-                                    : colors.onSurface.withValues(alpha: 0.6),
+                                    : colors.fadedText(0.6),
                                 fontWeight: isSelected
                                     ? FontWeight.w600
                                     : FontWeight.w400,
@@ -144,21 +145,21 @@ class EqualizerPage extends ConsumerWidget {
                           Text(
                             '+12',
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.25),
+                              color: colors.fadedText(0.25),
                               fontSize: 9,
                             ),
                           ),
                           Text(
                             '0',
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.35),
+                              color: colors.fadedText(0.35),
                               fontSize: 9,
                             ),
                           ),
                           Text(
                             '-12',
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: colors.onSurface.withValues(alpha: 0.25),
+                              color: colors.fadedText(0.25),
                               fontSize: 9,
                             ),
                           ),
@@ -189,7 +190,7 @@ class EqualizerPage extends ConsumerWidget {
                     child: Text(
                       l10n.eqCustom,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.3),
+                        color: colors.fadedText(0.3),
                         fontStyle: FontStyle.italic,
                       ),
                       textAlign: TextAlign.center,
@@ -202,7 +203,7 @@ class EqualizerPage extends ConsumerWidget {
                 Text(
                   l10n.eqEffects,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.onSurface.withValues(alpha: 0.35),
+                    color: colors.fadedText(0.35),
                     letterSpacing: 1.5,
                   ),
                 ),
@@ -296,7 +297,7 @@ class _VerticalBandSlider extends StatelessWidget {
         Text(
           label,
           style: theme.textTheme.labelSmall?.copyWith(
-            color: colors.onSurface.withValues(alpha: 0.4),
+            color: colors.fadedText(0.4),
             fontSize: 9,
           ),
         ),
@@ -345,7 +346,7 @@ class _EffectSlider extends StatelessWidget {
             Text(
               displayValue,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.4),
+                color: colors.fadedText(0.4),
               ),
             ),
           ],

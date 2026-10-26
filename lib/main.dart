@@ -467,7 +467,21 @@ class _ConstanzaAppState extends ConsumerState<ConstanzaApp>
       // No mobile (Android/iOS/macOS) o builder devolve o child puro.
       builder: (context, child) {
         if (!Platform.isWindows && !Platform.isLinux) {
-          return child ?? const SizedBox.shrink();
+          // Ícones da barra de estado/navegação contrastam com o tema ativo;
+          // telas sobre capas (Now Playing, Modo Carro) sobrepõem o seu.
+          final dark = Theme.of(context).brightness == Brightness.dark;
+          final icons = dark ? Brightness.light : Brightness.dark;
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              systemNavigationBarColor: Colors.transparent,
+              systemNavigationBarContrastEnforced: false,
+              statusBarIconBrightness: icons,
+              statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+              systemNavigationBarIconBrightness: icons,
+            ),
+            child: child ?? const SizedBox.shrink(),
+          );
         }
         return ValueListenableBuilder<bool>(
           valueListenable: WindowModeService.isMiniNotifier,

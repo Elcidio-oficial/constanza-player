@@ -61,25 +61,48 @@ abstract final class AppColors {
   // COLOR SCHEMES
   // ============================================================
 
+  /// Esquema claro completo (todos os papéis do Material 3).
+  ///
+  /// Neutros levemente quentes ("papel") em vez de cinza puro, que no claro
+  /// parece sujo. Hierarquia: fundo um tom abaixo do branco, cartões e folhas
+  /// em branco/quase-branco, contentores descendo em degraus de ~2,5% L.
+  /// Contraste de texto: onSurface 16:1, onSurfaceVariant 6,4:1 (AA).
   static ColorScheme lightScheme() {
     return const ColorScheme(
       brightness: Brightness.light,
-      primary: lightAccent,
-      onPrimary: lightCard,
-      secondary: lightAccentSubtle,
-      onSecondary: lightCard,
-      tertiary: playingIndicatorLight,
-      onTertiary: lightCard,
-      error: error,
-      onError: lightCard,
-      surface: lightBackground,
-      onSurface: lightTextPrimary,
-      surfaceContainerHighest: lightBackgroundSecondary,
-      outline: lightDivider,
-      outlineVariant: lightTextCaption,
-      inverseSurface: darkBackground,
-      onInverseSurface: darkTextPrimary,
-      surfaceContainer: lightCard,
+      primary: Color(0xFF1B1B1D),
+      onPrimary: Color(0xFFFFFFFF),
+      primaryContainer: Color(0xFFE6E5E3),
+      onPrimaryContainer: Color(0xFF1B1B1D),
+      secondary: Color(0xFF5C5B60),
+      onSecondary: Color(0xFFFFFFFF),
+      secondaryContainer: Color(0xFFE9E8E5),
+      onSecondaryContainer: Color(0xFF1F1F22),
+      tertiary: Color(0xFF2E7D4F),
+      onTertiary: Color(0xFFFFFFFF),
+      tertiaryContainer: Color(0xFFD3EEDC),
+      onTertiaryContainer: Color(0xFF0B2E18),
+      error: Color(0xFFBA1A1A),
+      onError: Color(0xFFFFFFFF),
+      errorContainer: Color(0xFFFFDAD6),
+      onErrorContainer: Color(0xFF410002),
+      surface: Color(0xFFF7F6F3),
+      onSurface: Color(0xFF1B1B1D),
+      onSurfaceVariant: Color(0xFF55545A),
+      surfaceDim: Color(0xFFDDDCD8),
+      surfaceBright: Color(0xFFFCFBF9),
+      surfaceContainerLowest: Color(0xFFFFFFFF),
+      surfaceContainerLow: Color(0xFFFCFBF9),
+      surfaceContainer: Color(0xFFFFFFFF),
+      surfaceContainerHigh: Color(0xFFEFEEEA),
+      surfaceContainerHighest: Color(0xFFE8E7E3),
+      outline: Color(0xFF8C8B90),
+      outlineVariant: Color(0xFFD3D2CE),
+      shadow: Color(0xFF000000),
+      scrim: Color(0xFF000000),
+      inverseSurface: Color(0xFF2F2F31),
+      onInverseSurface: Color(0xFFF3F2EF),
+      inversePrimary: Color(0xFFC9C8CC),
     );
   }
 

@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use, unused_local_variable, curly_braces_in_flow_control_structures, unused_element_parameter
 
 import 'dart:async';
+import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:constanza_player/domain/entities/lyric_line.dart';
@@ -186,244 +187,256 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
       });
     }
 
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-      ),
-    );
+    // Fundo sempre escuro (capa) → ícones claros, mesmo com o app em modo claro.
+    // AnnotatedRegion (e não SystemChrome) para vencer a região global do app.
 
     final npStyleOuter = themeState.nowPlayingStyle;
 
-    return Theme(
-      data: baseTheme.copyWith(colorScheme: colors),
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        extendBody: true,
-        backgroundColor: const Color(0xFF080808),
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            Container(color: const Color(0xFF080808)),
-            // Cover-art mode tem precedência: capa nítida em tela cheia + scrim.
-            if (themeState.nowPlayingColorStyle ==
-                    NowPlayingColorStyle.artwork &&
-                hasSong) ...[
-              _SharpArtworkBg(songId: songId),
-              Container(color: Colors.black.withValues(alpha: 0.60)),
-            ] else ...[
-              if (npStyleOuter == NowPlayingStyle.classic && hasSong)
-                _BlurredArtworkBg(songId: songId, opacity: 0.55),
-              if (npStyleOuter == NowPlayingStyle.fullBlur && hasSong)
-                _BlurredArtworkBg(songId: songId, opacity: 0.92),
-            ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      child: Theme(
+        data: baseTheme.copyWith(colorScheme: colors),
+        child: Scaffold(
+          extendBodyBehindAppBar: true,
+          extendBody: true,
+          backgroundColor: const Color(0xFF080808),
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              Container(color: const Color(0xFF080808)),
+              // Cover-art mode tem precedência: capa nítida em tela cheia + scrim.
+              if (themeState.nowPlayingColorStyle ==
+                      NowPlayingColorStyle.artwork &&
+                  hasSong) ...[
+                _SharpArtworkBg(songId: songId),
+                Container(color: Colors.black.withValues(alpha: 0.60)),
+              ] else ...[
+                if (npStyleOuter == NowPlayingStyle.classic && hasSong)
+                  _BlurredArtworkBg(songId: songId, opacity: 0.55),
+                if (npStyleOuter == NowPlayingStyle.fullBlur && hasSong)
+                  _BlurredArtworkBg(songId: songId, opacity: 0.92),
+              ],
 
-            // Camada de gradientes animados — isolada em RepaintBoundary para
-            // evitar que os 600ms de tween invalidem o Scaffold/content acima.
-            RepaintBoundary(
-              child: AnimatedBuilder(
-                animation: _colorAnim,
-                builder: (_, __) {
-                  // 3-color palette from animation
-                  final c1 = _animC1.value ?? _toC1;
-                  final c2 = _animC2.value ?? _toC2;
-                  final c3 = _animC3.value ?? _toC3;
-                  final useColor = c1 != _kDark;
-                  final npStyle = themeState.nowPlayingStyle;
-                  final colorStyle = themeState.nowPlayingColorStyle;
-                  final isGradient =
-                      colorStyle == NowPlayingColorStyle.gradient;
-                  // No modo "capa em tela cheia" suprimimos os gradients —
-                  // a artwork (já renderizada fora do AnimatedBuilder) substitui o fundo.
-                  final isArtworkBg =
-                      colorStyle == NowPlayingColorStyle.artwork;
+              // Camada de gradientes animados — isolada em RepaintBoundary para
+              // evitar que os 600ms de tween invalidem o Scaffold/content acima.
+              RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _colorAnim,
+                  builder: (_, __) {
+                    // 3-color palette from animation
+                    final c1 = _animC1.value ?? _toC1;
+                    final c2 = _animC2.value ?? _toC2;
+                    final c3 = _animC3.value ?? _toC3;
+                    final useColor = c1 != _kDark;
+                    final npStyle = themeState.nowPlayingStyle;
+                    final colorStyle = themeState.nowPlayingColorStyle;
+                    final isGradient =
+                        colorStyle == NowPlayingColorStyle.gradient;
+                    // No modo "capa em tela cheia" suprimimos os gradients —
+                    // a artwork (já renderizada fora do AnimatedBuilder) substitui o fundo.
+                    final isArtworkBg =
+                        colorStyle == NowPlayingColorStyle.artwork;
 
-                  // For degradê mode: use c1 as single base color with bright top
-                  final dgBase = c1;
-                  final Color dgTop;
-                  if (useColor) {
-                    final hsl = HSLColor.fromColor(c1);
-                    dgTop = hsl
-                        .withLightness((hsl.lightness * 1.3).clamp(0.18, 0.50))
-                        .withSaturation(
-                          (hsl.saturation * 1.1).clamp(0.25, 0.85),
-                        )
-                        .toColor();
-                  } else {
-                    dgTop = c1;
-                  }
+                    // For degradê mode: use c1 as single base color with bright top
+                    final dgBase = c1;
+                    final Color dgTop;
+                    if (useColor) {
+                      final hsl = HSLColor.fromColor(c1);
+                      dgTop = hsl
+                          .withLightness(
+                            (hsl.lightness * 1.3).clamp(0.18, 0.50),
+                          )
+                          .withSaturation(
+                            (hsl.saturation * 1.1).clamp(0.25, 0.85),
+                          )
+                          .toColor();
+                    } else {
+                      dgTop = c1;
+                    }
 
-                  // For gradient mode: blended accents
-                  final cMix12 = Color.lerp(c1, c2, 0.5)!;
-                  final cMix13 = Color.lerp(c1, c3, 0.5)!;
+                    // For gradient mode: blended accents
+                    final cMix12 = Color.lerp(c1, c2, 0.5)!;
+                    final cMix13 = Color.lerp(c1, c3, 0.5)!;
 
-                  return Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // ═══════════════════════════════════════════
-                      // DEGRADÊ MODE — Single-color linear gradient
-                      // ═══════════════════════════════════════════
-                      if (useColor && !isGradient && !isArtworkBg) ...[
-                        // Linear gradient — faithful to artwork color
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                dgTop.withValues(alpha: 0.90),
-                                dgBase.withValues(alpha: 0.80),
-                                dgBase.withValues(alpha: 0.60),
-                                Color.lerp(
-                                  dgBase,
-                                  const Color(0xFF080808),
-                                  0.55,
-                                )!,
-                                const Color(0xFF080808).withValues(alpha: 0.95),
-                              ],
-                              stops: const [0.0, 0.25, 0.50, 0.75, 1.0],
+                    return Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // ═══════════════════════════════════════════
+                        // DEGRADÊ MODE — Single-color linear gradient
+                        // ═══════════════════════════════════════════
+                        if (useColor && !isGradient && !isArtworkBg) ...[
+                          // Linear gradient — faithful to artwork color
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  dgTop.withValues(alpha: 0.90),
+                                  dgBase.withValues(alpha: 0.80),
+                                  dgBase.withValues(alpha: 0.60),
+                                  Color.lerp(
+                                    dgBase,
+                                    const Color(0xFF080808),
+                                    0.55,
+                                  )!,
+                                  const Color(
+                                    0xFF080808,
+                                  ).withValues(alpha: 0.95),
+                                ],
+                                stops: const [0.0, 0.25, 0.50, 0.75, 1.0],
+                              ),
                             ),
                           ),
-                        ),
-                        // Subtle radial glow from top-center
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                              center: const Alignment(0.0, -0.55),
-                              radius: 1.4,
-                              colors: [
-                                dgTop.withValues(alpha: 0.30),
-                                dgTop.withValues(alpha: 0.08),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.5, 1.0],
+                          // Subtle radial glow from top-center
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: const Alignment(0.0, -0.55),
+                                radius: 1.4,
+                                colors: [
+                                  dgTop.withValues(alpha: 0.30),
+                                  dgTop.withValues(alpha: 0.08),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.5, 1.0],
+                              ),
                             ),
                           ),
-                        ),
+                        ],
+
+                        // ═══════════════════════════════════════════
+                        // GRADIENT MODE — Multi-color radial blobs
+                        // ═══════════════════════════════════════════
+                        if (useColor && isGradient && !isArtworkBg) ...[
+                          // Blob 1 — Top-left (color 1)
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: const Alignment(-0.85, -0.65),
+                                radius: 1.35,
+                                colors: [
+                                  c1.withValues(alpha: 0.45),
+                                  c1.withValues(alpha: 0.18),
+                                  c1.withValues(alpha: 0.04),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.3, 0.6, 1.0],
+                              ),
+                            ),
+                          ),
+                          // Blob 2 — Top-right (color 2)
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: const Alignment(0.85, -0.40),
+                                radius: 1.15,
+                                colors: [
+                                  c2.withValues(alpha: 0.40),
+                                  c2.withValues(alpha: 0.15),
+                                  c2.withValues(alpha: 0.03),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.3, 0.6, 1.0],
+                              ),
+                            ),
+                          ),
+                          // Blob 3 — Bottom-right (color 3)
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: const Alignment(0.60, 0.85),
+                                radius: 1.20,
+                                colors: [
+                                  c3.withValues(alpha: 0.35),
+                                  c3.withValues(alpha: 0.12),
+                                  c3.withValues(alpha: 0.03),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.3, 0.6, 1.0],
+                              ),
+                            ),
+                          ),
+                          // Blob 4 — Center (blend c1+c2)
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: const Alignment(0.0, -0.05),
+                                radius: 0.90,
+                                colors: [
+                                  cMix12.withValues(alpha: 0.20),
+                                  cMix12.withValues(alpha: 0.05),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.45, 1.0],
+                              ),
+                            ),
+                          ),
+                          // Blob 5 — Bottom-left (blend c1+c3)
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: const Alignment(-0.70, 0.75),
+                                radius: 1.0,
+                                colors: [
+                                  cMix13.withValues(alpha: 0.25),
+                                  cMix13.withValues(alpha: 0.06),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.4, 1.0],
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        // ── Subtle vignette for controls readability ──
+                        if (useColor)
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.transparent,
+                                  const Color(
+                                    0xFF080808,
+                                  ).withValues(alpha: 0.30),
+                                  const Color(
+                                    0xFF080808,
+                                  ).withValues(alpha: 0.70),
+                                ],
+                                stops: const [0.0, 0.55, 0.82, 1.0],
+                              ),
+                            ),
+                          ),
+                        // ── Vinyl: extra radial glow center ──
+                        if (npStyle == NowPlayingStyle.vinyl && useColor)
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: Alignment.center,
+                                radius: 0.85,
+                                colors: [
+                                  c1.withValues(alpha: 0.25),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
                       ],
-
-                      // ═══════════════════════════════════════════
-                      // GRADIENT MODE — Multi-color radial blobs
-                      // ═══════════════════════════════════════════
-                      if (useColor && isGradient && !isArtworkBg) ...[
-                        // Blob 1 — Top-left (color 1)
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                              center: const Alignment(-0.85, -0.65),
-                              radius: 1.35,
-                              colors: [
-                                c1.withValues(alpha: 0.45),
-                                c1.withValues(alpha: 0.18),
-                                c1.withValues(alpha: 0.04),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.3, 0.6, 1.0],
-                            ),
-                          ),
-                        ),
-                        // Blob 2 — Top-right (color 2)
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                              center: const Alignment(0.85, -0.40),
-                              radius: 1.15,
-                              colors: [
-                                c2.withValues(alpha: 0.40),
-                                c2.withValues(alpha: 0.15),
-                                c2.withValues(alpha: 0.03),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.3, 0.6, 1.0],
-                            ),
-                          ),
-                        ),
-                        // Blob 3 — Bottom-right (color 3)
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                              center: const Alignment(0.60, 0.85),
-                              radius: 1.20,
-                              colors: [
-                                c3.withValues(alpha: 0.35),
-                                c3.withValues(alpha: 0.12),
-                                c3.withValues(alpha: 0.03),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.3, 0.6, 1.0],
-                            ),
-                          ),
-                        ),
-                        // Blob 4 — Center (blend c1+c2)
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                              center: const Alignment(0.0, -0.05),
-                              radius: 0.90,
-                              colors: [
-                                cMix12.withValues(alpha: 0.20),
-                                cMix12.withValues(alpha: 0.05),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.45, 1.0],
-                            ),
-                          ),
-                        ),
-                        // Blob 5 — Bottom-left (blend c1+c3)
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                              center: const Alignment(-0.70, 0.75),
-                              radius: 1.0,
-                              colors: [
-                                cMix13.withValues(alpha: 0.25),
-                                cMix13.withValues(alpha: 0.06),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.4, 1.0],
-                            ),
-                          ),
-                        ),
-                      ],
-
-                      // ── Subtle vignette for controls readability ──
-                      if (useColor)
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.transparent,
-                                const Color(0xFF080808).withValues(alpha: 0.30),
-                                const Color(0xFF080808).withValues(alpha: 0.70),
-                              ],
-                              stops: const [0.0, 0.55, 0.82, 1.0],
-                            ),
-                          ),
-                        ),
-                      // ── Vinyl: extra radial glow center ──
-                      if (npStyle == NowPlayingStyle.vinyl && useColor)
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                              center: Alignment.center,
-                              radius: 0.85,
-                              colors: [
-                                c1.withValues(alpha: 0.25),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-            _NowPlayingContent(rawVibrant: _rawVibrant),
-          ],
+              _NowPlayingContent(rawVibrant: _rawVibrant),
+            ],
+          ),
         ),
       ),
     );
@@ -464,7 +477,7 @@ class _NowPlayingContent extends ConsumerWidget {
             Text(
               AppLocalizations.of(context).npNoSongSelected,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.3),
+                color: colors.fadedText(0.3),
               ),
             ),
           ],
@@ -599,7 +612,7 @@ class _NowPlayingContent extends ConsumerWidget {
           ArtistLinksText(
             artist: currentSong.artist,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: colors.onSurface.withValues(alpha: 0.55),
+              color: colors.fadedText(0.55),
               fontWeight: FontWeight.w400,
             ),
             suffix: ' · ${currentSong.album}',
