@@ -390,7 +390,6 @@ class _MediaBarPainter extends CustomPainter {
       default:
         break;
     }
-    _playhead(canvas, size);
   }
 
   // ── Centered rounded-bar families (waveform / frequencyBars / dense) ────────
@@ -645,24 +644,6 @@ class _MediaBarPainter extends CustomPainter {
     canvas.clipRect(Rect.fromLTWH(0, 0, headX, size.height));
     canvas.drawPath(path, Paint()..shader = _playedShader(size.width));
     canvas.restore();
-  }
-
-  // ── Shared playhead ──────────────────────────────────────────────────────────
-  void _playhead(Canvas canvas, Size size) {
-    final cy = size.height / 2;
-    final headX = (progress * size.width).clamp(0.0, size.width);
-    canvas.drawCircle(
-      Offset(headX, cy),
-      dragging ? 4.5 : 3,
-      Paint()
-        ..color = activeColor.withValues(alpha: dragging ? 0.9 : 0.55)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, dragging ? 4 : 2.5),
-    );
-    canvas.drawCircle(
-      Offset(headX, cy),
-      dragging ? 3.5 : 2.5,
-      Paint()..color = Colors.white,
-    );
   }
 
   @override

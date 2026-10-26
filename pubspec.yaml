@@ -1,7 +1,7 @@
 name: constanza_player
 description: "Constanza Músicas — Sua música. Seu silêncio. Seu momento."
 publish_to: 'none'
-version: 1.5.0+17
+version: 1.5.1+18
 
 environment:
   sdk: ^3.10.7
@@ -109,8 +109,8 @@ msix_config:
   publisher: CN=Constanza, O=Constanza, C=BR
   identity_name: com.constanza.constanzaPlayer
   # MSIX exige versão de 4 partes (x.y.z.w). Mantemos sincronizado com a
-  # versão do app (1.5.0) + revisão 0.
-  msix_version: 1.5.0.0
+  # versão do app (1.5.1) + revisão 0.
+  msix_version: 1.5.1.0
   logo_path: assets/icon/icon.png
   # internetClient: busca de letras (lrclib) e capas.
   # broadFileSystemAccess: sem isto o AppContainer do MSIX bloqueia a
