@@ -207,29 +207,7 @@ class MiniPlayer extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        if (hasSong) {
-          Navigator.of(context).push(
-            PageRouteBuilder(
-              pageBuilder: (_, __, ___) => const NowPlayingPage(),
-              transitionsBuilder: (_, animation, __, child) {
-                return SlideTransition(
-                  position:
-                      Tween<Offset>(
-                        begin: const Offset(0, 1),
-                        end: Offset.zero,
-                      ).animate(
-                        CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeOutCubic,
-                        ),
-                      ),
-                  child: child,
-                );
-              },
-              transitionDuration: AppConstants.normal,
-            ),
-          );
-        }
+        if (hasSong) NowPlayingPage.open(context);
       },
       child: content,
     );

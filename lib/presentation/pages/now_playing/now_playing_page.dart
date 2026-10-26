@@ -71,6 +71,25 @@ part 'parts/analysis_badge.dart';
 class NowPlayingPage extends ConsumerStatefulWidget {
   const NowPlayingPage({super.key});
 
+  /// Único caminho para abrir o leitor a partir da UI. Usa o navegador raiz:
+  /// dentro de uma aba, `Navigator.of(context)` empilhava o leitor no
+  /// navegador da aba, com a barra de navegação e o mini player por baixo.
+  static Future<void> open(BuildContext context) {
+    return Navigator.of(context, rootNavigator: true).push(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const NowPlayingPage(),
+        transitionsBuilder: (_, animation, __, child) => SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+              .animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              ),
+          child: child,
+        ),
+        transitionDuration: AppConstants.normal,
+      ),
+    );
+  }
+
   @override
   ConsumerState<NowPlayingPage> createState() => _NowPlayingPageState();
 }

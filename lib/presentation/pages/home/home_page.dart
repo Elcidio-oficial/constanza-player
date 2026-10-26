@@ -899,16 +899,7 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  void _openNowPlaying(BuildContext context) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const NowPlayingPage(),
-        transitionsBuilder: (_, anim, __, child) =>
-            FadeTransition(opacity: anim, child: child),
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    );
-  }
+  void _openNowPlaying(BuildContext context) => NowPlayingPage.open(context);
 
   /// Mood-based picks: combine favorites + recent + random based on time of day.
   List<Song> _getMoodPicks(

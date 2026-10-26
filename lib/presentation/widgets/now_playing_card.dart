@@ -32,25 +32,7 @@ class NowPlayingCard extends ConsumerWidget {
     return GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
-            Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (_, __, ___) => const NowPlayingPage(),
-                transitionsBuilder: (_, anim, __, child) => SlideTransition(
-                  position:
-                      Tween<Offset>(
-                        begin: const Offset(0, 1),
-                        end: Offset.zero,
-                      ).animate(
-                        CurvedAnimation(
-                          parent: anim,
-                          curve: Curves.easeOutCubic,
-                        ),
-                      ),
-                  child: child,
-                ),
-                transitionDuration: const Duration(milliseconds: 340),
-              ),
-            );
+            NowPlayingPage.open(context);
           },
           child: Container(
             margin:
