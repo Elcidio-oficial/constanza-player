@@ -94,7 +94,7 @@ class BackupService {
       final file = File(trimmed);
       if (!await file.exists()) return -1;
       final content = await file.readAsString();
-      return importFromString(content);
+      return await importFromString(content);
     } catch (e) {
       debugPrint('[BackupService] importFromPath failed: $e');
       return -1;
