@@ -1,7 +1,7 @@
-name: constanza_player
-description: "Constanza Músicas — Sua música. Seu silêncio. Seu momento."
+﻿name: constanza_player
+description: "Constanza MÃºsicas â€” Sua mÃºsica. Seu silÃªncio. Seu momento."
 publish_to: 'none'
-version: 1.5.3+20
+version: 1.5.4+21
 
 environment:
   sdk: ^3.10.7
@@ -18,7 +18,7 @@ dependencies:
   # === I18N ===
   intl: any
 
-  # === NAVEGAÇÃO ===
+  # === NAVEGAÃ‡ÃƒO ===
   go_router: ^14.8.1
 
   # === AUDIO ===
@@ -29,18 +29,18 @@ dependencies:
   on_audio_query: ^2.9.0
 
   # === WINDOWS DESKTOP ===
-  # audiotags: leitura de metadata (ID3v2/FLAC/MP4/OGG) via FFI — substitui
-  # on_audio_query no Windows (que é Android/iOS only).
+  # audiotags: leitura de metadata (ID3v2/FLAC/MP4/OGG) via FFI â€” substitui
+  # on_audio_query no Windows (que Ã© Android/iOS only).
   audiotags: ^1.4.2
-  # smtc_windows: System Media Transport Controls — notificação de mídia
+  # smtc_windows: System Media Transport Controls â€” notificaÃ§Ã£o de mÃ­dia
   # nativa do Windows (substitui audio_service no Windows).
   smtc_windows: ^0.1.3
   # just_audio_media_kit: backend de playback para Windows/Linux usando libmpv.
-  # just_audio nativamente só suporta Android/iOS/Web — sem este pacote
-  # setFilePath() "sucede" silenciosamente mas nenhum áudio sai.
+  # just_audio nativamente sÃ³ suporta Android/iOS/Web â€” sem este pacote
+  # setFilePath() "sucede" silenciosamente mas nenhum Ã¡udio sai.
   just_audio_media_kit: ^2.1.0
   media_kit_libs_windows_audio: ^1.0.9
-  # window_manager: remove a title bar nativa do Windows e expõe APIs para
+  # window_manager: remove a title bar nativa do Windows e expÃµe APIs para
   # set min size, maximize, drag region, etc. Mesma libs em Linux e macOS.
   window_manager: ^0.5.1
 
@@ -70,14 +70,14 @@ dependencies:
   share_plus: ^11.1.0
 
   # === URL LAUNCHER ===
-  # Abre links externos (política de privacidade hospedada no GitHub Pages).
+  # Abre links externos (polÃ­tica de privacidade hospedada no GitHub Pages).
   url_launcher: ^6.3.1
 
   # === UTILS ===
   equatable: ^2.0.7
 
-  # Necessário para resolver warning de fontes do Flutter (algum widget transitivo
-  # referencia a família CupertinoIcons sem bundle-la).
+  # NecessÃ¡rio para resolver warning de fontes do Flutter (algum widget transitivo
+  # referencia a famÃ­lia CupertinoIcons sem bundle-la).
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
@@ -102,33 +102,33 @@ flutter_launcher_icons:
 # Gera build/windows/.../constanza_player.msix + um certificado de teste.
 # Para instalar: confiar no .cer (Trusted People) e abrir o .msix.
 msix_config:
-  display_name: Constanza Músicas
+  display_name: Constanza MÃºsicas
   publisher_display_name: Constanza
   # Subject do certificado de teste auto-gerado. Em sideload pode ser
-  # qualquer CN; só precisa bater entre o .cer instalado e o pacote.
+  # qualquer CN; sÃ³ precisa bater entre o .cer instalado e o pacote.
   publisher: CN=Constanza, O=Constanza, C=BR
   identity_name: com.constanza.constanzaPlayer
-  # MSIX exige versão de 4 partes (x.y.z.w). Mantemos sincronizado com a
-  # versão do app (1.5.1) + revisão 0.
+  # MSIX exige versÃ£o de 4 partes (x.y.z.w). Mantemos sincronizado com a
+  # versÃ£o do app (1.5.1) + revisÃ£o 0.
   msix_version: 1.5.1.0
   logo_path: assets/icon/icon.png
   # internetClient: busca de letras (lrclib) e capas.
   # broadFileSystemAccess: sem isto o AppContainer do MSIX bloqueia a
-  # leitura por caminho cru — Directory.list e o libmpv falham EM SILÊNCIO
-  # em pastas escolhidas pelo usuário (umas músicas tocam, outras não;
+  # leitura por caminho cru â€” Directory.list e o libmpv falham EM SILÃŠNCIO
+  # em pastas escolhidas pelo usuÃ¡rio (umas mÃºsicas tocam, outras nÃ£o;
   # pasta aparece vazia). Capability restrita: o msix package injeta o
   # namespace rescap automaticamente.
   capabilities: "internetClient, broadFileSystemAccess"
   # Arquitetura do build atual.
   architecture: x64
   store: false
-  # Certificado auto-assinado determinístico (gerado por certs/make_cert.ps1).
-  # Subject DEVE bater com `publisher` acima, senão a instalação falha.
+  # Certificado auto-assinado determinÃ­stico (gerado por certs/make_cert.ps1).
+  # Subject DEVE bater com `publisher` acima, senÃ£o a instalaÃ§Ã£o falha.
   certificate_path: certs/constanza.pfx
-  # Senha NÃO fica no repo: passar na hora do build, ex.:
+  # Senha NÃƒO fica no repo: passar na hora do build, ex.:
   #   dart run msix:create --certificate-password $env:CONSTANZA_PFX_PASSWORD
-  # Não tenta instalar o cert via prompt interativo (quebra em CI/terminal
-  # não-interativo). A instalação do .cer é passo manual documentado.
+  # NÃ£o tenta instalar o cert via prompt interativo (quebra em CI/terminal
+  # nÃ£o-interativo). A instalaÃ§Ã£o do .cer Ã© passo manual documentado.
   install_certificate: false
 
 flutter:

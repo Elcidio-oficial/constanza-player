@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Resultado da análise on-device via DSP nativo (AudioAnalysisPlugin).
 class NativeAnalysisResult {
@@ -39,6 +41,23 @@ class NativeAnalysisResult {
   /// Confiança da tonalidade como percentual
   String get keyConfidencePercent =>
       '${(keyConfidence * 100).clamp(0, 100).round()}%';
+
+  Map<String, dynamic> toJson() => {
+    'bpm': bpm,
+    'bpmConfidence': bpmConfidence,
+    'key': key,
+    'scale': scale,
+    'keyConfidence': keyConfidence,
+  };
+
+  factory NativeAnalysisResult.fromJson(Map<String, dynamic> json) =>
+      NativeAnalysisResult(
+        bpm: json['bpm'] as int?,
+        bpmConfidence: (json['bpmConfidence'] as num?)?.toDouble() ?? 0.0,
+        key: json['key'] as String?,
+        scale: json['scale'] as String?,
+        keyConfidence: (json['keyConfidence'] as num?)?.toDouble() ?? 0.0,
+      );
 }
 
 /// Serviço de análise DSP on-device via método channel nativo.
@@ -51,14 +70,64 @@ class NativeAnalysisResult {
 class NativeAudioAnalysisService {
   static const _channel = MethodChannel('com.constanza.audio_analysis');
 
+  /// Cache em disco por URI: cada música é analisada uma vez só.
+  /// Subir a versão quando o algoritmo do plugin mudar, para reanalisar.
+  static const _prefsKey = 'native_analysis_cache_v2';
+  static const _legacyPrefsKeys = ['native_analysis_cache_v1'];
+
   static final Map<String, NativeAnalysisResult> _cache = {};
-  static const _maxCache = 300;
+  static const _maxCache = 2000;
+  static bool _diskLoaded = false;
+  static Future<void>? _loading;
+
+  static Future<void> _ensureLoaded() {
+    if (_diskLoaded) return Future.value();
+    return _loading ??= () async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        for (final k in _legacyPrefsKeys) {
+          await prefs.remove(k);
+        }
+        final raw = prefs.getString(_prefsKey);
+        if (raw != null) {
+          final map = jsonDecode(raw) as Map<String, dynamic>;
+          for (final e in map.entries) {
+            try {
+              _cache[e.key] = NativeAnalysisResult.fromJson(
+                e.value as Map<String, dynamic>,
+              );
+            } catch (_) {}
+          }
+        }
+      } catch (e) {
+        debugPrint('[NativeAnalysis] Cache load error: $e');
+      }
+      _diskLoaded = true;
+    }();
+  }
+
+  static Future<void> _saveCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final map = {for (final e in _cache.entries) e.key: e.value.toJson()};
+      await prefs.setString(_prefsKey, jsonEncode(map));
+    } catch (e) {
+      debugPrint('[NativeAnalysis] Cache save error: $e');
+    }
+  }
+
+  /// Resultado já salvo, sem analisar.
+  static Future<NativeAnalysisResult?> getCached(String uri) async {
+    await _ensureLoaded();
+    return _cache[uri];
+  }
 
   /// Analisa uma música. Retorna null em caso de erro.
-  /// Cache em memória por URI.
+  /// Resultado salvo em disco por URI — a análise roda uma vez por música.
   static Future<NativeAnalysisResult?> analyze(String uri) async {
     if (uri.isEmpty) return null;
 
+    await _ensureLoaded();
     final cached = _cache[uri];
     if (cached != null) return cached;
 
@@ -102,6 +171,7 @@ class NativeAudioAnalysisService {
           }
         }
         _cache[uri] = analysis;
+        _saveCache();
       }
 
       return analysis;
@@ -114,7 +184,15 @@ class NativeAudioAnalysisService {
     }
   }
 
-  static void clearCache() => _cache.clear();
-  static void removeCached(String uri) => _cache.remove(uri);
+  static void clearCache() {
+    _cache.clear();
+    _saveCache();
+  }
+
+  static void removeCached(String uri) {
+    _cache.remove(uri);
+    _saveCache();
+  }
+
   static int get cachedCount => _cache.length;
 }

@@ -216,19 +216,40 @@ class ShareService {
       } catch (_) {}
     }
 
-    final key = GlobalKey();
-    final widget = _PosterFrame(
-      repaintKey: key,
-      child: kind == _PosterKind.lyrics
-          ? _LyricsPoster(
-              title: title,
-              subtitle: subtitle,
-              palette: palette,
-              artImage: artImage,
-              lines: lyricsLines ?? const [],
-              highlightIndex: lyricsHighlight,
-            )
-          : _SongPoster(
+    // Cada modelo é um poster 1080×1920 completo; a tela de pré-visualização
+    // mostra-os reduzidos e captura o escolhido no tamanho real.
+    final templates = <_PosterTemplate>[
+      if (kind == _PosterKind.lyrics)
+        _PosterTemplate(
+          'Letra',
+          Icons.lyrics_rounded,
+          _LyricsPoster(
+            title: title,
+            subtitle: subtitle,
+            palette: palette,
+            artImage: artImage,
+            lines: lyricsLines ?? const [],
+            highlightIndex: lyricsHighlight,
+          ),
+        )
+      else ...[
+        _PosterTemplate(
+          'Capa',
+          Icons.crop_square_rounded,
+          _CoverPoster(
+            kind: kind,
+            title: title,
+            subtitle: subtitle,
+            meta: meta,
+            palette: palette,
+            artImage: artImage,
+          ),
+        ),
+        if (kind != _PosterKind.artist)
+          _PosterTemplate(
+            'Vinil',
+            Icons.album_rounded,
+            _VinylPoster(
               kind: kind,
               title: title,
               subtitle: subtitle,
@@ -236,37 +257,46 @@ class ShareService {
               palette: palette,
               artImage: artImage,
             ),
-    );
+          ),
+        _PosterTemplate(
+          'Editorial',
+          Icons.view_agenda_rounded,
+          _SongPoster(
+            kind: kind,
+            title: title,
+            subtitle: subtitle,
+            meta: meta,
+            palette: palette,
+            artImage: artImage,
+          ),
+        ),
+      ],
+    ];
 
-    if (!context.mounted) return;
-    final overlay = OverlayEntry(builder: (_) => widget);
-    Overlay.of(context).insert(overlay);
-
-    Uint8List? png;
+    if (!context.mounted) {
+      artImage?.dispose();
+      return;
+    }
+    final Uint8List? png;
     try {
-      // Aguarda dois frames completos para garantir layout + paint.
-      await WidgetsBinding.instance.endOfFrame;
-      await Future.delayed(const Duration(milliseconds: 100));
-      await WidgetsBinding.instance.endOfFrame;
-
-      final boundary =
-          key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary != null) {
-        // pixelRatio 1.0 → poster final em 1080×1920 (já é alta resolução).
-        final image = await boundary.toImage(pixelRatio: 1.0);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        png = byteData?.buffer.asUint8List();
-        image.dispose();
-      }
+      png = await Navigator.of(context).push<Uint8List>(
+        PageRouteBuilder(
+          opaque: true,
+          transitionDuration: const Duration(milliseconds: 320),
+          pageBuilder: (_, _, _) =>
+              _PosterPreviewPage(templates: templates, palette: palette),
+          transitionsBuilder: (_, anim, _, child) => FadeTransition(
+            opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+            child: child,
+          ),
+        ),
+      );
     } finally {
-      overlay.remove();
       artImage?.dispose();
     }
 
-    if (png == null || png.isEmpty) {
-      await SharePlus.instance.share(ShareParams(text: shareText));
-      return;
-    }
+    // Fechou sem partilhar.
+    if (png == null || png.isEmpty) return;
 
     final tmp = await getTemporaryDirectory();
     final file = File(
@@ -334,29 +364,975 @@ class ShareService {
 }
 
 // ============================================================
-// FRAME — offscreen + RepaintBoundary
+// PRÉ-VISUALIZAÇÃO — escolhe o modelo e captura em 1080×1920
 // ============================================================
 
-class _PosterFrame extends StatelessWidget {
-  const _PosterFrame({required this.repaintKey, required this.child});
-  final GlobalKey repaintKey;
-  final Widget child;
+class _PosterTemplate {
+  const _PosterTemplate(this.label, this.icon, this.poster);
+  final String label;
+  final IconData icon;
+  final Widget poster;
+}
+
+/// Mostra os modelos reduzidos (deslizar troca) e devolve o PNG do escolhido.
+class _PosterPreviewPage extends StatefulWidget {
+  const _PosterPreviewPage({required this.templates, required this.palette});
+  final List<_PosterTemplate> templates;
+  final ArtworkPalette palette;
+
+  @override
+  State<_PosterPreviewPage> createState() => _PosterPreviewPageState();
+}
+
+class _PosterPreviewPageState extends State<_PosterPreviewPage> {
+  late final PageController _pages = PageController(viewportFraction: 0.84);
+  late final List<GlobalKey> _keys = [
+    for (final _ in widget.templates) GlobalKey(),
+  ];
+  int _index = 0;
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _pages.dispose();
+    super.dispose();
+  }
+
+  Future<void> _share() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    Uint8List? png;
+    try {
+      final boundary =
+          _keys[_index].currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
+      if (boundary != null) {
+        // O poster é montado em 1080×1920 lógicos (o FittedBox só reduz na
+        // tela), então pixelRatio 1 dá o PNG no tamanho real.
+        final image = await boundary.toImage(pixelRatio: 1.0);
+        final data = await image.toByteData(format: ui.ImageByteFormat.png);
+        image.dispose();
+        png = data?.buffer.asUint8List();
+      }
+    } catch (e) {
+      debugPrint('[Share] poster capture failed: $e');
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (png == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível gerar o poster')),
+      );
+      return;
+    }
+    Navigator.of(context).pop(png);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      left: -99999,
-      top: -99999,
-      child: MediaQuery(
-        // Garante densidade fixa, independente do device.
-        data: const MediaQueryData(devicePixelRatio: 1.0),
-        child: Material(
-          type: MaterialType.transparency,
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: RepaintBoundary(key: repaintKey, child: child),
+    final accent = _readableAccent(widget.palette.vibrant);
+    final bg = HSLColor.fromColor(widget.palette.dominant);
+    final base = bg.withLightness((bg.lightness * 0.18).clamp(0.04, 0.10));
+    final many = widget.templates.length > 1;
+
+    return Scaffold(
+      backgroundColor: base.toColor(),
+      body: Stack(
+        children: [
+          // Brilho suave da cor da capa atrás do preview.
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: const Alignment(0, -0.2),
+                  radius: 1.1,
+                  colors: [
+                    widget.palette.dominant.withValues(alpha: 0.35),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 4, 16, 0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        tooltip: 'Fechar',
+                        icon: const Icon(Icons.close_rounded),
+                        color: Colors.white,
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      const SizedBox(width: 4),
+                      const Expanded(
+                        child: Text(
+                          'Partilhar como poster',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pages,
+                    itemCount: widget.templates.length,
+                    physics: many
+                        ? const BouncingScrollPhysics()
+                        : const NeverScrollableScrollPhysics(),
+                    onPageChanged: (i) => setState(() => _index = i),
+                    itemBuilder: (_, i) => AnimatedBuilder(
+                      animation: _pages,
+                      builder: (_, child) {
+                        final page =
+                            _pages.hasClients && _pages.position.haveDimensions
+                            ? _pages.page ?? _index.toDouble()
+                            : _index.toDouble();
+                        final t = (1 - (page - i).abs()).clamp(0.0, 1.0);
+                        return Transform.scale(
+                          scale: 0.9 + 0.1 * t,
+                          child: Opacity(
+                            opacity: 0.45 + 0.55 * t,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Center(
+                        child: AspectRatio(
+                          aspectRatio: ShareService._w / ShareService._h,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(22),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.55),
+                                  blurRadius: 40,
+                                  offset: const Offset(0, 18),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(22),
+                              child: FittedBox(
+                                child: MediaQuery(
+                                  // Poster idêntico em qualquer aparelho.
+                                  data: MediaQuery.of(
+                                    context,
+                                  ).copyWith(textScaler: TextScaler.noScaling),
+                                  child: RepaintBoundary(
+                                    key: _keys[i],
+                                    child: SizedBox(
+                                      width: ShareService._w,
+                                      height: ShareService._h,
+                                      child: widget.templates[i].poster,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (many)
+                  SizedBox(
+                    height: 44,
+                    // Encolhe em telas estreitas em vez de transbordar.
+                    child: FittedBox(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (var i = 0; i < widget.templates.length; i++)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                              ),
+                              child: _TemplateChip(
+                                label: widget.templates[i].label,
+                                icon: widget.templates[i].icon,
+                                selected: i == _index,
+                                accent: accent,
+                                onTap: () => _pages.animateToPage(
+                                  i,
+                                  duration: const Duration(milliseconds: 380),
+                                  curve: Curves.easeOutCubic,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 18, 24, 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      onPressed: _busy ? null : _share,
+                      icon: _busy
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                                color: Colors.black,
+                              ),
+                            )
+                          : const Icon(Icons.ios_share_rounded),
+                      label: Text(_busy ? 'A preparar…' : 'Partilhar'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TemplateChip extends StatelessWidget {
+  const _TemplateChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.accent,
+    required this.onTap,
+  });
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final Color accent;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: selected
+              ? Colors.white.withValues(alpha: 0.16)
+              : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: selected ? accent : Colors.white.withValues(alpha: 0.10),
+            width: 1.4,
           ),
         ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: selected ? accent : Colors.white.withValues(alpha: 0.6),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: selected ? 1 : 0.6),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Garante que a cor de destaque se lê sobre fundo escuro.
+Color _readableAccent(Color c) {
+  final hsl = HSLColor.fromColor(c);
+  return hsl
+      .withLightness(hsl.lightness.clamp(0.55, 0.78))
+      .withSaturation(hsl.saturation.clamp(0.35, 1.0))
+      .toColor();
+}
+
+/// Fundo quase preto com o tom da capa.
+Color _deepBase(Color c, {double max = 0.10}) {
+  final hsl = HSLColor.fromColor(c);
+  return hsl
+      .withLightness((hsl.lightness * 0.14).clamp(0.03, max))
+      .withSaturation((hsl.saturation * 0.8).clamp(0.0, 0.6))
+      .toColor();
+}
+
+/// Artwork ou, sem capa, um gradiente com as cores da paleta.
+class _Art extends StatelessWidget {
+  const _Art({required this.image, required this.palette});
+  final ui.Image? image;
+  final ArtworkPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    if (image != null) {
+      return RawImage(
+        image: image,
+        fit: BoxFit.cover,
+        filterQuality: FilterQuality.high,
+      );
+    }
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            palette.secondary ?? palette.muted,
+            palette.vibrant,
+            palette.dominant,
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.music_note_rounded,
+          size: 260,
+          color: Colors.white.withValues(alpha: 0.35),
+        ),
+      ),
+    );
+  }
+}
+
+/// Rótulo pequeno em maiúsculas com o tipo do conteúdo.
+String _kindLabel(_PosterKind kind) => switch (kind) {
+  _PosterKind.song => 'A OUVIR AGORA',
+  _PosterKind.album => 'ÁLBUM',
+  _PosterKind.artist => 'ARTISTA',
+  _PosterKind.playlist => 'PLAYLIST',
+  _PosterKind.lyrics => 'LETRA',
+};
+
+// ============================================================
+// MODELO "CAPA" — capa em destaque sobre fundo desfocado
+// ============================================================
+
+class _CoverPoster extends StatelessWidget {
+  const _CoverPoster({
+    required this.kind,
+    required this.title,
+    required this.subtitle,
+    required this.meta,
+    required this.palette,
+    required this.artImage,
+  });
+
+  final _PosterKind kind;
+  final String title;
+  final String subtitle;
+  final String? meta;
+  final ArtworkPalette palette;
+  final ui.Image? artImage;
+
+  static const double _card = 820;
+
+  @override
+  Widget build(BuildContext context) {
+    final base = _deepBase(palette.dominant);
+    final accent = _readableAccent(palette.vibrant);
+    final round = kind == _PosterKind.artist;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Container(color: base),
+        // Capa ampliada e muito desfocada: o fundo tem a "cor" da música.
+        if (artImage != null)
+          Opacity(
+            opacity: 0.85,
+            child: ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(
+                sigmaX: 110,
+                sigmaY: 110,
+                tileMode: TileMode.clamp,
+              ),
+              child: Transform.scale(
+                scale: 1.4,
+                child: RawImage(image: artImage, fit: BoxFit.cover),
+              ),
+            ),
+          ),
+        // Escurece de cima para baixo para o texto ler bem.
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                base.withValues(alpha: 0.35),
+                base.withValues(alpha: 0.55),
+                base.withValues(alpha: 0.92),
+                base,
+              ],
+              stops: const [0.0, 0.42, 0.72, 1.0],
+            ),
+          ),
+        ),
+        const _Grain(),
+
+        // Rótulo
+        Positioned(
+          top: 150,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: _KindPill(label: _kindLabel(kind), accent: accent),
+          ),
+        ),
+
+        // Capa
+        Positioned(
+          top: 270,
+          left: (ShareService._w - _card) / 2,
+          width: _card,
+          height: _card,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              shape: round ? BoxShape.circle : BoxShape.rectangle,
+              borderRadius: round ? null : BorderRadius.circular(40),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  blurRadius: 90,
+                  offset: const Offset(0, 40),
+                ),
+                BoxShadow(
+                  color: palette.vibrant.withValues(alpha: 0.30),
+                  blurRadius: 140,
+                  spreadRadius: -20,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(round ? _card / 2 : 40),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _Art(image: artImage, palette: palette),
+                  // Fio de luz na borda, como em vidro.
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: round ? BoxShape.circle : BoxShape.rectangle,
+                      borderRadius: round ? null : BorderRadius.circular(40),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.14),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Texto
+        Positioned(
+          top: 270 + _card + 90,
+          left: 90,
+          right: 90,
+          child: Column(
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 78,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -2.4,
+                  height: 1.02,
+                ),
+              ),
+              const SizedBox(height: 22),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.78),
+                  fontSize: 38,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              if (meta != null && meta!.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                Text(
+                  meta!.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 2.2,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+
+        const Positioned(
+          left: 0,
+          right: 0,
+          bottom: 90,
+          child: Center(child: _BrandMark()),
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// MODELO "VINIL" — capa como capa de disco, vinil saindo
+// ============================================================
+
+class _VinylPoster extends StatelessWidget {
+  const _VinylPoster({
+    required this.kind,
+    required this.title,
+    required this.subtitle,
+    required this.meta,
+    required this.palette,
+    required this.artImage,
+  });
+
+  final _PosterKind kind;
+  final String title;
+  final String subtitle;
+  final String? meta;
+  final ArtworkPalette palette;
+  final ui.Image? artImage;
+
+  // Disco cabe inteiro no canvas: sai ~55 % para fora da capa.
+  static const double _sleeve = 640;
+  static const double _disc = 620;
+  static const double _top = 380;
+
+  @override
+  Widget build(BuildContext context) {
+    final base = _deepBase(palette.dominant, max: 0.12);
+    final accent = _readableAccent(palette.vibrant);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Container(color: base),
+        // Luz de palco atrás do disco.
+        Positioned(
+          top: _top - 260,
+          left: 80,
+          width: 1200,
+          height: 1200,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  palette.vibrant.withValues(alpha: 0.38),
+                  palette.vibrant.withValues(alpha: 0.0),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const _Grain(),
+
+        Positioned(
+          top: 120,
+          left: 90,
+          right: 90,
+          child: Row(
+            children: [
+              _KindPill(label: _kindLabel(kind), accent: accent),
+              const Spacer(),
+              const _BrandMark(compact: true),
+            ],
+          ),
+        ),
+
+        // Disco saindo da capa para a direita.
+        Positioned(
+          top: _top + (_sleeve - _disc) / 2,
+          left: 90 + _sleeve - _disc * 0.45,
+          width: _disc,
+          height: _disc,
+          child: _VinylDisc(artImage: artImage, palette: palette),
+        ),
+
+        // Capa do disco
+        Positioned(
+          top: _top,
+          left: 90,
+          width: _sleeve,
+          height: _sleeve,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  blurRadius: 60,
+                  offset: const Offset(18, 30),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _Art(image: artImage, palette: palette),
+                  // Brilho de capa plastificada.
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withValues(alpha: 0.16),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.18),
+                        ],
+                        stops: const [0.0, 0.45, 1.0],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Texto
+        Positioned(
+          top: _top + _sleeve + 140,
+          left: 90,
+          right: 90,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 64,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: accent,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              const SizedBox(height: 34),
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 100,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -2.8,
+                  height: 1.0,
+                ),
+              ),
+              const SizedBox(height: 22),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: accent,
+                  fontSize: 40,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.6,
+                ),
+              ),
+              if (meta != null && meta!.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  meta!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 26,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+
+        Positioned(
+          left: 90,
+          right: 90,
+          bottom: 100,
+          child: Container(
+            height: 1.5,
+            color: Colors.white.withValues(alpha: 0.12),
+          ),
+        ),
+        Positioned(
+          left: 90,
+          bottom: 52,
+          child: Text(
+            'CONSTANZA MÚSICAS',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.55),
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 4,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Disco de vinil: sulcos, reflexo e selo central com a capa.
+class _VinylDisc extends StatelessWidget {
+  const _VinylDisc({required this.artImage, required this.palette});
+  final ui.Image? artImage;
+  final ArtworkPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (_, c) {
+        final d = c.maxWidth;
+        final label = d * 0.36;
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    blurRadius: 50,
+                    offset: const Offset(10, 24),
+                  ),
+                ],
+              ),
+              child: CustomPaint(
+                size: Size.square(d),
+                painter: const _VinylPainter(),
+              ),
+            ),
+            ClipOval(
+              child: SizedBox.square(
+                dimension: label,
+                child: _Art(image: artImage, palette: palette),
+              ),
+            ),
+            // Furo central
+            Container(
+              width: d * 0.03,
+              height: d * 0.03,
+              decoration: const BoxDecoration(
+                color: Color(0xFF0B0B0B),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _VinylPainter extends CustomPainter {
+  const _VinylPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    final r = size.width / 2;
+    canvas.drawCircle(c, r, Paint()..color = const Color(0xFF111111));
+
+    // Sulcos
+    final groove = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    for (var rr = r * 0.22; rr < r * 0.97; rr += 5) {
+      final a = 0.035 + 0.03 * ((rr / 5).floor() % 3 == 0 ? 1 : 0);
+      groove.color = Colors.white.withValues(alpha: a);
+      canvas.drawCircle(c, rr, groove);
+    }
+
+    // Reflexo em dois feixes opostos
+    final sheen = Paint()
+      ..shader = SweepGradient(
+        colors: [
+          Colors.transparent,
+          Colors.white.withValues(alpha: 0.13),
+          Colors.transparent,
+          Colors.transparent,
+          Colors.white.withValues(alpha: 0.10),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.08, 0.18, 0.5, 0.58, 0.68],
+        transform: const GradientRotation(-0.6),
+      ).createShader(Rect.fromCircle(center: c, radius: r));
+    canvas.drawCircle(c, r * 0.97, sheen);
+
+    // Borda
+    canvas.drawCircle(
+      c,
+      r - 1,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..color = Colors.white.withValues(alpha: 0.08),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _KindPill extends StatelessWidget {
+  const _KindPill({required this.label, required this.accent});
+  final String label;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 13),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.16),
+          width: 1.4,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: accent,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: accent.withValues(alpha: 0.7), blurRadius: 12),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 19,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 3.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Assinatura do app no rodapé.
+class _BrandMark extends StatelessWidget {
+  const _BrandMark({this.compact = false});
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final mark = Container(
+      width: compact ? 52 : 46,
+      height: compact ? 52 : 46,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(compact ? 16 : 14),
+      ),
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.headphones_rounded,
+        size: compact ? 30 : 26,
+        color: Colors.black,
+      ),
+    );
+    if (compact) return mark;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        mark,
+        const SizedBox(width: 16),
+        Text(
+          'Constanza Músicas',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.9),
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Grain extends StatelessWidget {
+  const _Grain();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Opacity(
+      opacity: 0.05,
+      child: CustomPaint(
+        size: Size(ShareService._w, ShareService._h),
+        painter: _GrainPainter(),
       ),
     );
   }
@@ -517,7 +1493,10 @@ class _SongPoster extends StatelessWidget {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _Waveform(color: palette.vibrant),
+                    Container(
+                      height: 1.5,
+                      color: Colors.white.withValues(alpha: 0.12),
+                    ),
                     const SizedBox(height: 44),
                     const Center(child: _Branding()),
                   ],
@@ -1090,7 +2069,7 @@ class _TitleBlock extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 76,
+            fontSize: 92,
             fontWeight: FontWeight.w800,
             letterSpacing: -2.0,
             height: 1.0,
@@ -1132,79 +2111,6 @@ class _TitleBlock extends StatelessWidget {
           ),
         ],
       ],
-    );
-  }
-}
-
-/// “Waveform” ornamental — barras com alturas pseudo-aleatórias.
-class _Waveform extends StatelessWidget {
-  const _Waveform({required this.color});
-  final Color color;
-
-  static const _heights = <double>[
-    8,
-    14,
-    22,
-    16,
-    28,
-    18,
-    36,
-    22,
-    44,
-    30,
-    52,
-    38,
-    62,
-    42,
-    72,
-    48,
-    64,
-    40,
-    54,
-    32,
-    44,
-    26,
-    38,
-    20,
-    30,
-    16,
-    22,
-    12,
-    16,
-    8,
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 80,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          for (var i = 0; i < _heights.length; i++) ...[
-            Container(
-              width: 6,
-              height: _heights[i],
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    color.withValues(alpha: 0.95),
-                    color.withValues(alpha: 0.35),
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 8),
-                ],
-              ),
-            ),
-            if (i < _heights.length - 1) const SizedBox(width: 6),
-          ],
-        ],
-      ),
     );
   }
 }
