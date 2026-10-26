@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Widget Médio (4×2): capa à esquerda, texto e controlos completos à direita. -->
+<!-- Widget Médio (4×2): capa quadrada + texto em cima, controlos a toda a largura em baixo. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
@@ -10,132 +10,136 @@
         android:id="@android:id/background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:background="@drawable/widget_surface"
         android:clipToOutline="true"
-        android:padding="12dp">
-
-        <FrameLayout
-            android:layout_width="96dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/widget_artwork_frame"
-            android:clipToOutline="true">
-
-            <ImageView
-                android:id="@+id/widget_artwork"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:src="@mipmap/ic_launcher"
-                android:contentDescription="@string/widget_cd_artwork" />
-        </FrameLayout>
+        android:padding="14dp">
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginStart="14dp"
-            android:orientation="vertical">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/widget_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/widget_default_title"
-                android:textColor="@color/widget_on_surface"
-                android:textSize="16sp"
-                android:fontFamily="sans-serif-medium"
-                android:maxLines="1"
-                android:ellipsize="end" />
+            <FrameLayout
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/widget_artwork_frame"
+                android:clipToOutline="true">
 
-            <TextView
-                android:id="@+id/widget_artist"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/widget_default_artist"
-                android:textColor="@color/widget_on_surface_variant"
-                android:textSize="13sp"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+                <ImageView
+                    android:id="@+id/widget_artwork"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@mipmap/ic_launcher"
+                    android:contentDescription="@string/widget_cd_artwork" />
+            </FrameLayout>
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:orientation="vertical">
 
-                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
-                    <ImageButton
-                        android:id="@+id/widget_repeat"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_widget_repeat_off"
-                        android:background="@drawable/widget_icon_btn_bg"
-                        android:contentDescription="@string/widget_cd_repeat"
-                        android:scaleType="centerInside"
-                        android:padding="8dp" />
-                </FrameLayout>
+                <TextView
+                    android:id="@+id/widget_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_default_title"
+                    android:textColor="@color/widget_on_surface"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
-                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
-                    <ImageButton
-                        android:id="@+id/widget_prev"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_widget_prev"
-                        android:tint="@color/widget_on_surface"
-                        android:background="@drawable/widget_icon_btn_bg"
-                        android:contentDescription="@string/widget_cd_prev"
-                        android:scaleType="centerInside"
-                        android:padding="8dp" />
-                </FrameLayout>
-
-                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
-                    <ImageButton
-                        android:id="@+id/widget_play_pause"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_widget_play"
-                        android:tint="@color/widget_on_accent"
-                        android:background="@drawable/widget_play_bg"
-                        android:contentDescription="@string/widget_cd_play_pause"
-                        android:scaleType="centerInside"
-                        android:padding="12dp" />
-                </FrameLayout>
-
-                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
-                    <ImageButton
-                        android:id="@+id/widget_next"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_widget_next"
-                        android:tint="@color/widget_on_surface"
-                        android:background="@drawable/widget_icon_btn_bg"
-                        android:contentDescription="@string/widget_cd_next"
-                        android:scaleType="centerInside"
-                        android:padding="8dp" />
-                </FrameLayout>
-
-                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
-                    <ImageButton
-                        android:id="@+id/widget_favorite"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_favorite_border"
-                        android:background="@drawable/widget_icon_btn_bg"
-                        android:contentDescription="@string/widget_cd_favorite"
-                        android:scaleType="centerInside"
-                        android:padding="8dp" />
-                </FrameLayout>
+                <TextView
+                    android:id="@+id/widget_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/widget_default_artist"
+                    android:textColor="@color/widget_on_surface_variant"
+                    android:textSize="13sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
             </LinearLayout>
+        </LinearLayout>
+
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+
+        <!-- Play com largura fixa (não é espremido); os restantes dividem o espaço. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                <ImageButton
+                    android:id="@+id/widget_repeat"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_widget_repeat_off"
+                    android:background="@drawable/widget_icon_btn_bg"
+                    android:contentDescription="@string/widget_cd_repeat"
+                    android:scaleType="centerInside"
+                    android:padding="9dp" />
+            </FrameLayout>
+
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                <ImageButton
+                    android:id="@+id/widget_prev"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_widget_prev"
+                    android:tint="@color/widget_on_surface"
+                    android:background="@drawable/widget_icon_btn_bg"
+                    android:contentDescription="@string/widget_cd_prev"
+                    android:scaleType="centerInside"
+                    android:padding="9dp" />
+            </FrameLayout>
+
+            <ImageButton
+                android:id="@+id/widget_play_pause"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:src="@drawable/ic_widget_play"
+                android:tint="@color/widget_on_accent"
+                android:background="@drawable/widget_play_bg"
+                android:contentDescription="@string/widget_cd_play_pause"
+                android:scaleType="centerInside"
+                android:padding="14dp" />
+
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                <ImageButton
+                    android:id="@+id/widget_next"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_widget_next"
+                    android:tint="@color/widget_on_surface"
+                    android:background="@drawable/widget_icon_btn_bg"
+                    android:contentDescription="@string/widget_cd_next"
+                    android:scaleType="centerInside"
+                    android:padding="9dp" />
+            </FrameLayout>
+
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                <ImageButton
+                    android:id="@+id/widget_favorite"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_favorite_border"
+                    android:background="@drawable/widget_icon_btn_bg"
+                    android:contentDescription="@string/widget_cd_favorite"
+                    android:scaleType="centerInside"
+                    android:padding="9dp" />
+            </FrameLayout>
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

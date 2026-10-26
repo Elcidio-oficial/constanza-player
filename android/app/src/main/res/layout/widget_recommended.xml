@@ -95,19 +95,16 @@
                         android:padding="9dp" />
                 </FrameLayout>
 
-                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
-                    <ImageButton
-                        android:id="@+id/widget_play_pause"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_widget_play"
-                        android:tint="@color/widget_on_accent"
-                        android:background="@drawable/widget_play_bg"
-                        android:contentDescription="@string/widget_cd_play_pause"
-                        android:scaleType="centerInside"
-                        android:padding="12dp" />
-                </FrameLayout>
+                <ImageButton
+                    android:id="@+id/widget_play_pause"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_widget_play"
+                    android:tint="@color/widget_on_accent"
+                    android:background="@drawable/widget_play_bg"
+                    android:contentDescription="@string/widget_cd_play_pause"
+                    android:scaleType="centerInside"
+                    android:padding="13dp" />
 
                 <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
                     <ImageButton
@@ -129,66 +126,65 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="12dp"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <ImageButton
                     android:id="@+id/widget_action_queue"
-                    android:layout_width="52dp"
-                    android:layout_height="match_parent"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:src="@drawable/ic_widget_queue"
                     android:tint="@color/widget_on_container"
                     android:background="@drawable/widget_tonal_bg"
                     android:contentDescription="@string/widget_cd_queue"
                     android:scaleType="centerInside"
-                    android:padding="14dp" />
+                    android:padding="13dp" />
 
                 <ImageButton
                     android:id="@+id/widget_action_playlist"
-                    android:layout_width="52dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="6dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
                     android:src="@drawable/ic_widget_playlist"
                     android:tint="@color/widget_on_container"
                     android:background="@drawable/widget_tonal_bg"
                     android:contentDescription="@string/widget_cd_playlists"
                     android:scaleType="centerInside"
-                    android:padding="14dp" />
+                    android:padding="13dp" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:layout_marginTop="6dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
                 <ImageButton
                     android:id="@+id/widget_action_sleep"
-                    android:layout_width="52dp"
-                    android:layout_height="match_parent"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:src="@drawable/ic_widget_sleep"
                     android:tint="@color/widget_on_container"
                     android:background="@drawable/widget_tonal_bg"
                     android:contentDescription="@string/widget_cd_sleep"
                     android:scaleType="centerInside"
-                    android:padding="14dp" />
+                    android:padding="13dp" />
 
                 <ImageButton
                     android:id="@+id/widget_favorite"
-                    android:layout_width="52dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="6dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
                     android:src="@drawable/ic_favorite_border"
                     android:background="@drawable/widget_tonal_bg"
                     android:contentDescription="@string/widget_cd_favorite"
                     android:scaleType="centerInside"
-                    android:padding="14dp" />
+                    android:padding="13dp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

@@ -18,15 +18,24 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:background="@drawable/widget_artwork_frame"
-            android:clipToOutline="true">
+            android:layout_weight="1">
+
+            <!-- Tile tingido com a cor dominante da capa (setColorFilter no provider):
+                 a capa aparece inteira, sem cortes, seja qual for a proporção do widget. -->
+            <ImageView
+                android:id="@+id/widget_art_tile"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:src="@drawable/widget_art_tile"
+                android:tint="@color/widget_container"
+                android:importantForAccessibility="no" />
 
             <ImageView
                 android:id="@+id/widget_artwork"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="centerCrop"
+                android:scaleType="fitCenter"
                 android:src="@mipmap/ic_launcher"
                 android:contentDescription="@string/widget_cd_artwork" />
         </FrameLayout>
@@ -92,19 +101,16 @@
                     android:padding="9dp" />
             </FrameLayout>
 
-            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
-                <ImageButton
-                    android:id="@+id/widget_play_pause"
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_widget_play"
-                    android:tint="@color/widget_on_accent"
-                    android:background="@drawable/widget_play_bg"
-                    android:contentDescription="@string/widget_cd_play_pause"
-                    android:scaleType="centerInside"
-                    android:padding="15dp" />
-            </FrameLayout>
+            <ImageButton
+                android:id="@+id/widget_play_pause"
+                android:layout_width="58dp"
+                android:layout_height="58dp"
+                android:src="@drawable/ic_widget_play"
+                android:tint="@color/widget_on_accent"
+                android:background="@drawable/widget_play_bg"
+                android:contentDescription="@string/widget_cd_play_pause"
+                android:scaleType="centerInside"
+                android:padding="16dp" />
 
             <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
                 <ImageButton
