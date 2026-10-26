@@ -114,9 +114,10 @@ class _ArtworkCarouselState extends ConsumerState<_ArtworkCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final playerState = ref.watch(playerProvider);
-    final queue = playerState.queue;
-    final currentIdx = playerState.currentIndex;
+    // Só fila e índice: escutar o estado inteiro reconstruía o carrossel de
+    // capas a cada atualização de posição (10×/s).
+    final queue = ref.watch(playerProvider.select((s) => s.queue));
+    final currentIdx = ref.watch(playerProvider.select((s) => s.currentIndex));
 
     // Sync carousel when song changes externally (notification, mini player)
     ref.listen<int>(playerProvider.select((s) => s.currentIndex), (prev, next) {

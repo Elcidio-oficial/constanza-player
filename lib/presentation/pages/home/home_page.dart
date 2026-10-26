@@ -267,9 +267,11 @@ class HomePage extends ConsumerWidget {
         ? '${totalHours}h ${totalMins}min'
         : '$totalMins min';
 
-    // Player state for hero card
-    final playerState = ref.watch(playerProvider);
-    final currentSong = playerState.currentSong;
+    // Só o que muda raramente. A posição chega 10×/s durante a reprodução e
+    // reconstruiria a página inteira (ordenação de toda a biblioteca, soma
+    // de durações, sugestões); o progresso do cartão escuta sozinho.
+    final currentSong = ref.watch(playerProvider.select((s) => s.currentSong));
+    final isPlaying = ref.watch(playerProvider.select((s) => s.isPlaying));
 
     // Mood-based quick picks (time-aware suggestion)
     final moodPicks = _getMoodPicks(songs, recentSongs, favSongs);
@@ -297,8 +299,7 @@ class HomePage extends ConsumerWidget {
             child:
                 _NowPlayingHero(
                       song: currentSong,
-                      isPlaying: playerState.isPlaying,
-                      progress: playerState.progress,
+                      isPlaying: isPlaying,
                       colors: colors,
                       theme: theme,
                       onTap: () => _openNowPlaying(context),

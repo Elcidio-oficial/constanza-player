@@ -196,23 +196,27 @@ class _MediaSeekBarState extends State<MediaSeekBar>
             if (_dragFraction != null) widget.onSeek(_dragFraction!);
             setState(() => _dragFraction = null);
           },
-          child: SizedBox(
-            height: widget.height,
-            width: double.infinity,
-            child: AnimatedBuilder(
-              animation: _anim,
-              builder: (context, _) => CustomPaint(
-                painter: _MediaBarPainter(
-                  style: widget.style,
-                  bars: _bars,
-                  progress: fraction,
-                  phase: _anim.value,
-                  liveAmp: _liveAmp(fraction),
-                  dragging: _dragFraction != null,
-                  activeColor: widget.activeColor,
-                  inactiveColor: widget.inactiveColor,
-                  secondaryColor: widget.secondaryColor ?? widget.activeColor,
-                  tertiaryColor: widget.tertiaryColor ?? widget.activeColor,
+          // Camada própria: o ticker de 60 fps repinta só a barra, não a
+          // tela do player à volta.
+          child: RepaintBoundary(
+            child: SizedBox(
+              height: widget.height,
+              width: double.infinity,
+              child: AnimatedBuilder(
+                animation: _anim,
+                builder: (context, _) => CustomPaint(
+                  painter: _MediaBarPainter(
+                    style: widget.style,
+                    bars: _bars,
+                    progress: fraction,
+                    phase: _anim.value,
+                    liveAmp: _liveAmp(fraction),
+                    dragging: _dragFraction != null,
+                    activeColor: widget.activeColor,
+                    inactiveColor: widget.inactiveColor,
+                    secondaryColor: widget.secondaryColor ?? widget.activeColor,
+                    tertiaryColor: widget.tertiaryColor ?? widget.activeColor,
+                  ),
                 ),
               ),
             ),

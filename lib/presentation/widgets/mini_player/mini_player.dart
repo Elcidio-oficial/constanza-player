@@ -302,20 +302,23 @@ class _ProgressLine extends StatelessWidget {
     final trackColor = Theme.of(
       context,
     ).colorScheme.outline.withValues(alpha: 0.06);
-    return Container(
-      height: 2.5,
-      width: double.infinity,
-      color: trackColor,
-      alignment: Alignment.centerLeft,
-      child: AnimatedFractionallySizedBox(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.linear,
-        widthFactor: progress,
-        child: Container(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: const BorderRadius.horizontal(
-              right: Radius.circular(2),
+    // Sem animação: a posição chega a cada 100 ms e uma transição de 300 ms
+    // nunca terminava — a tela ficava a 60 fps o tempo todo só por esta
+    // linha. O avanço por atualização é de frações de pixel.
+    return RepaintBoundary(
+      child: Container(
+        height: 2.5,
+        width: double.infinity,
+        color: trackColor,
+        alignment: Alignment.centerLeft,
+        child: FractionallySizedBox(
+          widthFactor: progress,
+          child: Container(
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: const BorderRadius.horizontal(
+                right: Radius.circular(2),
+              ),
             ),
           ),
         ),

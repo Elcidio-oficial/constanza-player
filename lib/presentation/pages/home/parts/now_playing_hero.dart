@@ -5,7 +5,6 @@ class _NowPlayingHero extends StatelessWidget {
   const _NowPlayingHero({
     required this.song,
     required this.isPlaying,
-    required this.progress,
     required this.colors,
     required this.theme,
     required this.onTap,
@@ -14,7 +13,6 @@ class _NowPlayingHero extends StatelessWidget {
 
   final Song song;
   final bool isPlaying;
-  final double progress;
   final ColorScheme colors;
   final ThemeData theme;
   final VoidCallback onTap;
@@ -168,12 +166,19 @@ class _NowPlayingHero extends StatelessWidget {
                   bottomLeft: Radius.circular(AppSpacing.radiusLg),
                   bottomRight: Radius.circular(AppSpacing.radiusLg),
                 ),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 3,
-                  backgroundColor: colors.onSurface.withValues(alpha: 0.06),
-                  valueColor: AlwaysStoppedAnimation(
-                    colors.primary.withValues(alpha: 0.6),
+                // Só a barra escuta a posição (10×/s), numa camada própria.
+                child: RepaintBoundary(
+                  child: Consumer(
+                    builder: (context, ref, _) => LinearProgressIndicator(
+                      value: ref.watch(
+                        playerProvider.select((s) => s.progress),
+                      ),
+                      minHeight: 3,
+                      backgroundColor: colors.onSurface.withValues(alpha: 0.06),
+                      valueColor: AlwaysStoppedAnimation(
+                        colors.primary.withValues(alpha: 0.6),
+                      ),
+                    ),
                   ),
                 ),
               ),

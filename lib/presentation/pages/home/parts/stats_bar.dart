@@ -141,10 +141,16 @@ class _PulsingDotState extends State<_PulsingDot>
   @override
   void initState() {
     super.initState();
+    // Pulsa 3 vezes ao aparecer e para aceso. Um pulso infinito obriga o
+    // Impeller (sem cache de raster) a redesenhar a tela inteira a 60 fps
+    // enquanto a música toca — ~1/3 de um núcleo só para este ponto.
     _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 600),
+    );
+    _ctrl.repeat(reverse: true, count: 6).whenComplete(() {
+      if (mounted) _ctrl.value = 1;
+    });
   }
 
   @override
@@ -153,20 +159,28 @@ class _PulsingDotState extends State<_PulsingDot>
     super.dispose();
   }
 
+  // Opacidade animada pelo compositor (FadeTransition) numa camada própria:
+  // o ponto pulsa sem redesenhar o cartão — antes cada quadro repintava o
+  // cartão inteiro (sombras, gradiente) a 60 fps enquanto a música tocava.
+  late final Animation<double> _opacity = Tween(
+    begin: 0.5,
+    end: 1.0,
+  ).animate(_ctrl);
+
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<double>(
-      valueListenable: _ctrl,
-      builder: (context, value, child) {
-        return Container(
+    return RepaintBoundary(
+      child: FadeTransition(
+        opacity: _opacity,
+        child: Container(
           width: 6,
           height: 6,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: widget.color.withValues(alpha: 0.5 + 0.5 * value),
+            color: widget.color,
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
