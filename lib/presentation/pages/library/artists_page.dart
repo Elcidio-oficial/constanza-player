@@ -327,15 +327,7 @@ class _ArtistsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final cross =
-        columns ??
-        (width < 380
-            ? 2
-            : width < 600
-            ? 3
-            : width < 900
-            ? 4
-            : 5);
+    final cross = columns ?? autoGridColumns(width);
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -435,7 +427,7 @@ class _ArtistCardState extends State<_ArtistCard> {
               ),
             ),
             Text(
-              _subtitle(widget.artist),
+              _subtitle(widget.artist, AppLocalizations.of(context)),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelSmall?.copyWith(
@@ -448,11 +440,11 @@ class _ArtistCardState extends State<_ArtistCard> {
     );
   }
 
-  String _subtitle(Artist a) {
-    final songs = '${a.songCount} música${a.songCount == 1 ? '' : 's'}';
-    if (a.albumCount > 0) {
-      return '${a.albumCount} álbum${a.albumCount == 1 ? '' : 'ns'} · $songs';
-    }
+  // Plurais pelas traduções: a concatenação manual gerava "2 álbumns" e só
+  // existia em português.
+  String _subtitle(Artist a, AppLocalizations l10n) {
+    final songs = l10n.librarySongCount(a.songCount);
+    if (a.albumCount > 0) return '${l10n.albumsCount(a.albumCount)} · $songs';
     return songs;
   }
 }

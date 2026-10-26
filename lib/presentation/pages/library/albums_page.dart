@@ -331,15 +331,7 @@ class _AlbumsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final cross =
-        columns ??
-        (width < 380
-            ? 2
-            : width < 600
-            ? 3
-            : width < 900
-            ? 4
-            : 5);
+    final cross = columns ?? autoGridColumns(width);
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,

@@ -146,6 +146,13 @@ class _FoldersPageState extends ConsumerState<FoldersPage> {
         _selectedFolders.remove(folder);
       } else {
         _selectedFolders.add(folder);
+        // Ativar uma pasta com TODAS as músicas excluídas deixava a
+        // biblioteca vazia sem aviso. Exclusões parciais ficam.
+        if (_includedCount(folder) == 0) {
+          _excludedSongIds.removeAll(
+            (_folderSongs[folder] ?? const <Song>[]).map((s) => s.id),
+          );
+        }
       }
       _dirty = true;
     });
@@ -835,7 +842,13 @@ class _FolderSongsSelectionPageState extends State<_FolderSongsSelectionPage> {
 
   void _toggleFolder() {
     HapticFeedback.mediumImpact();
-    setState(() => _folderSelected = !_folderSelected);
+    setState(() {
+      _folderSelected = !_folderSelected;
+      // Mesma regra da lista de pastas: ativar com 0 incluídas inclui todas.
+      if (_folderSelected && _includedCount == 0) {
+        _excluded.removeAll(widget.songs.map((s) => s.id));
+      }
+    });
     widget.onChanged(_excluded, _folderSelected);
   }
 

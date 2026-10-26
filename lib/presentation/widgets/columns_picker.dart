@@ -42,9 +42,15 @@ IconData columnsIconFor(int? columns) {
   }
 }
 
-/// Colunas que o modo Auto usa nesta largura (aproximação para a
-/// pré-visualização; células de ~170 dp como nas grades).
-int _autoColumnsFor(double width) => (width / 170).floor().clamp(2, 6);
+/// Colunas do modo Auto para uma largura de ecrã (dp). Fonte única: usada
+/// pelas grades de Artistas e Álbuns e pela pré-visualização do seletor.
+int autoGridColumns(double width) => width < 380
+    ? 2
+    : width < 600
+    ? 3
+    : width < 900
+    ? 4
+    : 5;
 
 class _ColumnsPickerSheet extends StatefulWidget {
   const _ColumnsPickerSheet({required this.current, required this.circular});
@@ -66,7 +72,7 @@ class _ColumnsPickerSheetState extends State<_ColumnsPickerSheet> {
     final colors = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final previewColumns = _selected ?? _autoColumnsFor(screenWidth);
+    final previewColumns = _selected ?? autoGridColumns(screenWidth);
 
     return Container(
       decoration: BoxDecoration(
@@ -266,6 +272,7 @@ class _ColumnBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (int i = 0; i < columns; i++) ...[
           if (i > 0) const SizedBox(width: 2),
@@ -307,59 +314,72 @@ class _GridPreview extends StatelessWidget {
         // limita-se à altura disponível.
         final captionH = (cellWidth * 0.22).clamp(6.0, 16.0);
         final art = (c.maxHeight - captionH - 4).clamp(0.0, cellWidth);
+        // Quantas linhas inteiras cabem: com 4–5 colunas uma só linha
+        // deixava metade do painel vazio.
+        final cellH = art + 4 + captionH;
+        final rows = ((c.maxHeight + gap) / (cellH + gap)).floor().clamp(1, 3);
 
         return ClipRect(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
             children: [
-              for (int i = 0; i < columns; i++) ...[
-                if (i > 0) const SizedBox(width: gap),
-                SizedBox(
-                  width: cellWidth,
-                  child: Column(
-                    crossAxisAlignment: circular
-                        ? CrossAxisAlignment.center
-                        : CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: art,
-                        height: art,
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.28 + 0.06 * (i % 3)),
-                          shape: circular
-                              ? BoxShape.circle
-                              : BoxShape.rectangle,
-                          borderRadius: circular
-                              ? null
-                              : BorderRadius.circular(
-                                  (art * 0.08).clamp(3.0, 12.0),
+              for (int r = 0; r < rows; r++) ...[
+                if (r > 0) const SizedBox(height: gap),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (int i = 0; i < columns; i++) ...[
+                      if (i > 0) const SizedBox(width: gap),
+                      SizedBox(
+                        width: cellWidth,
+                        child: Column(
+                          crossAxisAlignment: circular
+                              ? CrossAxisAlignment.center
+                              : CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: art,
+                              height: art,
+                              decoration: BoxDecoration(
+                                color: color.withValues(
+                                  alpha: 0.28 + 0.06 * ((i + r) % 3),
                                 ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      FractionallySizedBox(
-                        widthFactor: 0.8,
-                        child: Container(
-                          height: captionH * 0.45,
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.35),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: captionH * 0.15),
-                      FractionallySizedBox(
-                        widthFactor: 0.5,
-                        child: Container(
-                          height: captionH * 0.35,
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
+                                shape: circular
+                                    ? BoxShape.circle
+                                    : BoxShape.rectangle,
+                                borderRadius: circular
+                                    ? null
+                                    : BorderRadius.circular(
+                                        (art * 0.08).clamp(3.0, 12.0),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            FractionallySizedBox(
+                              widthFactor: 0.8,
+                              child: Container(
+                                height: captionH * 0.45,
+                                decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.35),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: captionH * 0.15),
+                            FractionallySizedBox(
+                              widthFactor: 0.5,
+                              child: Container(
+                                height: captionH * 0.35,
+                                decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ],
             ],
