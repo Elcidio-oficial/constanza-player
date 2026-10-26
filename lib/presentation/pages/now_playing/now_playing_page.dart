@@ -153,15 +153,13 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
     final baseTheme = Theme.of(context);
     final baseColors = baseTheme.colorScheme;
 
-    final colors = baseColors.brightness == Brightness.dark
-        ? baseColors
-        : ColorScheme.dark(
-            primary: baseColors.primary,
-            onPrimary: baseColors.onPrimary,
-            secondary: baseColors.secondary,
-            tertiary: baseColors.tertiary,
-            error: baseColors.error,
-          );
+    // Segue o tema do app: no claro o fundo colorido recebe um véu claro
+    // (ver _LightWash) e o conteúdo usa o esquema claro (texto escuro).
+    final colors = baseColors;
+    final isLight = colors.brightness == Brightness.light;
+    // Cor de base do fundo e destino dos gradientes: quase preto no escuro,
+    // superfície clara no claro.
+    final npBase = isLight ? colors.surface : const Color(0xFF080808);
 
     // Aplica cores quando o AppShell atualiza a palette (fonte única de extração)
     ref.listen<ArtworkPalette?>(artworkPaletteProvider, (prev, next) {
@@ -187,34 +185,39 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
       });
     }
 
-    // Fundo sempre escuro (capa) → ícones claros, mesmo com o app em modo claro.
     // AnnotatedRegion (e não SystemChrome) para vencer a região global do app.
 
     final npStyleOuter = themeState.nowPlayingStyle;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
+      value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-        systemNavigationBarIconBrightness: Brightness.light,
+        statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+        statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
+        systemNavigationBarIconBrightness: isLight
+            ? Brightness.dark
+            : Brightness.light,
       ),
       child: Theme(
         data: baseTheme.copyWith(colorScheme: colors),
         child: Scaffold(
           extendBodyBehindAppBar: true,
           extendBody: true,
-          backgroundColor: const Color(0xFF080808),
+          backgroundColor: npBase,
           body: Stack(
             fit: StackFit.expand,
             children: [
-              Container(color: const Color(0xFF080808)),
+              Container(color: npBase),
               // Cover-art mode tem precedência: capa nítida em tela cheia + scrim.
               if (themeState.nowPlayingColorStyle ==
                       NowPlayingColorStyle.artwork &&
                   hasSong) ...[
                 _SharpArtworkBg(songId: songId),
-                Container(color: Colors.black.withValues(alpha: 0.60)),
+                Container(
+                  color: isLight
+                      ? colors.surface.withValues(alpha: 0.45)
+                      : Colors.black.withValues(alpha: 0.60),
+                ),
               ] else ...[
                 if (npStyleOuter == NowPlayingStyle.classic && hasSong)
                   _BlurredArtworkBg(songId: songId, opacity: 0.55),
@@ -280,14 +283,8 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
                                   dgTop.withValues(alpha: 0.90),
                                   dgBase.withValues(alpha: 0.80),
                                   dgBase.withValues(alpha: 0.60),
-                                  Color.lerp(
-                                    dgBase,
-                                    const Color(0xFF080808),
-                                    0.55,
-                                  )!,
-                                  const Color(
-                                    0xFF080808,
-                                  ).withValues(alpha: 0.95),
+                                  Color.lerp(dgBase, npBase, 0.55)!,
+                                  npBase.withValues(alpha: 0.95),
                                 ],
                                 stops: const [0.0, 0.25, 0.50, 0.75, 1.0],
                               ),
@@ -395,7 +392,7 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
                         ],
 
                         // ── Subtle vignette for controls readability ──
-                        if (useColor)
+                        if (useColor && !isLight)
                           Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -404,12 +401,8 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
                                 colors: [
                                   Colors.transparent,
                                   Colors.transparent,
-                                  const Color(
-                                    0xFF080808,
-                                  ).withValues(alpha: 0.30),
-                                  const Color(
-                                    0xFF080808,
-                                  ).withValues(alpha: 0.70),
+                                  npBase.withValues(alpha: 0.30),
+                                  npBase.withValues(alpha: 0.70),
                                 ],
                                 stops: const [0.0, 0.55, 0.82, 1.0],
                               ),
@@ -434,6 +427,8 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage>
                   },
                 ),
               ),
+              // Modo claro: véu claro sobre o fundo colorido → tons pastel da capa.
+              if (isLight) const _LightWash(),
               _NowPlayingContent(rawVibrant: _rawVibrant),
             ],
           ),
@@ -462,6 +457,7 @@ class _NowPlayingContent extends ConsumerWidget {
     final mq = MediaQuery.of(context);
     final screenH = mq.size.height;
     final isCompact = screenH < 700;
+    final isLight = colors.brightness == Brightness.light;
 
     if (!hasSong) {
       return Center(
@@ -497,8 +493,14 @@ class _NowPlayingContent extends ConsumerWidget {
       // Capas neutras (branco/cinza) mantêm o tom neutro; forçar saturação
       // mínima transformava cinza em vermelho/rosa.
       final isNeutral = hsl.saturation < 0.12;
+      // Escuro: destaque clareado para brilhar sobre o preto. Claro: escurecido,
+      // senão play e progresso ficam desbotados sobre o fundo pastel.
       accentColor = hsl
-          .withLightness(hsl.lightness.clamp(0.55, isNeutral ? 0.90 : 0.75))
+          .withLightness(
+            isLight
+                ? hsl.lightness.clamp(isNeutral ? 0.12 : 0.30, 0.45)
+                : hsl.lightness.clamp(0.55, isNeutral ? 0.90 : 0.75),
+          )
           .withSaturation(
             isNeutral
                 ? hsl.saturation
@@ -512,58 +514,60 @@ class _NowPlayingContent extends ConsumerWidget {
     final overlayGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: switch (themeState.nowPlayingStyle) {
-        NowPlayingStyle.classic => [
-          Colors.transparent,
-          Colors.transparent,
-          const Color(0xFF080808).withValues(alpha: 0.35),
-        ],
-        NowPlayingStyle.circular => [
-          Colors.transparent,
-          Colors.transparent,
-          const Color(0xFF050505).withValues(alpha: 0.40),
-        ],
-        NowPlayingStyle.large => [
-          Colors.transparent,
-          Colors.transparent,
-          const Color(0xFF080808).withValues(alpha: 0.30),
-        ],
-        NowPlayingStyle.fullBlur => [
-          Colors.transparent,
-          Colors.transparent,
-          const Color(0xFF0A0A0A).withValues(alpha: 0.20),
-        ],
-        NowPlayingStyle.vinyl => [
-          Colors.transparent,
-          Colors.transparent,
-          const Color(0xFF080808).withValues(alpha: 0.35),
-        ],
-        NowPlayingStyle.minimalist => [
-          Colors.transparent,
-          Colors.transparent,
-          Colors.transparent,
-        ],
-        NowPlayingStyle.aurora => [
-          Colors.transparent,
-          Colors.transparent,
-          const Color(0xFF080808).withValues(alpha: 0.15),
-        ],
-        NowPlayingStyle.elegant => [
-          Colors.transparent,
-          Colors.transparent,
-          const Color(0xFF0C0C0F).withValues(alpha: 0.30),
-        ],
-        NowPlayingStyle.wave => [
-          Colors.transparent,
-          Colors.transparent,
-          const Color(0xFF080808).withValues(alpha: 0.30),
-        ],
-        NowPlayingStyle.mosaic => [
-          Colors.transparent,
-          Colors.transparent,
-          const Color(0xFF080808).withValues(alpha: 0.25),
-        ],
-      },
+      colors: isLight
+          ? const [Colors.transparent, Colors.transparent, Colors.transparent]
+          : switch (themeState.nowPlayingStyle) {
+              NowPlayingStyle.classic => [
+                Colors.transparent,
+                Colors.transparent,
+                const Color(0xFF080808).withValues(alpha: 0.35),
+              ],
+              NowPlayingStyle.circular => [
+                Colors.transparent,
+                Colors.transparent,
+                const Color(0xFF050505).withValues(alpha: 0.40),
+              ],
+              NowPlayingStyle.large => [
+                Colors.transparent,
+                Colors.transparent,
+                const Color(0xFF080808).withValues(alpha: 0.30),
+              ],
+              NowPlayingStyle.fullBlur => [
+                Colors.transparent,
+                Colors.transparent,
+                const Color(0xFF0A0A0A).withValues(alpha: 0.20),
+              ],
+              NowPlayingStyle.vinyl => [
+                Colors.transparent,
+                Colors.transparent,
+                const Color(0xFF080808).withValues(alpha: 0.35),
+              ],
+              NowPlayingStyle.minimalist => [
+                Colors.transparent,
+                Colors.transparent,
+                Colors.transparent,
+              ],
+              NowPlayingStyle.aurora => [
+                Colors.transparent,
+                Colors.transparent,
+                const Color(0xFF080808).withValues(alpha: 0.15),
+              ],
+              NowPlayingStyle.elegant => [
+                Colors.transparent,
+                Colors.transparent,
+                const Color(0xFF0C0C0F).withValues(alpha: 0.30),
+              ],
+              NowPlayingStyle.wave => [
+                Colors.transparent,
+                Colors.transparent,
+                const Color(0xFF080808).withValues(alpha: 0.30),
+              ],
+              NowPlayingStyle.mosaic => [
+                Colors.transparent,
+                Colors.transparent,
+                const Color(0xFF080808).withValues(alpha: 0.25),
+              ],
+            },
     );
 
     final titleBlock = Padding(
@@ -691,3 +695,32 @@ class _NowPlayingContent extends ConsumerWidget {
 // ============================================================
 // LANDSCAPE LAYOUT — artwork à esquerda, controles à direita
 // ============================================================
+
+/// Véu claro do modo claro: transforma o fundo colorido (gradientes da paleta
+/// e capa desfocada, pensados para o escuro) numa versão pastel. Mais leve no
+/// topo para a cor da capa aparecer; mais opaco em baixo, onde texto e
+/// controlos precisam de contraste.
+class _LightWash extends StatelessWidget {
+  const _LightWash();
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = Theme.of(context).colorScheme.surface;
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              surface.withValues(alpha: 0.55),
+              surface.withValues(alpha: 0.68),
+              surface.withValues(alpha: 0.86),
+            ],
+            stops: const [0.0, 0.45, 1.0],
+          ),
+        ),
+      ),
+    );
+  }
+}

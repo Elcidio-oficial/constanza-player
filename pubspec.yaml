@@ -1,7 +1,7 @@
 name: constanza_player
 description: "Constanza M????sicas ???????? Sua m????sica. Seu sil????ncio. Seu momento."
 publish_to: 'none'
-version: 1.6.0+27
+version: 1.6.1+28
 
 environment:
   sdk: ^3.10.7
