@@ -82,9 +82,10 @@ class _AlbumsPageState extends ConsumerState<AlbumsPage> {
                   context: context,
                   current: _columns,
                 );
-                if (!mounted) return;
-                setState(() => _columns = picked);
-                SettingsStorageService.saveAlbumColumns(picked);
+                // null = fechou sem aplicar: mantém a grade como está.
+                if (picked == null || !mounted) return;
+                setState(() => _columns = picked.columns);
+                SettingsStorageService.saveAlbumColumns(picked.columns);
               },
             ),
             IconButton(

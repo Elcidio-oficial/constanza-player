@@ -959,5 +959,21 @@
   "defaultPlayerBlockedAction": "Abrir definições do {app}",
   "defaultPlayerBannerMessage": "Tornar o Constanza seu leitor de áudio padrão?",
   "defaultPlayerBannerAction": "Definir",
-  "defaultPlayerSetConfirmed": "O Constanza agora é o seu leitor de áudio padrão"
+  "defaultPlayerSetConfirmed": "O Constanza agora é o seu leitor de áudio padrão",
+  "whatsNewEyebrow": "ATUALIZAÇÃO",
+  "whatsNewTitle": "Novidades da versão {version}",
+  "whatsNewFixesTitle": "Também corrigimos",
+  "whatsNewContinue": "Continuar",
+  "aboutWhatsNew": "O que há de novo",
+  "aboutWhatsNewDesc": "Novidades da versão {version}",
+  "aboutVersionLabel": "Versão {version}",
+  "aboutRateDesc": "Uma avaliação ajuda o app a chegar a mais pessoas",
+  "aboutRateFailed": "Não foi possível abrir a loja",
+  "aboutLocalFirst": "Tudo fica no seu aparelho: sem conta, sem anúncios, sem rastreamento.",
+  "gridLayoutTitle": "Layout da grade",
+  "gridLayoutSubtitle": "Escolha quantas colunas mostrar",
+  "gridAuto": "Auto",
+  "gridAutoHint": "Ajusta-se à largura da tela",
+  "gridColumnsHint": "{count, plural, =1{1 coluna} other{{count} colunas}}",
+  "gridApply": "Aplicar"
 }

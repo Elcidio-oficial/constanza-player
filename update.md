@@ -7,6 +7,30 @@
 
 ---
 
+## [1.7.0] — 2026-10-27 (versionCode 33)
+Reúne as versões internas 1.5.1–1.6.5 (não publicadas) e esta.
+
+### Tema
+- **Modo claro de volta** (o carregamento forçava o escuro): seletor Sistema/Claro/Escuro em Configurações → Aparência; paleta clara com todos os papéis M3; token `ColorScheme.fadedText` para texto secundário legível no claro.
+- Now Playing, folhas, letras, Modo Carro, leitor flutuante nativo e splash seguem o tema. `BackgroundWrapper` pinta a superfície quando não há fundo (Artistas, Álbuns… ficavam pretos no claro).
+- **Padrões de fábrica**: Now Playing Clássico + Degradê, barra de navegação e mini player em Vidro, barra de progresso Espessa.
+
+### Widgets
+- Os 6 widgets redesenhados com tokens claro/escuro/Material You; receptores passam a `exported="false"`.
+
+### Novas telas
+- **"O que há de novo"** (`WhatsNewPage`, dados em `release_notes.dart`): aparece uma vez após atualizar, nunca em instalação nova; Android e Windows.
+- **Sobre** (`AboutPage`) substitui o diálogo; **seletor de colunas** redesenhado com pré-visualização.
+
+### Correções
+- "Avaliar na Play Store" não fazia nada (`StoreService`).
+- Fechar o seletor de colunas repunha "Auto".
+- "Tornar padrão" tocava a amostra no leitor padrão de outro app (MIUI); agora explica e abre as definições desse app.
+- Versão em "Sobre" parada em 1.5.1; `pubspec.yaml` com acentos corrompidos (nome do MSIX "M????sicas"). Testes em `test/app_version_test.dart` impedem a repetição (versão, `msix_version`, notas, encoding).
+
+### Desempenho
+- 120 Hz quando o aparelho permite; Início não redesenha a 60 fps durante a reprodução; caches gravados em lote.
+
 ## [1.5.0] — 2026-07-26 (Play Store, versionCode 17)
 ### Áudio — audio focus padrão + ducking
 - **`mixWithOthers` substituído por `AudioFocusGainType.gain`**: o app volta a registrar-se no audio focus do Android (`handleAudioSessionActivation = true`), como um player de música normal.

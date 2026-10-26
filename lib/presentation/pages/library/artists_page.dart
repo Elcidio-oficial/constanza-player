@@ -81,10 +81,12 @@ class _ArtistsPageState extends ConsumerState<ArtistsPage> {
                 final picked = await showColumnsPicker(
                   context: context,
                   current: _columns,
+                  circular: _shape == ArtistCardShape.circle,
                 );
-                if (!mounted) return;
-                setState(() => _columns = picked);
-                SettingsStorageService.saveArtistColumns(picked);
+                // null = fechou sem aplicar: mantém a grade como está.
+                if (picked == null || !mounted) return;
+                setState(() => _columns = picked.columns);
+                SettingsStorageService.saveArtistColumns(picked.columns);
               },
             ),
             IconButton(

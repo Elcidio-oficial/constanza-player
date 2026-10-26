@@ -141,7 +141,10 @@
         </receiver>
 
         <!-- Home Screen Widgets -->
-        <receiver android:name=".MusicWidgetProvider" android:exported="true">
+        <!-- exported="false": só o sistema (atualização) e os nossos PendingIntents
+             explícitos falam com os widgets. Com "true", qualquer app podia
+             tocar/pausar, marcar favoritos ou abrir rotas por broadcast. -->
+        <receiver android:name=".MusicWidgetProvider" android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.constanza.constanza_player.WIDGET_PREV" />
@@ -153,7 +156,7 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/music_widget_info" />
         </receiver>
 
-        <receiver android:name=".WidgetLargeProvider" android:exported="true">
+        <receiver android:name=".WidgetLargeProvider" android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.constanza.constanza_player.WIDGET_PREV" />
@@ -165,7 +168,7 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_large_info" />
         </receiver>
 
-        <receiver android:name=".WidgetMediumSearchProvider" android:exported="true">
+        <receiver android:name=".WidgetMediumSearchProvider" android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.constanza.constanza_player.WIDGET_PREV" />
@@ -176,7 +179,7 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_medium_search_info" />
         </receiver>
 
-        <receiver android:name=".WidgetCapsuleProvider" android:exported="true">
+        <receiver android:name=".WidgetCapsuleProvider" android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
@@ -185,7 +188,7 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_capsule_info" />
         </receiver>
 
-        <receiver android:name=".WidgetRecommendationProvider" android:exported="true">
+        <receiver android:name=".WidgetRecommendationProvider" android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.constanza.constanza_player.WIDGET_PLAY_PAUSE" />
@@ -193,7 +196,7 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_recommendation_info" />
         </receiver>
 
-        <receiver android:name=".WidgetRecommendedProvider" android:exported="true">
+        <receiver android:name=".WidgetRecommendedProvider" android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.constanza.constanza_player.WIDGET_PREV" />

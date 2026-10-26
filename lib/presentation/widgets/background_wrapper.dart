@@ -15,19 +15,25 @@ class BackgroundWrapper extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final hasBackground = ref.watch(
+      themeProvider.select((s) => s.hasBackground),
+    );
+
+    // Sem fundo personalizado, as páginas que usam este wrapper têm Scaffold
+    // transparente: sem esta cor via-se o preto da janela por trás (invisível
+    // no tema escuro, gritante no claro).
+    if (!hasBackground) {
+      return ColoredBox(
+        color: Theme.of(context).colorScheme.surface,
+        child: child,
+      );
+    }
+
     // Desktop (Windows/Linux): o fundo é pintado UMA vez no
     // MaterialApp.builder, cobrindo a janela inteira (inclusive atrás da
     // title bar) — ver main.dart. Repintar aqui geraria um recorte
     // diferente e uma emenda visível logo abaixo da barra de título.
     if (Platform.isWindows || Platform.isLinux) {
-      return child;
-    }
-
-    final hasBackground = ref.watch(
-      themeProvider.select((s) => s.hasBackground),
-    );
-
-    if (!hasBackground) {
       return child;
     }
 

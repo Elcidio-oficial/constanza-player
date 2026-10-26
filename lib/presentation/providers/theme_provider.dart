@@ -64,8 +64,9 @@ class ThemeState {
     this.showAlbumArtInList = true,
     this.navBarStyle = NavBarStyle.glass,
     this.miniPlayerStyle = MiniPlayerStyle.glass,
-    this.mediaBarStyle = MediaBarStyle.minimal,
-    this.nowPlayingColorStyle = NowPlayingColorStyle.gradient,
+    // Padrões de fábrica: Clássico + Degradê, barras em Vidro, progresso Espesso.
+    this.mediaBarStyle = MediaBarStyle.thick,
+    this.nowPlayingColorStyle = NowPlayingColorStyle.degrade,
 
     this.useCustomNpColors = false,
     this.npCustomColor1,
@@ -247,16 +248,17 @@ class ThemeState {
             0,
             MiniPlayerStyle.values.length - 1,
           )],
-      mediaBarStyle:
-          switch (MediaBarStyle.values[(json['mediaBarStyle'] as int? ?? 0)
-              .clamp(0, MediaBarStyle.values.length - 1)]) {
-            // Estilo removido: quem o usava passa para o visualizador padrão.
-            MediaBarStyle.pulse => MediaBarStyle.waveform,
-            final style => style,
-          },
+      mediaBarStyle: switch (MediaBarStyle.values[(json['mediaBarStyle']
+                  as int? ??
+              MediaBarStyle.thick.index)
+          .clamp(0, MediaBarStyle.values.length - 1)]) {
+        // Estilo removido: quem o usava passa para o visualizador padrão.
+        MediaBarStyle.pulse => MediaBarStyle.waveform,
+        final style => style,
+      },
       nowPlayingColorStyle:
           NowPlayingColorStyle.values[(json['nowPlayingColorStyle'] as int? ??
-                  1)
+                  NowPlayingColorStyle.degrade.index)
               .clamp(0, NowPlayingColorStyle.values.length - 1)],
 
       useCustomNpColors: json['useCustomNpColors'] as bool? ?? false,

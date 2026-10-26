@@ -37,8 +37,32 @@ class SettingsStorageService {
 
   /// Inicializa o SharedPreferences. Deve ser chamado uma vez no main().
   static Future<void> init() async {
-    _prefs ??= await SharedPreferences.getInstance();
+    if (_prefs != null) return;
+    final p = await SharedPreferences.getInstance();
+    _prefs = p;
+    // Lido ANTES de qualquer gravação desta sessão: distingue quem já usava o
+    // app (atualização) de uma instalação nova, mesmo vindo de versões que
+    // ainda não guardavam a última versão vista.
+    hadDataAtLaunch =
+        p.containsKey(_keyLibraryCache) ||
+        p.containsKey(_keyTheme) ||
+        p.containsKey(_keyMusicFolders);
   }
+
+  /// `true` se já existiam dados do app quando este processo arrancou.
+  static bool hadDataAtLaunch = false;
+
+  // ─── NOVIDADES (ecrã "O que há de novo") ───
+
+  static const _keyLastSeenVersion = 'constanza_last_seen_version';
+
+  /// Última versão cujas novidades o utilizador viu (null em instalações
+  /// novas e em versões anteriores à 1.7.0, que não guardavam isto).
+  static String? loadLastSeenVersion() =>
+      _safePrefs.getString(_keyLastSeenVersion);
+
+  static Future<void> saveLastSeenVersion(String version) =>
+      _safePrefs.setString(_keyLastSeenVersion, version);
 
   // ─── THEME ───
 

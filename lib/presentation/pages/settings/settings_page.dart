@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:constanza_player/presentation/pages/settings/about_page.dart';
+import 'package:constanza_player/services/store_service.dart';
 import 'package:constanza_player/presentation/widgets/default_player_flow.dart';
 import 'package:constanza_player/core/theme/color_scheme_x.dart';
 import 'dart:convert';
@@ -447,7 +449,9 @@ class SettingsPage extends ConsumerWidget {
                 subtitle: 'v${AppConstants.appVersion}',
                 colors: colors,
                 theme: theme,
-                onTap: () => _showAboutDialog(context),
+                onTap: () => Navigator.of(
+                  context,
+                ).push(AppPageRoute(page: const AboutPage())),
               ),
               _divider(colors),
               _SettingsTile(
@@ -467,7 +471,13 @@ class SettingsPage extends ConsumerWidget {
                 subtitle: l10n.settingsRateDesc,
                 colors: colors,
                 theme: theme,
-                onTap: () {},
+                onTap: () async {
+                  if (!await StoreService.openListing() && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.aboutRateFailed)),
+                    );
+                  }
+                },
               ),
               _divider(colors),
               _SettingsTile(
@@ -847,93 +857,6 @@ class SettingsPage extends ConsumerWidget {
         context,
       ).showSnackBar(SnackBar(content: Text(AppConstants.privacyPolicyUrl)));
     }
-  }
-
-  void _showAboutDialog(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.surfaceContainer,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: AppSpacing.md),
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: colors.onSurface, width: 1.5),
-              ),
-              child: Center(
-                child: Text(
-                  'C',
-                  style: theme.textTheme.displayLarge?.copyWith(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w200,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              AppConstants.appName,
-              style: theme.textTheme.titleMedium?.copyWith(
-                letterSpacing: 2,
-                fontWeight: FontWeight.w300,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              'v${AppConstants.appVersion}',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.fadedText(0.4),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              '"${l10n.aboutDialogTagline}"',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.fadedText(0.5),
-                fontStyle: FontStyle.italic,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              l10n.aboutDialogMadeBy,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.fadedText(0.3),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              AppConstants.appAuthor,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.fadedText(0.6),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => ctx.pop(),
-            child: Text(
-              l10n.aboutDialogClose,
-              style: TextStyle(color: colors.onSurface),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   // ── INTERFACE DIALOGS ──

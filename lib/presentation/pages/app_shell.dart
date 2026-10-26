@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:constanza_player/core/theme/app_spacing.dart';
+import 'package:constanza_player/core/constants/release_notes.dart';
+import 'package:constanza_player/presentation/pages/whats_new/whats_new_page.dart';
+import 'package:constanza_player/services/settings_storage_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:constanza_player/presentation/providers/theme_provider.dart';
 import 'package:constanza_player/presentation/providers/library_provider.dart';
@@ -56,6 +59,21 @@ class _AppShellState extends ConsumerState<AppShell>
       if (!mounted) return;
       await ref.read(playerProvider.notifier).restorePlaybackState();
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowWhatsNew());
+  }
+
+  /// "O que há de novo" uma vez por atualização (Android e Windows). A versão
+  /// é marcada como vista ANTES de abrir: se o app fechar com o ecrã aberto,
+  /// não volta a aparecer em todos os arranques.
+  Future<void> _maybeShowWhatsNew() async {
+    final current = currentReleaseNotes.version;
+    final show = shouldShowWhatsNew(
+      current: current,
+      lastSeen: SettingsStorageService.loadLastSeenVersion(),
+      hadDataAtLaunch: SettingsStorageService.hadDataAtLaunch,
+    );
+    await SettingsStorageService.saveLastSeenVersion(current);
+    if (show && mounted) await WhatsNewPage.open(context, currentReleaseNotes);
   }
 
   @override
