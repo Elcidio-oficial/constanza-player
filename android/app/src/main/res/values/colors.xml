@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#1A1A2E</color>
+    <!-- Fundo do splash e da janela até ao 1.º frame do Flutter: o "papel" do
+         tema claro (values-night: preto). Evita o flash preto no modo claro. -->
+    <color name="launch_bg">#F7F6F3</color>
 </resources>

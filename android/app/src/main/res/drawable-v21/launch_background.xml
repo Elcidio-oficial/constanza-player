@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Splash mostrado pelo Android antes do Flutter inicializar (API 21+).
-     Fundo preto + ícone centralizado para combinar com o tema escuro do app. -->
+     Fundo do tema (claro/escuro via launch_bg) + ícone centralizado. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/black" />
+    <item android:drawable="@color/launch_bg" />
     <!-- @mipmap/ic_launcher é um adaptive-icon (XML) em API 26+; <bitmap> exige
          um raster e rebenta ("requires a valid 'src'"). Usamos <item
          android:drawable> com tamanho explícito (válido em API 23+, minSdk=24),

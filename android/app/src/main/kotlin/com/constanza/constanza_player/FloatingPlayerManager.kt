@@ -2,6 +2,7 @@ package com.constanza.constanza_player
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
@@ -24,6 +25,7 @@ import android.widget.TextView
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.plugin.common.MethodChannel
 import kotlin.math.abs
+import org.json.JSONObject
 
 /**
  * Leitor flutuante (system overlay) exibido ao tocar um áudio pelo explorador.
@@ -54,6 +56,23 @@ object FloatingPlayerManager {
     fun canDraw(ctx: Context): Boolean =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Settings.canDrawOverlays(ctx) else true
 
+    /** Contexto com o modo claro/escuro escolhido NO APP (Sistema/Claro/Escuro),
+     *  não só o do sistema: os recursos `values-night` do layout passam a seguir
+     *  essa escolha. Lida das SharedPreferences do Flutter
+     *  (`constanza_theme_settings.themeMode`: 0 sistema, 1 claro, 2 escuro). */
+    private fun themedContext(ctx: Context): Context {
+        val mode = try {
+            val json = ctx.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+                .getString("flutter.constanza_theme_settings", null)
+            if (json == null) 0 else JSONObject(json).optInt("themeMode", 0)
+        } catch (_: Exception) { 0 }
+        if (mode != 1 && mode != 2) return ctx
+        val cfg = Configuration(ctx.resources.configuration)
+        val night = if (mode == 2) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
+        cfg.uiMode = (cfg.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or night
+        return ctx.createConfigurationContext(cfg)
+    }
+
     /** Mostra o overlay (idempotente). Devolve `false` se não há permissão. */
     fun show(ctx: Context): Boolean {
         if (!canDraw(ctx)) return false
@@ -62,7 +81,7 @@ object FloatingPlayerManager {
             return true
         }
         val wm = ctx.getSystemService(Context.WINDOW_SERVICE) as? WindowManager ?: return false
-        val root = View.inflate(ctx, R.layout.floating_player, null)
+        val root = View.inflate(themedContext(ctx), R.layout.floating_player, null)
 
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
