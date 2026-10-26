@@ -8,4 +8,5 @@
     android:targetCellHeight="5"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
+    android:description="@string/widget_desc_large"
     android:widgetCategory="home_screen" />

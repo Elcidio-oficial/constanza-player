@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Antes do Android 12 o launcher não põe margem à volta do widget. -->
+    <dimen name="widget_margin">8dp</dimen>
+    <dimen name="widget_radius">24dp</dimen>
+    <dimen name="widget_inner_radius">16dp</dimen>
+</resources>

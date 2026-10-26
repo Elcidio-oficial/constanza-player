@@ -1,112 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Widget Médio + Pesquisa (4×2): leitor compacto e barra de pesquisa. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="12dp">
+    android:padding="@dimen/widget_margin">
 
     <LinearLayout
+        android:id="@android:id/background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@drawable/widget_bg_dark"
-        android:padding="14dp">
+        android:background="@drawable/widget_surface"
+        android:clipToOutline="true"
+        android:padding="12dp">
 
-        <!-- Top row: artwork + info + controls + note icon -->
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <!-- Artwork -->
-            <ImageView
-                android:id="@+id/widget_artwork"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:scaleType="centerCrop"
-                android:src="@mipmap/ic_launcher"
-                android:background="@drawable/widget_artwork_bg"
-                android:contentDescription="Album art" />
+            <FrameLayout
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/widget_artwork_frame"
+                android:clipToOutline="true">
 
-            <!-- Music note (top-right) -->
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"
-                android:src="@drawable/ic_widget_play"
-                android:tint="#AAFFFFFF"
-                android:contentDescription="Note" />
+                <ImageView
+                    android:id="@+id/widget_artwork"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@mipmap/ic_launcher"
+                    android:contentDescription="@string/widget_cd_artwork" />
+            </FrameLayout>
 
-            <!-- Controls: prev / play / next — far right, vertically centered -->
             <LinearLayout
-                android:id="@+id/controls_row"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginTop="24dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <ImageButton
-                    android:id="@+id/widget_prev"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_widget_prev"
-                    android:tint="#FFFFFF"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Previous"
-                    android:scaleType="centerInside"
-                    android:padding="4dp" />
-
-                <ImageButton
-                    android:id="@+id/widget_play_pause"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="4dp"
-                    android:src="@drawable/ic_widget_play"
-                    android:tint="#FFFFFF"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Play/Pause"
-                    android:scaleType="centerInside"
-                    android:padding="4dp" />
-
-                <ImageButton
-                    android:id="@+id/widget_next"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_widget_next"
-                    android:tint="#FFFFFF"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Next"
-                    android:scaleType="centerInside"
-                    android:padding="4dp" />
-
-            </LinearLayout>
-
-            <!-- Song info between artwork and controls -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/widget_artwork"
-                android:layout_toStartOf="@id/controls_row"
-                android:layout_centerVertical="true"
-                android:orientation="vertical"
+                android:layout_weight="1"
                 android:layout_marginStart="12dp"
-                android:layout_marginEnd="8dp">
+                android:layout_marginEnd="4dp"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/widget_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Constanza Músicas"
-                    android:textColor="#FFFFFF"
+                    android:text="@string/widget_default_title"
+                    android:textColor="@color/widget_on_surface"
                     android:textSize="15sp"
-                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
                     android:maxLines="1"
                     android:ellipsize="end" />
 
@@ -115,53 +61,77 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Artista"
-                    android:textColor="#99FFFFFF"
-                    android:textSize="12sp"
+                    android:text="@string/widget_default_artist"
+                    android:textColor="@color/widget_on_surface_variant"
+                    android:textSize="13sp"
                     android:maxLines="1"
                     android:ellipsize="end" />
-
             </LinearLayout>
 
-        </RelativeLayout>
+            <ImageButton
+                android:id="@+id/widget_prev"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_widget_prev"
+                android:tint="@color/widget_on_surface"
+                android:background="@drawable/widget_icon_btn_bg"
+                android:contentDescription="@string/widget_cd_prev"
+                android:scaleType="centerInside"
+                android:padding="9dp" />
 
-        <!-- Divider (FrameLayout — RemoteViews não aceita View puro) -->
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="#1FFFFFFF" />
+            <ImageButton
+                android:id="@+id/widget_play_pause"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="2dp"
+                android:src="@drawable/ic_widget_play"
+                android:tint="@color/widget_on_accent"
+                android:background="@drawable/widget_play_bg"
+                android:contentDescription="@string/widget_cd_play_pause"
+                android:scaleType="centerInside"
+                android:padding="12dp" />
 
-        <!-- Search bar -->
+            <ImageButton
+                android:id="@+id/widget_next"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_widget_next"
+                android:tint="@color/widget_on_surface"
+                android:background="@drawable/widget_icon_btn_bg"
+                android:contentDescription="@string/widget_cd_next"
+                android:scaleType="centerInside"
+                android:padding="9dp" />
+        </LinearLayout>
+
         <LinearLayout
             android:id="@+id/widget_search"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="44dp"
+            android:layout_marginTop="10dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="@drawable/widget_btn_bg"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp">
+            android:background="@drawable/widget_tonal_bg"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
 
             <ImageView
-                android:layout_width="18dp"
-                android:layout_height="18dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:src="@drawable/ic_widget_search"
-                android:tint="#AAFFFFFF"
-                android:contentDescription="Search" />
+                android:tint="@color/widget_on_container"
+                android:contentDescription="@string/widget_cd_search" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:text="Pesquisar músicas, playlists..."
-                android:textColor="#88FFFFFF"
-                android:textSize="13sp"
+                android:layout_marginStart="12dp"
+                android:text="@string/widget_search_hint"
+                android:textColor="@color/widget_on_container"
+                android:alpha="0.8"
+                android:textSize="14sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
-
         </LinearLayout>
-
     </LinearLayout>
 </FrameLayout>

@@ -13,6 +13,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
+import android.os.Build
 import android.view.KeyEvent
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.plugin.common.MethodChannel
@@ -22,8 +23,11 @@ abstract class BaseWidgetProvider : AppWidgetProvider() {
     abstract val layoutRes: Int
     abstract val providerClass: Class<*>
 
-    /** Fração do tamanho da arte usada como raio de canto. 0.5 = circular. */
-    protected open val artworkRadiusFraction: Float = 0.08f
+    /** Fração do tamanho da arte usada como raio de canto. 0.5 = circular.
+     *  No Android 12+ a moldura do layout (clipToOutline) já arredonda a capa;
+     *  antes disso o recorte tem de vir no próprio bitmap. */
+    protected open val artworkRadiusFraction: Float =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) 0f else 0.12f
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         for (id in appWidgetIds) {
@@ -66,8 +70,10 @@ abstract class BaseWidgetProvider : AppWidgetProvider() {
 
     protected fun updateWidget(context: Context, mgr: AppWidgetManager, widgetId: Int) {
         val prefs = context.getSharedPreferences(WidgetConstants.PREFS, Context.MODE_PRIVATE)
-        val title      = prefs.getString(WidgetConstants.KEY_TITLE, "Constanza Músicas") ?: "Constanza Músicas"
-        val artist     = prefs.getString(WidgetConstants.KEY_ARTIST, "Sua música. Seu momento.") ?: ""
+        val title      = prefs.getString(WidgetConstants.KEY_TITLE, null)
+            ?: context.getString(R.string.widget_default_title)
+        val artist     = prefs.getString(WidgetConstants.KEY_ARTIST, null)
+            ?: context.getString(R.string.widget_default_artist)
         val isPlaying  = prefs.getBoolean(WidgetConstants.KEY_IS_PLAYING, false)
         val artPath    = prefs.getString(WidgetConstants.KEY_ARTWORK_PATH, null)
         val isFavorite = prefs.getBoolean(WidgetConstants.KEY_IS_FAVORITE, false)
@@ -192,7 +198,8 @@ abstract class BaseWidgetProvider : AppWidgetProvider() {
                 shader = BitmapShader(src, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
             }
             val r = size * radiusFraction
-            canvas.drawRoundRect(RectF(0f, 0f, size.toFloat(), size.toFloat()), r, r, paint)
+            val rect = RectF(0f, 0f, size.toFloat(), size.toFloat())
+            if (r > 0f) canvas.drawRoundRect(rect, r, r, paint) else canvas.drawRect(rect, paint)
             if (src !== sq) src.recycle()
             sq
         } catch (_: Exception) { null }

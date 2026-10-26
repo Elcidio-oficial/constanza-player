@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tokens de cor dos widgets — tema claro (Android < 12, sem cores dinâmicas).
+     values-night: escuro. values-v31 / values-night-v31: Material You (wallpaper). -->
+<resources>
+    <color name="widget_surface">#FFF6F3FA</color>
+    <color name="widget_on_surface">#FF1C1B20</color>
+    <color name="widget_on_surface_variant">#FF5F5B67</color>
+    <color name="widget_accent">#FF6750A4</color>
+    <color name="widget_on_accent">#FFFFFFFF</color>
+    <color name="widget_container">#FFE9E3F1</color>
+    <color name="widget_on_container">#FF2B2635</color>
+    <color name="widget_outline">#14000000</color>
+    <color name="widget_ripple">#1F000000</color>
+</resources>

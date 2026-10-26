@@ -8,4 +8,5 @@
     android:targetCellHeight="1"
     android:resizeMode="horizontal"
     android:updatePeriodMillis="0"
+    android:description="@string/widget_desc_capsule"
     android:widgetCategory="home_screen" />

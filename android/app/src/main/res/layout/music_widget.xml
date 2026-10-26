@@ -1,58 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Widget Médio (4×2): capa à esquerda, texto e controlos completos à direita. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="12dp">
+    android:padding="@dimen/widget_margin">
 
     <LinearLayout
+        android:id="@android:id/background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:background="@drawable/widget_bg_dark"
-        android:padding="14dp">
+        android:background="@drawable/widget_surface"
+        android:clipToOutline="true"
+        android:padding="12dp">
 
-        <!-- Artwork with music note badge -->
         <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent">
+            android:layout_width="96dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/widget_artwork_frame"
+            android:clipToOutline="true">
 
             <ImageView
                 android:id="@+id/widget_artwork"
-                android:layout_width="80dp"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:src="@mipmap/ic_launcher"
-                android:background="@drawable/widget_artwork_bg"
-                android:contentDescription="Album art" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="top|end"
-                android:layout_margin="4dp"
-                android:src="@drawable/ic_widget_play"
-                android:tint="#AAFFFFFF"
-                android:contentDescription="Note" />
-
+                android:contentDescription="@string/widget_cd_artwork" />
         </FrameLayout>
 
-        <!-- Right side: title + artist + controls -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="14dp">
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/widget_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Constanza Músicas"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold"
+                android:layout_marginTop="2dp"
+                android:text="@string/widget_default_title"
+                android:textColor="@color/widget_on_surface"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -60,83 +53,89 @@
                 android:id="@+id/widget_artist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:text="Artista"
-                android:textColor="#99FFFFFF"
-                android:textSize="12sp"
+                android:layout_marginTop="2dp"
+                android:text="@string/widget_default_artist"
+                android:textColor="@color/widget_on_surface_variant"
+                android:textSize="13sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
-            <!-- Spacer (FrameLayout vazio — universalmente aceito por RemoteViews) -->
             <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
 
-            <!-- Controls: repeat / prev / play / next / star -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <ImageButton
-                    android:id="@+id/widget_repeat"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_widget_repeat_off"
-                    android:tint="#AAFFFFFF"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Repeat"
-                    android:scaleType="centerInside"
-                    android:padding="4dp" />
+                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                    <ImageButton
+                        android:id="@+id/widget_repeat"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_widget_repeat_off"
+                        android:background="@drawable/widget_icon_btn_bg"
+                        android:contentDescription="@string/widget_cd_repeat"
+                        android:scaleType="centerInside"
+                        android:padding="8dp" />
+                </FrameLayout>
 
-                <ImageButton
-                    android:id="@+id/widget_prev"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_widget_prev"
-                    android:tint="#FFFFFF"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Previous"
-                    android:scaleType="centerInside"
-                    android:padding="4dp" />
+                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                    <ImageButton
+                        android:id="@+id/widget_prev"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_widget_prev"
+                        android:tint="@color/widget_on_surface"
+                        android:background="@drawable/widget_icon_btn_bg"
+                        android:contentDescription="@string/widget_cd_prev"
+                        android:scaleType="centerInside"
+                        android:padding="8dp" />
+                </FrameLayout>
 
-                <ImageButton
-                    android:id="@+id/widget_play_pause"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"
-                    android:src="@drawable/ic_widget_play"
-                    android:tint="#FFFFFF"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Play/Pause"
-                    android:scaleType="centerInside"
-                    android:padding="4dp" />
+                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                    <ImageButton
+                        android:id="@+id/widget_play_pause"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_widget_play"
+                        android:tint="@color/widget_on_accent"
+                        android:background="@drawable/widget_play_bg"
+                        android:contentDescription="@string/widget_cd_play_pause"
+                        android:scaleType="centerInside"
+                        android:padding="12dp" />
+                </FrameLayout>
 
-                <ImageButton
-                    android:id="@+id/widget_next"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_widget_next"
-                    android:tint="#FFFFFF"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Next"
-                    android:scaleType="centerInside"
-                    android:padding="4dp" />
+                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                    <ImageButton
+                        android:id="@+id/widget_next"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_widget_next"
+                        android:tint="@color/widget_on_surface"
+                        android:background="@drawable/widget_icon_btn_bg"
+                        android:contentDescription="@string/widget_cd_next"
+                        android:scaleType="centerInside"
+                        android:padding="8dp" />
+                </FrameLayout>
 
-                <ImageButton
-                    android:id="@+id/widget_favorite"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_favorite_border"
-                    android:tint="#AAFFFFFF"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Favorite"
-                    android:scaleType="centerInside"
-                    android:padding="4dp" />
-
+                <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+                    <ImageButton
+                        android:id="@+id/widget_favorite"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_favorite_border"
+                        android:background="@drawable/widget_icon_btn_bg"
+                        android:contentDescription="@string/widget_cd_favorite"
+                        android:scaleType="centerInside"
+                        android:padding="8dp" />
+                </FrameLayout>
             </LinearLayout>
-
         </LinearLayout>
-
     </LinearLayout>
 </FrameLayout>

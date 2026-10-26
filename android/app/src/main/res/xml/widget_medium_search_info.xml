@@ -8,4 +8,5 @@
     android:targetCellHeight="2"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
+    android:description="@string/widget_desc_search"
     android:widgetCategory="home_screen" />

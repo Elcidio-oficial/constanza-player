@@ -5,7 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.widget.RemoteViews
 
-/** Widget Cápsula — formato pílula com artwork circular, título, pause e next. */
+/** Widget Cápsula — pílula com capa circular, título/artista, play e seguinte. */
 class WidgetCapsuleProvider : BaseWidgetProvider() {
     override val layoutRes get() = R.layout.widget_capsule
     override val providerClass get() = WidgetCapsuleProvider::class.java
@@ -27,6 +27,7 @@ class WidgetCapsuleProvider : BaseWidgetProvider() {
         val views = RemoteViews(context.packageName, layoutRes)
 
         views.setTextViewText(R.id.widget_title, title)
+        views.setTextViewText(R.id.widget_artist, artist)
         views.setImageViewResource(R.id.widget_play_pause, playPauseRes)
         if (artwork != null) views.setImageViewBitmap(R.id.widget_artwork, artwork)
 

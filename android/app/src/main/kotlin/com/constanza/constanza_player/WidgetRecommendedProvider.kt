@@ -5,7 +5,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.widget.RemoteViews
 
-/** Widget Recomendado — artwork + transporte + grelha 2×2 de ações. */
+/** Widget Atalhos — leitor + grelha 2×2 de atalhos (fila, playlists, temporizador, favorito).
+ *  (Nome da classe mantido para não remover widgets já colocados pelo utilizador.) */
 class WidgetRecommendedProvider : BaseWidgetProvider() {
     override val layoutRes get() = R.layout.widget_recommended
     override val providerClass get() = WidgetRecommendedProvider::class.java

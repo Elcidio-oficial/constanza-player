@@ -1,81 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Widget Capa (3×3): capa a toda a área, véu inferior com texto e play.
+     O texto fica sempre branco porque assenta no véu escuro, não na superfície. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="12dp">
+    android:padding="@dimen/widget_margin">
 
-    <!-- Dark background -->
     <FrameLayout
+        android:id="@android:id/background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/widget_bg_dark">
+        android:background="@drawable/widget_surface"
+        android:clipToOutline="true">
 
-        <!-- Artwork fills most of the card -->
         <ImageView
             android:id="@+id/widget_artwork"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:src="@mipmap/ic_launcher"
-            android:contentDescription="Album art"
-            android:alpha="0.6" />
+            android:contentDescription="@string/widget_cd_artwork" />
 
-        <!-- Dark overlay (FrameLayout em vez de View — RemoteViews não aceita View puro) -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#88000000" />
+            android:background="@drawable/widget_scrim" />
 
-        <!-- Music note top-right -->
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="top|end"
-            android:layout_margin="12dp"
-            android:src="@drawable/ic_widget_play"
-            android:tint="#CCFFFFFF"
-            android:contentDescription="Note" />
-
-        <!-- Daily Recommendation label — bottom-left -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start"
-            android:orientation="vertical"
-            android:layout_margin="14dp">
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="14dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Daily"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/widget_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Recommendation"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_now_playing"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.08"
+                    android:textAllCaps="true"
+                    android:fontFamily="sans-serif-medium" />
 
+                <TextView
+                    android:id="@+id/widget_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/widget_default_title"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="17sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/widget_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_default_artist"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="13sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/widget_play_pause"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:src="@drawable/ic_widget_play"
+                android:tint="@color/widget_on_accent"
+                android:background="@drawable/widget_play_bg"
+                android:contentDescription="@string/widget_cd_play_pause"
+                android:scaleType="centerInside"
+                android:padding="14dp" />
         </LinearLayout>
-
-        <!-- Play button center -->
-        <ImageButton
-            android:id="@+id/widget_play_pause"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_widget_play"
-            android:tint="#FFFFFF"
-            android:background="@drawable/widget_btn_bg"
-            android:contentDescription="Play"
-            android:scaleType="centerInside"
-            android:padding="10dp" />
-
     </FrameLayout>
 </FrameLayout>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_default_title">Constanza Músicas</string>
+    <string name="widget_default_artist">Sua música. Seu momento.</string>
+    <string name="widget_now_playing">A tocar agora</string>
+    <string name="widget_search_hint">Pesquisar músicas, artistas…</string>
+
+    <string name="widget_cd_artwork">Capa do álbum</string>
+    <string name="widget_cd_play_pause">Reproduzir ou pausar</string>
+    <string name="widget_cd_prev">Anterior</string>
+    <string name="widget_cd_next">Seguinte</string>
+    <string name="widget_cd_repeat">Repetir</string>
+    <string name="widget_cd_favorite">Favorito</string>
+    <string name="widget_cd_queue">Fila de reprodução</string>
+    <string name="widget_cd_playlists">Playlists</string>
+    <string name="widget_cd_sleep">Temporizador</string>
+    <string name="widget_cd_search">Pesquisar</string>
+
+    <string name="widget_desc_medium">Capa, música atual e todos os controlos</string>
+    <string name="widget_desc_large">Capa grande com controlos completos</string>
+    <string name="widget_desc_search">Leitor compacto com atalho de pesquisa</string>
+    <string name="widget_desc_capsule">Pílula discreta: reproduzir e avançar</string>
+    <string name="widget_desc_cover">Cartão com a capa da música em destaque</string>
+    <string name="widget_desc_shortcuts">Leitor com atalhos para fila, playlists e temporizador</string>
+</resources>
