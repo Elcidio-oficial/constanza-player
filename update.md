@@ -7,6 +7,31 @@
 
 ---
 
+## [1.5.0] — 2026-07-26 (Play Store, versionCode 17)
+### Áudio — audio focus padrão + ducking
+- **`mixWithOthers` substituído por `AudioFocusGainType.gain`**: o app volta a registrar-se no audio focus do Android (`handleAudioSessionActivation = true`), como um player de música normal.
+- **Interrupções tratadas manualmente no handler:**
+  - **Duck** (SMS, alarme, GPS) — reduz o volume para 30% sem pausar e restaura no fim.
+  - **Pause** (chamada, outro player) — pausa e retoma automaticamente quando a interrupção termina.
+  - **Fones desconectados** — pausa via `becomingNoisyEventStream`.
+
+### Privacidade — exigência da Play Store
+- **`PRIVACY.md`** com a política de privacidade, publicada no GitHub Pages.
+- **Link em Configurações** (`AppConstants.privacyPolicyUrl`, aberto via `url_launcher`), traduzido em PT-BR e EN.
+
+### Letras
+- **`/search` valida a correspondência da faixa** antes de aceitar um resultado, evitando letras de músicas erradas; log de init de mídia para diagnóstico.
+
+### Windows
+- Merge da branch `fix/windows-audio-and-cover-resolution` (áudio com caracteres especiais, capas em alta resolução, pasta escaneada na hora, `broadFileSystemAccess` no MSIX).
+
+### Build / release
+- **Correção para o AGP 8**: `on_audio_query_android` 1.1.0 traz `package=` no `AndroidManifest.xml`, o que quebrava o `bundleRelease`. Novo passo em `android/build.gradle.kts` (`subprojects`) remove o atributo automaticamente — funciona após `pub cache repair`, em outras máquinas e em CI.
+- `dart format` + lint pendente corrigidos para manter o CI verde.
+- **versionCode 17**: o 16 já tinha sido usado no Play Console. **Próximo upload precisa de versionCode ≥ 18.**
+
+---
+
 ## [1.4.1] — 2026-06-06
 ### Letras — busca online mais rápida
 - **`LyricsFetchService.fetch()` deixou de ser cascata sequencial.** Antes, encontrar a letra exigia até **5 idas à rede em série** (`/get` exato → `/get` limpo → `/search` estratégia 1 → 2 → 3), cada uma esperando a anterior. Como o `/get` do LRCLIB exige duração **exata** (que o ID3 local quase nunca tem certa), a maioria das músicas caía até ao fim da fila — daí o "demora um tempinho".
