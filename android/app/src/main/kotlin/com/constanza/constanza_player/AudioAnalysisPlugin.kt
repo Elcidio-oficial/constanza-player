@@ -147,15 +147,15 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
         private const val NUM_CHROMA = 12
 
-        /** 6 harmônicas → pesos 1, 1/4, 1/9, 1/16, 1/25, 1/36. */
-        private const val NUM_HARMONICS = 6
+        /** Pico espectral só conta se tiver ≥ 2 % do maior pico do frame. */
+        private const val PEAK_REL_THRESHOLD = 0.02
 
         /** Frequência de referência para MIDI ↔ freq (A4 = 440 Hz). */
         private const val A4_REF = 440.0
 
-        /** Faixa de frequência considerada no chroma: A1 (55 Hz) → B7 (3951 Hz). */
-        private const val CHROMA_FREQ_MIN = 55.0
-        private const val CHROMA_FREQ_MAX = 3951.0
+        /** Faixa do chroma: C2 (65 Hz) → C7 (2093 Hz). Acima disso é brilho/percussão. */
+        private const val CHROMA_FREQ_MIN = 65.0
+        private const val CHROMA_FREQ_MAX = 2100.0
 
         private val NOTE_NAMES = arrayOf(
             "C", "C#", "D", "D#", "E", "F",
@@ -466,7 +466,7 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         val ctx = context ?: throw IllegalStateException("No context")
 
         val decoded = decodeToMonoFloat(ctx, uri)
-        val samples = applyDcBlockerAndPreEmphasis(decoded.samples)
+        val samples = applyDcBlocker(decoded.samples)
         val sampleRate = decoded.sampleRate
 
         if (samples.size < BPM_FRAME_SIZE * 4) {
@@ -496,24 +496,22 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     // ════════════════════════════════════════════════════════════
 
     /**
-     * 1. DC blocker: y[n] = x[n] - x[n-1] + 0.995 * y[n-1]
-     *    Remove offset DC que causa vazamento espectral na bin 0.
-     * 2. Pre-ênfase: amplifica altas frequências (melhora onset em hi-hats/snares).
-     *    Coeficiente 0.97 = padrão telecomunicações / speech processing.
+     * DC blocker in-place: y[n] = x[n] - x[n-1] + 0.995 * y[n-1].
+     * Remove offset DC que causa vazamento espectral na bin 0. Sem pré-ênfase:
+     * ela distorcia o cromagrama (agudos dominavam a tonalidade), e o BPM já
+     * pesa as bandas separadamente.
      */
-    private fun applyDcBlockerAndPreEmphasis(input: FloatArray): FloatArray {
-        val out = FloatArray(input.size)
+    private fun applyDcBlocker(samples: FloatArray): FloatArray {
         var prevIn = 0f
         var prevOut = 0f
-        for (i in input.indices) {
-            // DC blocker
-            val dcOut = input[i] - prevIn + 0.995f * prevOut
-            prevIn = input[i]
-            prevOut = dcOut
-            // Pre-ênfase leve (0.97)
-            out[i] = dcOut - 0.97f * (if (i > 0) out[i - 1] else 0f)
+        for (i in samples.indices) {
+            val x = samples[i]
+            val y = x - prevIn + 0.995f * prevOut
+            prevIn = x
+            prevOut = y
+            samples[i] = y
         }
-        return out
+        return samples
     }
 
     // ════════════════════════════════════════════════════════════
@@ -550,6 +548,15 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             val mime = format.getString(MediaFormat.KEY_MIME)
                 ?: throw IllegalArgumentException("No mime type")
 
+            // Pula a introdução: analisa a partir de 25 % da faixa (limitado
+            // para ainda caber ANALYSIS_DURATION_SEC). Intros sem bateria ou
+            // fora do tom davam BPM/tonalidade aleatórios.
+            val durationUs = if (format.containsKey(MediaFormat.KEY_DURATION))
+                format.getLong(MediaFormat.KEY_DURATION) else 0L
+            val windowUs = ANALYSIS_DURATION_SEC * 1_000_000L
+            val startUs = min(durationUs / 4, durationUs - windowUs).coerceAtLeast(0L)
+            if (startUs > 0) extractor.seekTo(startUs, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
+
             codec = MediaCodec.createDecoderByType(mime)
             codec.configure(format, null, null, 0)
             codec.start()
@@ -557,9 +564,11 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             // FloatArray primitivo — 4 bytes/sample vs ~16 bytes/sample do
             // ArrayList<Float> (boxing). Reduz o footprint de ~60MB p/ ~10MB
             // em 60s @44100Hz.
-            val maxSamples = ANALYSIS_DURATION_SEC * sampleRate
-            val monoSamples = FloatArray(maxSamples)
+            // Folga de 2× para decoders (HE-AAC) que dobram a taxa de saída.
+            val monoSamples = FloatArray(ANALYSIS_DURATION_SEC * sampleRate * 2)
+            var maxSamples = ANALYSIS_DURATION_SEC * sampleRate
             var sampleCount = 0
+            var isFloat = false
             val bufferInfo = MediaCodec.BufferInfo()
             var inputDone = false
             var outputDone = false
@@ -592,6 +601,18 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 }
 
                 val outputIdx = codec.dequeueOutputBuffer(bufferInfo, timeoutUs)
+                if (outputIdx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                    // A taxa/canais reais vêm daqui, não do container: com a
+                    // taxa errada o BPM saía multiplicado ou dividido.
+                    val out = codec.outputFormat
+                    channelCount = out.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                    sampleRate = out.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                    isFloat = out.containsKey(MediaFormat.KEY_PCM_ENCODING) &&
+                        out.getInteger(MediaFormat.KEY_PCM_ENCODING) ==
+                        android.media.AudioFormat.ENCODING_PCM_FLOAT
+                    maxSamples = min(ANALYSIS_DURATION_SEC * sampleRate, monoSamples.size)
+                    continue
+                }
                 if (outputIdx >= 0) {
                     if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
                         outputDone = true
@@ -601,19 +622,21 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                         codec.releaseOutputBuffer(outputIdx, false)
                         continue
                     }
+                    outputBuf.position(bufferInfo.offset)
+                    outputBuf.limit(bufferInfo.offset + bufferInfo.size)
                     outputBuf.order(ByteOrder.LITTLE_ENDIAN)
-                    val shortBuf = outputBuf.asShortBuffer()
-                    val samplesInBuffer = shortBuf.remaining()
+                    val floats = if (isFloat) outputBuf.asFloatBuffer() else null
+                    val shorts = if (isFloat) null else outputBuf.asShortBuffer()
+                    val samplesInBuffer = floats?.remaining() ?: shorts!!.remaining()
 
-                    for (i in 0 until samplesInBuffer step channelCount) {
-                        if (sampleCount >= maxSamples) break
+                    var i = 0
+                    while (i + channelCount <= samplesInBuffer && sampleCount < maxSamples) {
                         var sum = 0f
                         for (ch in 0 until channelCount) {
-                            if (i + ch < samplesInBuffer) {
-                                sum += shortBuf.get(i + ch).toFloat() / 32768f
-                            }
+                            sum += floats?.get(i + ch) ?: (shorts!!.get(i + ch) / 32768f)
                         }
                         monoSamples[sampleCount++] = sum / channelCount
+                        i += channelCount
                     }
                     codec.releaseOutputBuffer(outputIdx, false)
                 }
@@ -622,7 +645,7 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             // Trim para o tamanho real. copyOf cria uma nova FloatArray;
             // aqui o pico temporário é ~20MB (original + copia) — aceitável,
             // e GC recolhe o 'monoSamples' logo em seguida.
-            val trimmed = if (sampleCount == maxSamples) monoSamples
+            val trimmed = if (sampleCount == monoSamples.size) monoSamples
                 else monoSamples.copyOf(sampleCount)
             return DecodedAudio(trimmed, sampleRate)
         } finally {
@@ -667,31 +690,35 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         val hannWindow = DoubleArray(frameSize) { i ->
             0.5 * (1.0 - cos(2.0 * PI * i / (frameSize - 1)))
         }
-        val spectra = Array(numFrames) { f ->
-            val start = f * hop
-            val windowed = DoubleArray(frameSize)
-            for (i in 0 until frameSize) {
-                if (start + i < samples.size) {
-                    windowed[i] = samples[start + i].toDouble() * hannWindow[i]
-                }
-            }
-            fftMagnitude(windowed)
-        }
-
-        // Step 2 — spectral flux por banda
+        // Step 2 — spectral flux por banda, só com o espectro anterior em
+        // memória. Magnitude comprimida por log(1 + γ·|X|): sem isso o fluxo
+        // seguia o volume (crescendos) em vez das batidas.
         val rawFlux = Array(NUM_BANDS) { DoubleArray(numFrames - 1) }
-        for (f in 1 until numFrames) {
-            for (band in 0 until NUM_BANDS) {
-                val lowBin  = max(1, (BAND_EDGES[band] / binWidth).toInt())
-                val highBin = min(spectra[f].size - 1, (BAND_EDGES[band + 1] / binWidth).toInt())
-                if (lowBin >= highBin) continue
-                var flux = 0.0
-                for (bin in lowBin until highBin) {
-                    val diff = spectra[f][bin] - spectra[f - 1][bin]
-                    if (diff > 0.0) flux += diff  // half-wave rectified
-                }
-                rawFlux[band][f - 1] = flux
+        val windowed = DoubleArray(frameSize)
+        var prev: DoubleArray? = null
+        for (f in 0 until numFrames) {
+            val start = f * hop
+            for (i in 0 until frameSize) {
+                windowed[i] = if (start + i < samples.size)
+                    samples[start + i].toDouble() * hannWindow[i] else 0.0
             }
+            val spec = fftMagnitude(windowed)
+            for (bin in spec.indices) spec[bin] = ln(1.0 + 100.0 * spec[bin])
+            val p = prev
+            if (p != null) {
+                for (band in 0 until NUM_BANDS) {
+                    val lowBin  = max(1, (BAND_EDGES[band] / binWidth).toInt())
+                    val highBin = min(spec.size - 1, (BAND_EDGES[band + 1] / binWidth).toInt())
+                    if (lowBin >= highBin) continue
+                    var flux = 0.0
+                    for (bin in lowBin until highBin) {
+                        val diff = spec[bin] - p[bin]
+                        if (diff > 0.0) flux += diff  // half-wave rectified
+                    }
+                    rawFlux[band][f - 1] = flux / (highBin - lowBin)
+                }
+            }
+            prev = spec
         }
 
         // Step 3 — threshold adaptativo por mediana local → onset normalizado
@@ -742,10 +769,12 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             if (lag3 <= maxLag)  sum += acf[lag3]    * 0.3
             if (lagHalf >= minLag) sum += acf[lagHalf] * 0.4
 
-            // Bias perceptual: Gaussiana σ=50 centrada em 120 BPM
+            // Prior perceptual (Ellis 2007): log-Gaussiana em 120 BPM, σ = 1
+            // oitava. Resolve a ambiguidade dobro/metade a favor do andamento
+            // que a pessoa marcaria batendo o pé.
             val bpmAtLag = framesPerSecond * 60.0 / lag
-            val gauss = exp(-((bpmAtLag - 120.0).pow(2)) / (2.0 * 50.0.pow(2)))
-            harmonicAcf[lag] = sum * (1.0 + 0.25 * gauss)
+            val oct = log2(bpmAtLag / 120.0)
+            harmonicAcf[lag] = sum * exp(-0.5 * oct * oct)
         }
 
         // Step 5 — pico
@@ -820,45 +849,16 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         val windowed = DoubleArray(frameSize)
         val blackmanCoeffs = buildBlackmanHarrisCoeffs(frameSize)
 
-        // Primeira passagem — estimativa do desvio de afinação (tuning offset)
-        val tuningBins = DoubleArray(100)  // centavos -50..+49
-        var tuningTotal = 0.0
+        // Passagem única: guarda só os picos espectrais de cada frame (freq com
+        // interpolação parabólica + magnitude). Bins fora de pico são vazamento
+        // da janela e ruído de bateria — somá-los borrava o cromagrama inteiro.
+        class Peak(val midi: Double, val mag: Double)
+        val framePeaks = ArrayList<List<Peak>>(numFrames)
+        val frameRms = DoubleArray(numFrames)
+        // Afinação por média circular da fase de semitom dos picos.
+        var tuneRe = 0.0
+        var tuneIm = 0.0
 
-        for (f in 0 until numFrames) {
-            val start = f * hop
-            for (i in 0 until frameSize) {
-                windowed[i] = if (start + i < samples.size)
-                    samples[start + i].toDouble() * blackmanCoeffs[i]
-                else 0.0
-            }
-            val spectrum = fftMagnitude(windowed)
-            for (bin in 1 until spectrum.size) {
-                val freq = bin * binWidth
-                if (freq < CHROMA_FREQ_MIN || freq > CHROMA_FREQ_MAX) continue
-                val mag = spectrum[bin]
-                if (mag < 1e-8) continue
-                val midi = 12.0 * log2(freq / A4_REF) + 69.0
-                val frac = midi - floor(midi)  // 0..1
-                val cents = ((frac * 100).roundToInt() + 50) % 100  // 0..99
-                tuningBins[cents] += mag
-                tuningTotal += mag
-            }
-        }
-
-        // Desvio de afinação em semitom fracional (-0.5..+0.5)
-        val tuningOffset = if (tuningTotal > 1e-10) {
-            var best = 0; var bestVal = 0.0
-            for (i in tuningBins.indices) {
-                if (tuningBins[i] > bestVal) { bestVal = tuningBins[i]; best = i }
-            }
-            // cents: 0..49 → offset positivo, 50..99 → offset negativo
-            val rawCents = if (best <= 49) best else best - 100
-            rawCents / 100.0  // semitom fracional
-        } else 0.0
-
-        Log.d(TAG, "Tuning offset: ${"%.3f".format(tuningOffset)} semitones")
-
-        // Segunda passagem — HPCP com compensação de afinação
         for (f in 0 until numFrames) {
             val start = f * hop
             var rms = 0.0
@@ -869,26 +869,59 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 rms += s * s
             }
             rms = sqrt(rms / frameSize)
-            if (rms < 1e-6) continue  // skip frames silenciosos
+            frameRms[f] = rms
+            if (rms < 1e-4) { framePeaks.add(emptyList()); continue }
 
             val spectrum = fftMagnitude(windowed)
+            val loBin = max(2, (CHROMA_FREQ_MIN / binWidth).toInt())
+            val hiBin = min(spectrum.size - 2, (CHROMA_FREQ_MAX / binWidth).toInt())
+            var frameMax = 0.0
+            for (bin in loBin..hiBin) frameMax = max(frameMax, spectrum[bin])
+            val floor = frameMax * PEAK_REL_THRESHOLD
+
+            val peaks = ArrayList<Peak>()
+            for (bin in loBin..hiBin) {
+                val b = spectrum[bin]
+                if (b < floor || b <= spectrum[bin - 1] || b < spectrum[bin + 1]) continue
+                // Interpolação parabólica em escala log → frequência sub-bin.
+                val a = ln(spectrum[bin - 1] + 1e-12)
+                val lb = ln(b + 1e-12)
+                val c = ln(spectrum[bin + 1] + 1e-12)
+                val denom = a - 2 * lb + c
+                val delta = if (abs(denom) > 1e-12) (0.5 * (a - c) / denom).coerceIn(-0.5, 0.5) else 0.0
+                val freq = (bin + delta) * binWidth
+                val midi = 12.0 * log2(freq / A4_REF) + 69.0
+                // sqrt comprime a dinâmica: graves fortes não dominam sozinhos.
+                val mag = sqrt(b)
+                peaks.add(Peak(midi, mag))
+                val phase = 2.0 * PI * midi
+                tuneRe += mag * cos(phase)
+                tuneIm += mag * sin(phase)
+            }
+            framePeaks.add(peaks)
+        }
+
+        // Desvio em semitom fracional (-0.5..+0.5); 0 = afinado em A4 = 440 Hz.
+        val tuningOffset = if (tuneRe * tuneRe + tuneIm * tuneIm > 1e-20)
+            atan2(tuneIm, tuneRe) / (2.0 * PI) else 0.0
+
+        Log.d(TAG, "Tuning offset: ${"%.3f".format(tuningOffset)} semitones")
+
+        for (f in 0 until numFrames) {
+            val peaks = framePeaks[f]
+            if (peaks.isEmpty()) continue
+            val rms = frameRms[f]
             val frameChroma = DoubleArray(NUM_CHROMA)
 
-            for (bin in 1 until spectrum.size) {
-                val freq = bin * binWidth
-                if (freq < CHROMA_FREQ_MIN || freq > CHROMA_FREQ_MAX) continue
-                val mag = spectrum[bin]
-                if (mag < 1e-8) continue
-
-                for (h in 1..NUM_HARMONICS) {
-                    val fundFreq = freq / h
-                    if (fundFreq < CHROMA_FREQ_MIN || fundFreq > 2500.0) continue
-                    // MIDI com compensação de afinação
-                    val midi = 12.0 * log2(fundFreq / A4_REF) + 69.0 - tuningOffset
-                    val chromaIdx = ((midi.roundToInt() % 12) + 12) % 12
-                    val harmonicWeight = 1.0 / (h.toDouble() * h.toDouble())
-                    frameChroma[chromaIdx] += mag * harmonicWeight
-                }
+            for (p in peaks) {
+                val midi = p.midi - tuningOffset
+                val nearest = midi.roundToInt()
+                // Pico longe do semitom (> 35 cents) é ruído/percussão.
+                val dev = abs(midi - nearest)
+                if (dev > 0.35) continue
+                val w = cos(PI * dev / 0.7).pow(2)
+                val chromaIdx = ((nearest % 12) + 12) % 12
+                frameChroma[chromaIdx] += p.mag * w
             }
 
             // Normalização L2 do frame antes de acumular (ponderado por RMS)
@@ -996,9 +1029,10 @@ class AudioAnalysisPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         var p = 1; while (p < n) p = p shl 1; return p
     }
 
+    /** Perfil com a tônica em [shift]: rotated[shift] = profile[0]. */
     private fun rotateProfile(profile: DoubleArray, shift: Int): DoubleArray {
         val n = profile.size
-        return DoubleArray(n) { profile[(it + shift) % n] }
+        return DoubleArray(n) { profile[(it - shift + n) % n] }
     }
 
     private fun pearsonCorrelation(x: DoubleArray, y: DoubleArray): Double {

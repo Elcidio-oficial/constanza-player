@@ -110,7 +110,9 @@ class BpmKeyResult {
 /// Nunca lança exceção — retorna null se nada for encontrado.
 class BpmKeyFetchService {
   // ─── Storage keys ─────────────────────────────────────────
-  static const _cacheKey = 'bpm_key_cache_v4';
+  // v5: caches anteriores têm resultados de faixas erradas (busca sem
+  // verificação) — descartados.
+  static const _cacheKey = 'bpm_key_cache_v5';
   static const _spotifyCredsKey = 'spotify_credentials';
   static const _spotifyTokenKey = 'spotify_access_token';
   static const _spotifyTokenExpiryKey = 'spotify_token_expiry';
@@ -171,6 +173,7 @@ class BpmKeyFetchService {
       // Migração: limpar chaves legadas do GetSongBPM
       await prefs.remove('getsongbpm_api_key');
       await prefs.remove('bpm_key_cache_v3');
+      await prefs.remove('bpm_key_cache_v4');
 
       // Results cache
       final raw = prefs.getString(_cacheKey);
@@ -379,7 +382,7 @@ class BpmKeyFetchService {
     ]) {
       try {
         final url = Uri.parse(
-          'https://api.spotify.com/v1/search?q=${Uri.encodeQueryComponent(q)}&type=track&limit=1',
+          'https://api.spotify.com/v1/search?q=${Uri.encodeQueryComponent(q)}&type=track&limit=5',
         );
         final res = await http
             .get(url, headers: {'Authorization': 'Bearer $token'})
@@ -393,15 +396,21 @@ class BpmKeyFetchService {
                 as List<dynamic>?;
         if (items == null || items.isEmpty) continue;
 
-        final track = items[0] as Map<String, dynamic>;
-        final id = track['id'] as String?;
-        final name = track['name'] as String? ?? '';
-        final artists = track['artists'] as List<dynamic>?;
-        final artistName = artists != null && artists.isNotEmpty
-            ? (artists[0] as Map<String, dynamic>)['name'] as String? ?? ''
-            : '';
-        if (id != null && id.isNotEmpty && name.isNotEmpty) {
-          return _SpotifyHit(id, name, artistName);
+        // Só aceita um resultado que seja de fato a mesma música: o Spotify
+        // sempre devolve *algo*, e aceitar o primeiro dava o BPM de outra
+        // faixa para músicas que ele não conhece.
+        for (final item in items) {
+          final track = item as Map<String, dynamic>;
+          final id = track['id'] as String?;
+          final name = track['name'] as String? ?? '';
+          final artistNames = [
+            for (final a in (track['artists'] as List<dynamic>? ?? const []))
+              (a as Map<String, dynamic>)['name'] as String? ?? '',
+          ];
+          if (id == null || id.isEmpty || name.isEmpty) continue;
+          if (isSameTrack(cleanTitle, artist, name, artistNames)) {
+            return _SpotifyHit(id, name, artistNames.firstOrNull ?? '');
+          }
         }
       } catch (e) {
         debugPrint('[BpmKey] Spotify search parse error: $e');
@@ -528,6 +537,49 @@ class BpmKeyFetchService {
 
   static String _normalize(String s) =>
       s.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '').trim();
+
+  /// Palavras normalizadas, sem acentos (Spotify e tags locais divergem).
+  static Set<String> _words(String s) {
+    const from = 'áàâãäéèêëíìîïóòôõöúùûüçñ';
+    const to = 'aaaaaeeeeiiiiooooouuuucn';
+    final buf = StringBuffer();
+    for (final ch in s.toLowerCase().split('')) {
+      final i = from.indexOf(ch);
+      buf.write(i >= 0 ? to[i] : ch);
+    }
+    return buf
+        .toString()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .toSet();
+  }
+
+  /// Fração das palavras de [a] presentes em [b].
+  static double _coverage(Set<String> a, Set<String> b) =>
+      a.isEmpty ? 0 : a.where(b.contains).length / a.length;
+
+  /// O resultado do Spotify é a mesma música? Exige título quase igual e
+  /// pelo menos um artista em comum.
+  @visibleForTesting
+  static bool isSameTrack(
+    String title,
+    String artist,
+    String hitTitle,
+    List<String> hitArtists,
+  ) {
+    final t = _words(_cleanTitle(title));
+    final ht = _words(_cleanTitle(hitTitle));
+    if (_coverage(t, ht) < 0.8 || _coverage(ht, t) < 0.6) return false;
+
+    final a = _words(artist);
+    if (a.isEmpty) return false;
+    for (final name in hitArtists) {
+      final ha = _words(name);
+      if (_coverage(ha, a) >= 0.8 || _coverage(a, ha) >= 0.8) return true;
+    }
+    return false;
+  }
 
   static String _cleanTitle(String title) => title
       .replaceAll(

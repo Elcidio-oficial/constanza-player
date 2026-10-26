@@ -125,7 +125,7 @@ class AudioAnalysisResult {
 /// Dados online vêm via Spotify Search (identificação) + ReccoBeats (features).
 /// Tonalidade vem exclusivamente do DSP nativo (AudioAnalysisPlugin.kt).
 class AudioAnalysisService {
-  static const _cacheKey = 'audio_analysis_cache_v3';
+  static const _cacheKey = 'audio_analysis_cache_v4';
 
   static final Map<String, AudioAnalysisResult> _memCache = {};
   static const _maxCacheSize = 500;
@@ -135,6 +135,8 @@ class AudioAnalysisService {
     if (_diskCacheLoaded) return;
     try {
       final prefs = await SharedPreferences.getInstance();
+      // v3 guardava BPMs de faixas trocadas pela busca sem verificação.
+      await prefs.remove('audio_analysis_cache_v3');
       final raw = prefs.getString(_cacheKey);
       if (raw != null) {
         final map = jsonDecode(raw) as Map<String, dynamic>;
