@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -193,11 +194,23 @@ class BpmKeyFetchService {
     _diskLoaded = true;
   }
 
-  static Future<void> _saveCache() async {
+  static Timer? _saveTimer;
+
+  /// Agenda a gravação: vários resultados seguidos viram uma escrita só.
+  static void _saveCache() {
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(seconds: 3), _writeCache);
+  }
+
+  static Future<void> _writeCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final map = {for (final e in _memCache.entries) e.key: e.value.toJson()};
-      await prefs.setString(_cacheKey, jsonEncode(map));
+      // JSON montado fora da thread da UI.
+      await prefs.setString(
+        _cacheKey,
+        await Isolate.run(() => jsonEncode(map)),
+      );
     } catch (e) {
       debugPrint('[BpmKey] saveCache error: $e');
     }

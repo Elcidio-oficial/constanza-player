@@ -269,23 +269,27 @@ class _AppShellState extends ConsumerState<AppShell>
               ? Colors.transparent
               : colors.surface,
           body: widget.navigationShell,
-          bottomNavigationBar: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const MiniPlayer(),
-              _PremiumNavBar(
-                currentIndex: currentIndex,
-                onTap: (i) {
-                  HapticFeedback.lightImpact();
-                  widget.navigationShell.goBranch(
-                    i,
-                    initialLocation: i == widget.navigationShell.currentIndex,
-                  );
-                },
-                colors: colors,
-                hasBackground: themeState.hasBackground,
-              ),
-            ],
+          // Mini player e barra de navegação desfocam o mesmo fundo: no grupo
+          // o Impeller lê o fundo uma vez para os dois, em vez de duas.
+          bottomNavigationBar: BackdropGroup(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const MiniPlayer(),
+                _PremiumNavBar(
+                  currentIndex: currentIndex,
+                  onTap: (i) {
+                    HapticFeedback.lightImpact();
+                    widget.navigationShell.goBranch(
+                      i,
+                      initialLocation: i == widget.navigationShell.currentIndex,
+                    );
+                  },
+                  colors: colors,
+                  hasBackground: themeState.hasBackground,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -513,7 +517,7 @@ class _PremiumNavBar extends ConsumerWidget {
 
     if (useBlur) {
       return ClipRRect(
-        child: BackdropFilter(
+        child: BackdropFilter.grouped(
           filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
           child: content,
         ),

@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:constanza_player/services/bpm_key_fetch_service.dart';
@@ -154,14 +156,27 @@ class AudioAnalysisService {
     _diskCacheLoaded = true;
   }
 
-  static Future<void> _saveCache() async {
+  static Timer? _saveTimer;
+
+  /// Agenda a gravação: a análise em lote da Home gera vários resultados
+  /// seguidos, que viram uma escrita só.
+  static void _saveCache() {
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(seconds: 3), _writeCache);
+  }
+
+  static Future<void> _writeCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final map = <String, dynamic>{};
       for (final entry in _memCache.entries) {
         map[entry.key] = entry.value.toJson();
       }
-      await prefs.setString(_cacheKey, jsonEncode(map));
+      // JSON montado fora da thread da UI.
+      await prefs.setString(
+        _cacheKey,
+        await Isolate.run(() => jsonEncode(map)),
+      );
     } catch (e) {
       debugPrint('[AudioAnalysis] Cache save error: $e');
     }

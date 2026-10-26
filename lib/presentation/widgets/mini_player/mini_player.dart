@@ -195,7 +195,8 @@ class MiniPlayer extends ConsumerWidget {
     if (useBlur) {
       content = RepaintBoundary(
         child: ClipRRect(
-          child: BackdropFilter(
+          // Agrupado com a barra de navegação (BackdropGroup no AppShell).
+          child: BackdropFilter.grouped(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: content,
           ),

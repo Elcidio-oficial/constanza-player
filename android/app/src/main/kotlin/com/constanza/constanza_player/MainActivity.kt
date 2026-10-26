@@ -50,6 +50,7 @@ class MainActivity : AudioServiceFragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestHighestRefreshRate()
         // Sinaliza ao trampolim que o engine está vivo/atado (ver [AudioOpenSupport.mainAlive]).
         AudioOpenSupport.mainAlive = true
         captureDeepLink(intent)
@@ -338,6 +339,32 @@ class MainActivity : AudioServiceFragmentActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    /** Pede o modo de tela com a maior taxa (ex.: 120 Hz) na resolução atual.
+     *  Sem isto vários sistemas (HyperOS incluído) deixam o app a 60 Hz. O
+     *  Flutter só desenha quando algo muda, então o custo extra de bateria
+     *  fica restrito a rolagens e animações. */
+    private fun requestHighestRefreshRate() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+        try {
+            @Suppress("DEPRECATION")
+            val display = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) display
+                else windowManager.defaultDisplay
+            display ?: return
+            val current = display.mode
+            val best = display.supportedModes
+                .filter {
+                    it.physicalWidth == current.physicalWidth &&
+                        it.physicalHeight == current.physicalHeight
+                }
+                .maxByOrNull { it.refreshRate } ?: return
+            if (best.modeId == current.modeId) return
+            window.attributes = window.attributes.apply {
+                preferredDisplayModeId = best.modeId
+            }
+        } catch (_: Exception) {
+        }
     }
 
     /** Abre as Configurações para o usuário conceder "sobrepor a outras apps". */

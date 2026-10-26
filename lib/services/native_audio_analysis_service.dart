@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -106,11 +107,23 @@ class NativeAudioAnalysisService {
     }();
   }
 
-  static Future<void> _saveCache() async {
+  static Timer? _saveTimer;
+
+  /// Agenda a gravação: várias análises seguidas viram uma escrita só.
+  static void _saveCache() {
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(seconds: 3), _writeCache);
+  }
+
+  static Future<void> _writeCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final map = {for (final e in _cache.entries) e.key: e.value.toJson()};
-      await prefs.setString(_prefsKey, jsonEncode(map));
+      // Até milhares de entradas: o JSON é montado fora da thread da UI.
+      await prefs.setString(
+        _prefsKey,
+        await Isolate.run(() => jsonEncode(map)),
+      );
     } catch (e) {
       debugPrint('[NativeAnalysis] Cache save error: $e');
     }
